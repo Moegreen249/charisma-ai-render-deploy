@@ -21,8 +21,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  Play,
-  Pause,
   X,
   CheckCircle,
   AlertCircle,
@@ -42,7 +40,7 @@ interface BackgroundJob {
   currentStep: string;
   totalSteps: number;
   error?: string;
-  result?: any;
+  result?: AnalysisResult;
   fileName: string;
   startedAt?: Date;
   completedAt?: Date;
@@ -51,19 +49,28 @@ interface BackgroundJob {
   isComplete?: boolean;
 }
 
+interface AnalysisResult {
+  templateId?: string;
+  analysisData?: unknown;
+  result?: unknown;
+  [key: string]: unknown;
+}
+
 interface BackgroundAnalysisProps {
-  onAnalysisComplete?: (result: any) => void;
+  onAnalysisComplete?: (result: AnalysisResult) => void;
   onError?: (error: string) => void;
 }
 
+interface AnalysisData {
+  templateId: string;
+  modelId: string;
+  provider: string;
+  fileName: string;
+  fileContent: string;
+}
+
 interface BackgroundAnalysisRef {
-  startAnalysis: (data: {
-    templateId: string;
-    modelId: string;
-    provider: string;
-    fileName: string;
-    fileContent: string;
-  }) => Promise<void>;
+  startAnalysis: (data: AnalysisData) => Promise<void>;
 }
 
 const BackgroundAnalysis = forwardRef<
@@ -71,12 +78,11 @@ const BackgroundAnalysis = forwardRef<
   BackgroundAnalysisProps
 >(({ onAnalysisComplete, onError }, ref) => {
   const { data: session } = useSession();
-  const { translations: t } = useEnhancedLanguage();
+  useEnhancedLanguage();
   const [currentJob, setCurrentJob] = useState<BackgroundJob | null>(null);
   const [recentJobs, setRecentJobs] = useState<BackgroundJob[]>([]);
   const [isPolling, setIsPolling] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Poll for job updates
   const pollJobStatus = useCallback(
@@ -113,46 +119,42 @@ const BackgroundAnalysis = forwardRef<
   );
 
   // Start background analysis
-  const startBackgroundAnalysis = async (analysisData: {
-    templateId: string;
-    modelId: string;
-    provider: string;
-    fileName: string;
-    fileContent: string;
-  }) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/background/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(analysisData),
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.jobId) {
-        setCurrentJob({
-          id: data.jobId,
-          status: "PENDING",
-          progress: 0,
-          currentStep: "Queued for processing",
-          totalSteps: 4,
-          fileName: analysisData.fileName,
-          createdAt: new Date(),
+  const startBackgroundAnalysis = useCallback(
+    async (analysisData: AnalysisData) => {
+      try {
+        const response = await fetch("/api/background/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(analysisData),
         });
 
-        setIsPolling(true);
-        // Start polling immediately
-        pollJobStatus(data.jobId);
-      } else {
-        onError?.(data.error || "Failed to start background analysis");
+        const data = await response.json();
+
+        if (data.success && data.jobId) {
+          setCurrentJob({
+            id: data.jobId,
+            status: "PENDING",
+            progress: 0,
+            currentStep: "Queued for processing",
+            totalSteps: 4,
+            fileName: analysisData.fileName,
+            createdAt: new Date(),
+          });
+
+          setIsPolling(true);
+          // Start polling immediately
+          pollJobStatus(data.jobId);
+        } else {
+          onError?.(data.error || "Failed to start background analysis");
+        }
+      } catch (error) {
+        onError?.(error instanceof Error ? error.message : "Unknown error");
+      } finally {
+        // Analysis completed
       }
-    } catch (error) {
-      onError?.(error instanceof Error ? error.message : "Unknown error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [pollJobStatus, onError],
+  );
 
   // Cancel current job
   const cancelJob = async () => {
@@ -218,6 +220,15 @@ const BackgroundAnalysis = forwardRef<
       loadRecentJobs();
     }
   }, [session?.user?.id]);
+
+  // Expose startAnalysis method via ref
+  useImperativeHandle(
+    ref,
+    () => ({
+      startAnalysis: startBackgroundAnalysis,
+    }),
+    [startBackgroundAnalysis],
+  );
 
   // Get status icon and color
   const getStatusDisplay = (status: string) => {
@@ -464,7 +475,9 @@ const BackgroundAnalysis = forwardRef<
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onAnalysisComplete?.(job.result)}
+                                onClick={() =>
+                                  job.result && onAnalysisComplete?.(job.result)
+                                }
                                 className="text-xs"
                               >
                                 View Results
@@ -513,14 +526,6 @@ const BackgroundAnalysis = forwardRef<
       </Card>
     </div>
   );
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      startAnalysis: startBackgroundAnalysis,
-    }),
-    [startBackgroundAnalysis],
-  );
 });
 
 BackgroundAnalysis.displayName = "BackgroundAnalysis";
@@ -529,7 +534,9 @@ export default BackgroundAnalysis;
 
 // Export a hook for easier usage
 export function useBackgroundAnalysis() {
-  const [analysisRef, setAnalysisRef] = useState<any>(null);
+  const [analysisRef, setAnalysisRef] = useState<BackgroundAnalysisRef | null>(
+    null,
+  );
 
   const startAnalysis = useCallback(
     (data: {

@@ -172,3 +172,5 @@ Start analyzing conversations with AI-powered insights!
 ---
 
 **CharismaAI v2.0** - Production Ready | Template Standardization Complete
+
+**Developed by Mohamed Abdelrazig - MAAM**

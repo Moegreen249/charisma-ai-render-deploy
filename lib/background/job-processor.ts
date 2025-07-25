@@ -1,9 +1,11 @@
-// Background job processing system for CharismaAI
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
-import { analyzeChat } from "@/app/actions/analyze";
+import { getModelInfo, getProviderConfig } from "@/lib/ai-providers";
+import { getAllAnalysisTemplates } from "@/lib/analysis-templates";
 import { logPlatformError } from "./error-tracker";
 import { trackUserActivity } from "./analytics";
-import type { JobStatus } from "@/src/generated/prisma";
 
 export interface BackgroundJobData {
   userId: string;
@@ -285,11 +287,6 @@ export class BackgroundJobProcessor {
       await this.updateJobProgress(jobId, 25, "Preparing file data");
 
       // Get API key from job record (stored during job creation)
-      const { getProviderConfig } = await import("@/lib/ai-providers");
-      const { getAllAnalysisTemplates } = await import(
-        "@/lib/analysis-templates"
-      );
-
       const providerConfig = getProviderConfig(
         (job.provider as any) || "openai",
       );
@@ -304,6 +301,9 @@ export class BackgroundJobProcessor {
         );
       }
 
+      // Step 2: Run analysis
+      await this.updateJobProgress(jobId, 50, "Running AI analysis");
+
       const formData = new FormData();
       const file = new File([job.fileContent], job.fileName || "chat.txt", {
         type: "text/plain",
@@ -313,42 +313,6 @@ export class BackgroundJobProcessor {
       formData.append("modelId", job.modelId || "");
       formData.append("provider", job.provider || "");
       formData.append("apiKey", apiKey);
-
-      // If using a custom template, send the template data along
-      try {
-        const allTemplates = await getAllAnalysisTemplates();
-        const template = allTemplates.find(
-          (t) => t.id === (job.templateId || ""),
-        );
-
-        if (template && !template.isBuiltIn) {
-          // Extract the actual template string from the function
-          const funcStr = template.analysisPrompt.toString();
-          // Try to extract the template literal from the function
-          const templateMatch = funcStr.match(/`([\s\S]*?)`/);
-          const analysisPromptString = templateMatch
-            ? templateMatch[1]
-            : funcStr;
-          formData.append(
-            "customTemplate",
-            JSON.stringify({
-              id: template.id,
-              name: template.name,
-              systemPrompt: template.systemPrompt,
-              analysisPromptString: analysisPromptString,
-            }),
-          );
-        }
-      } catch (templateError) {
-        console.warn(
-          "Failed to load custom template, using built-in instead:",
-          templateError,
-        );
-        // Continue with built-in template
-      }
-
-      // Step 2: Run analysis
-      await this.updateJobProgress(jobId, 50, "Running AI analysis");
 
       const result = await this.backgroundAnalyzeChat(formData, job.userId);
 
@@ -499,228 +463,17 @@ export class BackgroundJobProcessor {
       return null;
     }
 
-    const elapsed = Date.now() - job.startedAt.getTime();
+    const elapsedTime = Date.now() - new Date(job.startedAt).getTime();
     const progressRatio = job.progress / 100;
 
-    if (progressRatio <= 0) {
+    if (progressRatio === 0) {
       return null;
     }
 
-    const estimatedTotal = elapsed / progressRatio;
-    const remaining = estimatedTotal - elapsed;
+    const estimatedTotalTime = elapsedTime / progressRatio;
+    const remainingTime = estimatedTotalTime - elapsedTime;
 
-    return Math.max(0, remaining);
-  }
-
-  /**
-   * Retry a failed job
-   */
-  async retryJob(jobId: string, userId?: string): Promise<boolean> {
-    try {
-      const job = await prisma.backgroundJob.findUnique({
-        where: { id: jobId },
-      });
-
-      if (!job) {
-        throw new Error("Job not found");
-      }
-
-      if (userId && job.userId !== userId) {
-        throw new Error("Access denied");
-      }
-
-      if (job.status !== "FAILED") {
-        throw new Error("Only failed jobs can be retried");
-      }
-
-      // Reset job to pending
-      await prisma.backgroundJob.update({
-        where: { id: jobId },
-        data: {
-          status: "PENDING",
-          progress: 0,
-          currentStep: "Queued for retry",
-          error: null,
-          startedAt: null,
-          completedAt: null,
-          retryCount: 0, // Reset retry count for manual retry
-        },
-      });
-
-      // Track activity
-      await trackUserActivity({
-        userId: job.userId,
-        action: "analysis_job_retried",
-        category: "analysis",
-        metadata: {
-          jobId,
-          fileName: job.fileName,
-          retriedBy: userId || "admin",
-        },
-      });
-
-      console.log(`Job ${jobId} queued for retry`);
-      return true;
-    } catch (error) {
-      await logPlatformError({
-        category: "SYSTEM",
-        severity: "MEDIUM",
-        message: "Failed to retry job",
-        userId: userId,
-        stackTrace: error instanceof Error ? error.stack : undefined,
-        requestData: { jobId },
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Get detailed job information for debugging
-   */
-  async getJobDetails(jobId: string, userId?: string) {
-    try {
-      const job = await prisma.backgroundJob.findUnique({
-        where: { id: jobId },
-        include: {
-          user: {
-            select: { name: true, email: true },
-          },
-        },
-      });
-
-      if (!job) {
-        throw new Error("Job not found");
-      }
-
-      if (userId && job.userId !== userId) {
-        throw new Error("Access denied");
-      }
-
-      return {
-        ...job,
-        // Don't expose file content in detailed view for security
-        fileContent: job.fileContent ? "[FILE CONTENT HIDDEN]" : null,
-        isRetryable: job.status === "FAILED",
-        canCancel: ["PENDING", "PROCESSING"].includes(job.status),
-      };
-    } catch (error) {
-      await logPlatformError({
-        category: "DATABASE",
-        severity: "MEDIUM",
-        message: "Failed to get job details",
-        userId: userId,
-        stackTrace: error instanceof Error ? error.stack : undefined,
-        requestData: { jobId },
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Get platform statistics for admin dashboard
-   */
-  async getPlatformStats() {
-    try {
-      const now = new Date();
-      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-      const [
-        totalJobs,
-        todayJobs,
-        weekJobs,
-        completedJobs,
-        failedJobs,
-        processingJobs,
-        avgProcessingTime,
-      ] = await Promise.all([
-        // Total jobs
-        prisma.backgroundJob.count(),
-
-        // Today's jobs
-        prisma.backgroundJob.count({
-          where: { createdAt: { gte: oneDayAgo } },
-        }),
-
-        // This week's jobs
-        prisma.backgroundJob.count({
-          where: { createdAt: { gte: oneWeekAgo } },
-        }),
-
-        // Completed jobs
-        prisma.backgroundJob.count({
-          where: { status: "COMPLETED" },
-        }),
-
-        // Failed jobs
-        prisma.backgroundJob.count({
-          where: { status: "FAILED" },
-        }),
-
-        // Currently processing
-        prisma.backgroundJob.count({
-          where: { status: "PROCESSING" },
-        }),
-
-        // Average processing time - calculate from startedAt and completedAt
-        this.calculateAverageProcessingTime(),
-      ]);
-
-      return {
-        totalJobs,
-        todayJobs,
-        weekJobs,
-        completedJobs,
-        failedJobs,
-        processingJobs,
-        pendingJobs: totalJobs - completedJobs - failedJobs,
-        successRate: totalJobs > 0 ? (completedJobs / totalJobs) * 100 : 0,
-        avgProcessingTimeMs: avgProcessingTime || 0,
-      };
-    } catch (error) {
-      await logPlatformError({
-        category: "DATABASE",
-        severity: "MEDIUM",
-        message: "Failed to get platform stats",
-        stackTrace: error instanceof Error ? error.stack : undefined,
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Calculate average processing time from completed jobs
-   */
-  private async calculateAverageProcessingTime(): Promise<number> {
-    try {
-      const completedJobs = await prisma.backgroundJob.findMany({
-        where: {
-          status: "COMPLETED",
-          startedAt: { not: null },
-          completedAt: { not: null },
-        },
-        select: {
-          startedAt: true,
-          completedAt: true,
-        },
-      });
-
-      if (completedJobs.length === 0) {
-        return 0;
-      }
-
-      const totalDuration = completedJobs.reduce((sum, job) => {
-        if (job.startedAt && job.completedAt) {
-          return sum + (job.completedAt.getTime() - job.startedAt.getTime());
-        }
-        return sum;
-      }, 0);
-
-      return totalDuration / completedJobs.length;
-    } catch (error) {
-      console.error("Failed to calculate average processing time:", error);
-      return 0;
-    }
+    return Math.max(0, remainingTime);
   }
 
   /**
@@ -728,17 +481,6 @@ export class BackgroundJobProcessor {
    */
   private async backgroundAnalyzeChat(formData: FormData, userId: string) {
     try {
-      // Import required modules
-      const { GoogleGenerativeAI } = await import("@google/generative-ai");
-      const OpenAI = (await import("openai")).default;
-      const Anthropic = (await import("@anthropic-ai/sdk")).default;
-      const { getModelInfo, getProviderConfig } = await import(
-        "@/lib/ai-providers"
-      );
-      const { getAllAnalysisTemplates, getAnalysisTemplate } = await import(
-        "@/lib/analysis-templates"
-      );
-
       // Extract form data
       const file = formData.get("chatFile") as File;
       const templateId = formData.get("templateId") as string;
@@ -834,6 +576,13 @@ export class BackgroundJobProcessor {
           throw new Error("No response from OpenAI");
         }
 
+        console.log("Google AI response length:", content.length);
+        console.log("Response starts with:", content.substring(0, 50));
+        console.log(
+          "Response ends with:",
+          content.substring(content.length - 50),
+        );
+
         // Clean and validate JSON response
         analysisResult = this.parseAndValidateJSON(content, "OpenAI");
       } else if (provider === "google") {
@@ -848,6 +597,13 @@ export class BackgroundJobProcessor {
         if (!content) {
           throw new Error("No response from Google AI");
         }
+
+        console.log("Google AI response length:", content.length);
+        console.log("Response starts with:", content.substring(0, 50));
+        console.log(
+          "Response ends with:",
+          content.substring(content.length - 50),
+        );
 
         // Clean and validate JSON response
         analysisResult = this.parseAndValidateJSON(content, "Google AI");
@@ -879,7 +635,7 @@ export class BackgroundJobProcessor {
           modelId,
           provider,
           fileName: file.name,
-          analysisResult,
+          analysisResult: analysisResult as any,
           durationMs: 0, // Will be calculated by job processor
         },
       });
@@ -899,7 +655,7 @@ export class BackgroundJobProcessor {
   }
 
   /**
-   * Parse and validate JSON response from AI providers
+   * Parse and validate JSON response from AI providers (Original Implementation)
    */
   private parseAndValidateJSON(content: string, provider: string) {
     try {

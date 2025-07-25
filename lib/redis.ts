@@ -117,7 +117,11 @@ export class RedisService {
 
   // Real-time notifications
   static async publishNotification(channel: string, data: any) {
-    await redis.publish(channel, JSON.stringify(data));
+    try {
+      await redis.publish(channel, JSON.stringify(data));
+    } catch (error) {
+      console.error("Failed to publish notification:", error);
+    }
   }
 
   static async subscribeToNotifications(

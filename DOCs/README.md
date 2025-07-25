@@ -1,368 +1,228 @@
-# CharismaAI - AI-Powered Communication Analysis Platform
+# CharismaAI Documentation
 
-## Overview
+Welcome to the comprehensive documentation for CharismaAI - an AI-powered communication analysis platform that provides deep insights into chat conversations, personality traits, emotional dynamics, and interpersonal relationships.
 
-CharismaAI is a production-ready web application that leverages artificial intelligence to analyze chat conversations and provide deep insights into communication patterns, personality traits, emotional dynamics, and interpersonal relationships. Built with Next.js 15, TypeScript, and modern AI models, it features a comprehensive standardized template system with 100% compliance validation for consistent, reliable analysis across all communication types.
+## 📚 Documentation Overview
 
-## 🚀 Key Features
-
-### Core Functionality
-- **Multi-Format Chat Analysis**: Upload and analyze chat conversations in various formats
-- **AI-Powered Insights**: Leverage state-of-the-art AI models (Google Gemini, Vertex AI, OpenAI GPT, Anthropic Claude) for deep analysis
-- **Standardized Analysis Templates**: 10 professionally crafted templates with 100% compliance validation
-- **Template Standardization Framework**: Automated quality assurance and compliance checking
-- **Real-time AI Coaching**: Interactive chat interface for personalized communication guidance
-- **Multi-language Support**: Automatic language detection and analysis in the conversation's native language
-- **Production Ready**: Deployment-ready with health checks and monitoring
-
-### Standardized Template System
-CharismaAI features a comprehensive template standardization framework with 100% compliance validation ensuring consistent, reliable results:
-
-#### **10 Professional Analysis Templates (100% Compliant)**
-1. **Communication Analysis** - General communication patterns and effectiveness
-2. **Relationship Analysis** - Emotional dynamics and interpersonal connections
-3. **Business Meeting Analysis** - Professional leadership and meeting effectiveness
-4. **Coaching Session Analysis** - Development insights and goal progress
-5. **Advanced Communication Analysis** - Sophisticated linguistic and psychological frameworks
-6. **Deep Relationship Dynamics** - Advanced attachment theory and intimacy models
-7. **Executive Leadership Analysis** - Business strategy and team dynamics
-8. **Advanced Coaching Analysis** - Comprehensive development and behavioral change
-9. **Clinical Therapeutic Assessment** - Mental health and therapeutic progress frameworks
-10. **Deep Forensic Analysis** - Multi-layered psychological profiling and relationship dynamics
-
-#### **Template Standards Framework (Validated)**
-- **Unified Metadata Schema**: Consistent priority (1-5), confidence (0.0-1.0), and category systems
-- **Standardized Color Mapping**: Semantic category-based color schemes with 18 standardized categories
-- **Required Core Insights**: Every template includes effectiveness scores, emotional timelines, and pattern analysis
-- **Core Metrics**: All templates provide communicationEffectiveness, emotionalStability, and relationshipHealth scores
-- **Automated Validation**: Continuous compliance checking with 100% compliance rate achieved
-- **Quality Assurance**: Zero template errors, build-time validation, and TypeScript safety
-
-### Analysis Capabilities
-- **Personality Profiling**: Identify key personality traits and communication styles
-- **Emotional Arc Tracking**: Monitor emotional changes throughout conversations with standardized metrics
-- **Topic Analysis**: Extract and categorize discussion topics by relevance
-- **Communication Pattern Recognition**: Identify recurring patterns and their impact
-- **Standardized Insights**: Consistent insight system across all templates (text, scores, charts, tables)
-
-### User Experience
-- **Modern UI/UX**: Beautiful, responsive interface built with Tailwind CSS and Radix UI
-- **Interactive Visualizations**: Dynamic charts and graphs with standardized data formats
-- **Template Management**: Access to all 10 standardized templates plus custom template creation
-- **Settings Management**: Comprehensive configuration for AI providers and models
-
-## 🏗️ Architecture
-
-### Technology Stack
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Styling**: Tailwind CSS, Radix UI components
-- **AI Integration**: Google Vertex AI (Gemini, Gemma), Google AI Studio, OpenAI, Anthropic
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js
-- **Validation**: Zod schema validation
-- **Template Standards**: Custom standardization framework
-
-### Project Structure
-```
-charisma-ai/
-├── app/                    # Next.js app directory
-│   ├── actions/           # Server actions for analysis and templates
-│   ├── api/              # API routes
-│   ├── admin/            # Admin dashboard
-│   ├── settings/         # Settings page
-│   └── layout.tsx        # Root layout
-├── components/           # React components
-│   ├── ui/              # Reusable UI components
-│   ├── admin/           # Admin-specific components
-│   └── *.tsx            # Feature components
-├── lib/                 # Utility libraries
-│   ├── analysis-templates.ts    # Standardized templates
-│   ├── template-standards.ts   # Template validation framework
-│   ├── enhanced-templates.ts   # Advanced analysis templates
-│   └── *.ts             # Other utilities
-├── scripts/             # Setup and maintenance scripts
-│   ├── validate-template-standards.ts
-│   ├── update-template-standards.ts
-│   └── *.ts             # Other scripts
-├── DOCs/               # Comprehensive documentation
-└── prisma/             # Database schema and migrations
-```
+This documentation is organized into several sections to help you understand, deploy, and contribute to CharismaAI.
 
 ## 🚀 Getting Started
 
-### Quick Setup (Recommended)
+### Quick Links
+- **[Main README](../README.md)** - Project overview and quick deployment guide
+- **[Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Complete pre-deployment verification
+- **[Render.com Deployment](RENDER_DEPLOYMENT.md)** - Platform-specific deployment guide
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd charisma-ai
-   ```
+### For Users
+- **[User Guide](../DOCs/USER_GUIDE.md)** - How to use CharismaAI features
+- **[FAQ](../DOCs/FAQ.md)** - Frequently asked questions
+- **[API Reference](../DOCs/API_REFERENCE.md)** - REST API documentation
 
-2. **Run the automated setup script**
-   ```bash
-   chmod +x setup.sh
-   ./setup.sh
-   ```
-   
-   The setup script will:
-   - Check system requirements
-   - Install dependencies
-   - Configure environment variables
-   - Set up database schema
-   - Deploy all 10 standardized templates
-   - Validate 100% template compliance
-   - Create admin account
-   - Start development server
+### For Developers
+- **[Development Guide](../DOCs/DEVELOPMENT_GUIDE.md)** - Local development setup
+- **[Architecture](../DOCs/ARCHITECTURE.md)** - System architecture overview
+- **[Contributing](../.github/CONTRIBUTING.md)** - How to contribute to the project
 
-   **Alternative methods:**
-   ```bash
-   # Windows:
-   setup.bat
-   
-   # Direct Node.js:
-   node setup.js
-   ```
+## 🏗️ Architecture & Development
 
-### Manual Setup
+### System Design
+- **[Architecture Overview](../DOCs/ARCHITECTURE.md)** - High-level system design
+- **[Chart Components](../DOCs/CHART_COMPONENTS.md)** - Visualization components guide
+- **[Authentication Setup](../DOCs/AUTHENTICATION_SETUP.md)** - OAuth and security configuration
 
-1. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   pnpm install
-   ```
+### Technical Implementation
+- **[Background Processing](BACKGROUND_PROCESSING_IMPLEMENTATION.md)** - Async processing implementation
+- **[Template Standardization](TEMPLATE_STANDARDIZATION_COMPLETE.md)** - Analysis template standards
+- **[Update Summary](UPDATE_SUMMARY.md)** - Recent changes and improvements
 
-2. **Set up environment variables**
-   ```bash
-   cp env-example.txt .env
-   ```
-   
-   Edit `.env` and add your configuration:
-   ```env
-   # Database
-   DATABASE_URL="postgresql://postgres:password@localhost:5432/charisma_ai"
-   
-   # NextAuth
-   NEXTAUTH_SECRET="your-secret-key"
-   NEXTAUTH_URL="http://localhost:3000"
-   
-   # AI Providers
-   GOOGLE_API_KEY="your-google-ai-api-key"
-   OPENAI_API_KEY="your-openai-api-key"
-   ANTHROPIC_API_KEY="your-anthropic-api-key"
-   
-   # Google Cloud (Optional)
-   GOOGLE_CLOUD_PROJECT_ID="your-project-id"
-   GOOGLE_CLOUD_LOCATION="us-central1"
-   ```
+## 🚀 Deployment & Operations
 
-3. **Set up database**
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
+### Deployment Guides
+- **[Deployment Guide](../DOCs/DEPLOYMENT.md)** - General deployment instructions
+- **[Render.com Specific](RENDER_DEPLOYMENT.md)** - Render.com deployment details
+- **[Complete Setup](../DOCs/COMPLETE_SETUP_DOCUMENTATION.md)** - Comprehensive setup guide
 
-4. **Deploy standardized templates**
-   ```bash
-   npx tsx scripts/seedModules.ts
-   npx tsx scripts/deploy-all-enhanced-templates.ts
-   npx tsx scripts/validate-template-standards.ts
-   ```
+### Configuration
+- **[Environment Variables](../env-example.txt)** - Required environment configuration
+- **[Google Cloud Setup](../DOCs/GOOGLE_CLOUD_AUTH_INVENTORY.md)** - GCP integration guide
+- **[Database Setup](../DOCs/SETUP_README.md)** - Database configuration
 
-5. **Verify template compliance (should show 100%)**
-   ```bash
-   npx tsx scripts/validate-template-standards.ts
-   ```
+## 🤖 AI & Analysis
 
-6. **Start development server**
-   ```bash
-   npm run dev
-   ```
+### Analysis Features
+CharismaAI provides 10 standardized analysis templates:
 
-## 📖 Usage Guide
+1. **Emotional Arc Tracking** - Emotional journey analysis
+2. **Key Topic Identification** - Main conversation themes
+3. **Communication Pattern Analysis** - Communication style patterns
+4. **Personality Trait Assessment** - Big Five personality analysis
+5. **Engagement Level Measurement** - Participation and involvement metrics
+6. **Decision Making Analysis** - Decision-making process insights
+7. **Relationship Dynamics** - Interpersonal relationship analysis
+8. **Conflict Resolution** - Conflict identification and resolution patterns
+9. **Leadership Assessment** - Leadership qualities and influence
+10. **Cultural Context Analysis** - Cultural communication patterns
 
-### Basic Workflow
+### Template Standards
+- **[Template Standardization Report](../DOCs/TEMPLATE_STANDARDIZATION_REPORT.md)** - Template compliance details
+- **[Validation Process](TEMPLATE_STANDARDIZATION_COMPLETE.md)** - Quality assurance process
 
-1. **Upload Chat File**: Drag and drop or select a chat conversation file
-2. **Select Analysis Template**: Choose from 10 standardized templates
-3. **Run Analysis**: Click "Analyze" to process your conversation
-4. **Review Standardized Results**: Explore consistent insights, patterns, and metrics
-5. **Get AI Coaching**: Use the interactive coach for personalized guidance
+## 🛠️ Development Resources
 
-### Template Selection Guide
+### Code Structure
+```
+charisma-ai-render-deploy/
+├── app/                    # Next.js app router pages
+├── components/            # Reusable React components
+├── lib/                   # Utility functions and configurations
+├── src/types/             # TypeScript type definitions
+├── prisma/               # Database schema and migrations
+├── scripts/              # Build and deployment scripts
+├── docs/                 # Documentation (this directory)
+├── DOCs/                 # Legacy documentation
+└── .github/              # GitHub templates and workflows
+```
 
-#### **General Purpose**
-- **Communication Analysis**: Best for everyday conversations and general patterns
-- **Relationship Analysis**: Ideal for personal relationships and emotional dynamics
+### Development Workflow
+1. **Setup**: Follow the [Development Guide](../DOCs/DEVELOPMENT_GUIDE.md)
+2. **Coding**: Adhere to [Contributing Guidelines](../.github/CONTRIBUTING.md)
+3. **Testing**: Run comprehensive tests before submitting
+4. **Documentation**: Update relevant documentation
+5. **Deployment**: Use [Deployment Checklist](DEPLOYMENT_CHECKLIST.md)
 
-#### **Professional Use**
-- **Business Meeting Analysis**: Perfect for professional meetings and leadership assessment
-- **Executive Leadership Analysis**: Advanced business strategy and team dynamics
+## 📋 API Documentation
 
-#### **Personal Development**
-- **Coaching Session Analysis**: Great for development conversations and goal tracking
-- **Advanced Coaching Analysis**: Comprehensive behavioral change and learning frameworks
+### Core Endpoints
+- `GET /api/health` - Health check endpoint
+- `POST /api/chat/upload` - Upload chat file for analysis
+- `GET /api/chat/analysis/:id` - Retrieve analysis results
+- `POST /api/auth/signin` - User authentication
+- `GET /api/templates` - List available analysis templates
 
-#### **Specialized Analysis**
-- **Deep Relationship Dynamics**: Advanced attachment theory and intimacy assessment
-- **Clinical Therapeutic Assessment**: Mental health and therapeutic progress evaluation
-- **Advanced Communication Analysis**: Sophisticated linguistic and psychological analysis
-- **Deep Forensic Analysis**: Multi-layered psychological profiling and relationship forensics
+### Authentication
+- OAuth2 with Google
+- JWT session management
+- Role-based access control
 
-### Understanding Results
+## 🔒 Security & Privacy
 
-All templates provide standardized results including:
-- **Overall Summary**: Comprehensive analysis overview
-- **Standardized Insights**: Consistent insight types (scores, charts, text analysis)
-- **Core Metrics**: Universal metrics (communicationEffectiveness, emotionalStability, relationshipHealth)
-- **Specialized Metrics**: Template-specific measurements
-- **Visual Charts**: Standardized data visualizations
+### Security Features
+- **Data Encryption**: All data transmission uses HTTPS/TLS
+- **Input Validation**: Comprehensive sanitization and validation
+- **Authentication**: Secure OAuth2 implementation
+- **Privacy**: Chat data processed in memory, not permanently stored
 
-## 🔧 Development & Maintenance
+### Compliance
+- GDPR compliance ready
+- CCPA compliance ready
+- Configurable data retention policies
+- Audit logging capabilities
 
-### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+### Security Policies
+- **[Security Policy](../.github/SECURITY.md)** - Vulnerability reporting and security practices
+- **[Privacy Guidelines](../DOCs/USER_GUIDE.md#privacy-considerations)** - Data handling practices
 
-### Template System Scripts
-- `npx tsx scripts/validate-template-standards.ts` - Validate template compliance (100% expected)
-- `npx tsx scripts/update-template-standards.ts` - Apply standardization updates
-- `npx tsx scripts/seedModules.ts` - Deploy all basic templates
-- `npx tsx scripts/deploy-all-enhanced-templates.ts` - Deploy all 10 standardized templates
+## 🎯 Use Cases
 
-### Quality Assurance & Validation
+### Business Applications
+- **Team Communication Analysis** - Improve team collaboration
+- **Customer Service Optimization** - Enhance customer interactions
+- **Leadership Development** - Assess and develop leadership skills
+- **Conflict Resolution** - Identify and resolve communication issues
 
-The template system includes comprehensive quality assurance:
-- **100% Compliance Rate**: All 10 templates meet standardization requirements
-- **Zero Template Errors**: Complete error elimination achieved
-- **Automated Validation**: Continuous compliance checking with validation scripts
-- **Type Safety**: Full TypeScript integration with standardized interfaces
-- **Build-time Validation**: Prevents regressions and ensures consistency
-- **Health Checks**: Production monitoring and validation endpoints
+### Research Applications
+- **Communication Studies** - Academic research on communication patterns
+- **Psychology Research** - Personality and behavioral analysis
+- **Organizational Behavior** - Workplace communication analysis
+- **Social Network Analysis** - Relationship dynamics research
 
-### Adding New Templates
+## 📊 Features
 
-When creating new templates:
-1. Use the standardization framework in `lib/template-standards.ts`
-2. Follow the established metadata schema
-3. Include required core insights and metrics
-4. Run validation script to ensure compliance
-5. Update documentation accordingly
+### Analysis Capabilities
+- **Multi-format Support** - WhatsApp, Discord, Slack, plain text
+- **Real-time Processing** - Fast analysis with streaming results
+- **Visualization** - Interactive charts and graphs
+- **Export Options** - PDF reports, CSV data, JSON format
 
-## 🚀 Deployment
+### Platform Features
+- **Responsive Design** - Works on desktop and mobile
+- **Dark/Light Themes** - User preference support
+- **Multi-language** - Internationalization ready
+- **Accessibility** - WCAG 2.1 compliant
 
-### Render.com Deployment (Recommended)
+## 🔄 Updates & Changelog
 
-1. **Fork this repository**
-2. **Connect to Render.com**
-3. **Set environment variables** in Render dashboard
-4. **Deploy automatically** - Render will build and deploy with template validation
+### Recent Updates
+- **[Update Summary](UPDATE_SUMMARY.md)** - Latest changes and improvements
+- **[Changelog](../DOCs/CHANGELOG.md)** - Version history
+- **[UI Upgrade Plan](../DOCs/UI_UPGRADE_PLAN.md)** - Planned improvements
 
-**Features for Production:**
-- Automated template deployment and validation
-- Health check endpoints at `/api/health`
-- 100% template compliance verification
-- Production-ready configuration
+### Version Information
+- **Current Version**: 0.1.0
+- **Release Date**: December 2024
+- **Next Release**: Planned for Q1 2025
 
-### Other Platforms
+## 🆘 Support & Community
 
-The application is compatible with:
-- Vercel
-- Netlify
-- Railway
-- Heroku
-- Docker deployment
+### Getting Help
+- **[FAQ](../DOCs/FAQ.md)** - Common questions and answers
+- **[GitHub Issues](https://github.com/your-repo/issues)** - Bug reports and feature requests
+- **[Discussions](https://github.com/your-repo/discussions)** - Community discussions
 
-See `RENDER_DEPLOYMENT.md` and `DOCs/DEPLOYMENT.md` for detailed platform-specific instructions.
+### Contributing
+- **[Contributing Guide](../.github/CONTRIBUTING.md)** - How to contribute
+- **[Code of Conduct](../.github/CONTRIBUTING.md#code-of-conduct)** - Community guidelines
+- **[Development Setup](../DOCs/DEVELOPMENT_GUIDE.md)** - Local development environment
 
-## 📚 Documentation
+### Issue Templates
+- **[Bug Report](../.github/ISSUE_TEMPLATE/bug_report.md)** - Report bugs
+- **[Feature Request](../.github/ISSUE_TEMPLATE/feature_request.md)** - Request new features
+- **[Deployment Issue](../.github/ISSUE_TEMPLATE/deployment_issue.md)** - Deployment problems
 
-### Complete Documentation Suite
-- **[Template Standardization Report](TEMPLATE_STANDARDIZATION_REPORT.md)** - Comprehensive standardization details
-- **[API Reference](API_REFERENCE.md)** - Complete API documentation
-- **[User Guide](USER_GUIDE.md)** - Detailed usage instructions
-- **[Development Guide](DEVELOPMENT_GUIDE.md)** - Contributor guidelines
-- **[Architecture](ARCHITECTURE.md)** - System design and structure
-- **[Deployment](DEPLOYMENT.md)** - Platform deployment guides
-- **[FAQ](FAQ.md)** - Frequently asked questions
+## 📝 Documentation Standards
 
-## 🎯 Project Status
+### Writing Guidelines
+- Use clear, concise language
+- Include code examples where appropriate
+- Maintain up-to-date screenshots and diagrams
+- Follow markdown best practices
+- Include table of contents for long documents
 
-### Current Version: 2.0 (Template Standardization Complete) ✅
+### Document Types
+- **Guides**: Step-by-step instructions
+- **References**: Comprehensive technical documentation
+- **Tutorials**: Learning-oriented content
+- **Explanations**: Understanding-oriented content
 
-#### ✅ **Production Ready Features**
-- 10 standardized analysis templates (100% compliance validated)
-- Template validation and quality assurance framework (zero errors)
-- Comprehensive automated setup with health checks
-- Full TypeScript integration with standardized interfaces
-- Modern UI/UX with responsive design
-- Multi-AI provider support (Google, OpenAI, Anthropic)
-- Real-time coaching interface
-- Database integration with Prisma
-- Admin dashboard and user management
-- Render.com deployment ready with automated validation
+## 🔗 External Resources
 
-#### 🚀 **Production Capabilities**
-- Health check endpoints for monitoring
-- Automated template deployment and validation
-- Build-time error prevention
-- Production environment configuration
-- Template compliance monitoring
+### Third-Party Services
+- **[Google Cloud AI Platform](https://cloud.google.com/ai-platform)** - AI/ML services
+- **[Render.com](https://render.com/)** - Deployment platform
+- **[NextAuth.js](https://next-auth.js.org/)** - Authentication
+- **[Prisma](https://www.prisma.io/)** - Database ORM
 
-#### 📋 **Future Enhancements**
-- Batch analysis capabilities
-- Export functionality (PDF, CSV, JSON)
-- Team collaboration features
-- Mobile application
-- API for third-party integrations
-- Advanced analytics dashboard
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Follow the standardization guidelines
-4. Ensure template compliance
-5. Add tests if applicable
-6. Submit a pull request
-
-See `DOCs/DEVELOPMENT_GUIDE.md` for detailed contribution guidelines.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Check the comprehensive documentation in `DOCs/`
-- Review template standardization guidelines
-- Run validation scripts for troubleshooting
-- Open an issue on the repository
-
-## 🏆 Key Achievements
-
-- **100% Template Compliance**: All 10 templates meet standardization requirements with validation
-- **Zero Template Errors**: Comprehensive validation framework ensures complete reliability
-- **Consistent User Experience**: Standardized outputs and metadata across all analysis types
-- **Production Ready**: Successfully built, tested, and deployed with health monitoring
-- **Quality Assurance**: Automated validation prevents regressions and ensures consistency
-- **Future-Proof Architecture**: Scalable template system with standardization framework
+### Learning Resources
+- **[Next.js Documentation](https://nextjs.org/docs)** - Framework documentation
+- **[TypeScript Handbook](https://www.typescriptlang.org/docs/)** - TypeScript guide
+- **[React Documentation](https://react.dev/)** - React framework
+- **[Tailwind CSS](https://tailwindcss.com/docs)** - Styling framework
 
 ---
 
-**CharismaAI** - Transforming conversations into insights with standardized, reliable analysis.
+## Quick Navigation
 
-*Version 2.0 - Template Standardization Complete | Production Deployment Ready | 100% Compliance Validated*
+| Category | Documents |
+|----------|-----------|
+| **Getting Started** | [README](../README.md), [Setup](../DOCs/COMPLETE_SETUP_DOCUMENTATION.md), [FAQ](../DOCs/FAQ.md) |
+| **Deployment** | [Checklist](DEPLOYMENT_CHECKLIST.md), [Render.com](RENDER_DEPLOYMENT.md), [Guide](../DOCs/DEPLOYMENT.md) |
+| **Development** | [Contributing](../.github/CONTRIBUTING.md), [Architecture](../DOCs/ARCHITECTURE.md), [Dev Guide](../DOCs/DEVELOPMENT_GUIDE.md) |
+| **API** | [Reference](../DOCs/API_REFERENCE.md), [Auth Setup](../DOCs/AUTHENTICATION_SETUP.md) |
+| **Security** | [Policy](../.github/SECURITY.md), [User Guide](../DOCs/USER_GUIDE.md) |
 
 ---
 
-### References
+*This documentation is continuously updated. For the latest information, please check the repository's main branch.*
 
-- [Next.js 15 Documentation](https://nextjs.org/docs)
-- [Google AI Studio](https://makersuite.google.com/)
-- [Vertex AI Documentation](https://cloud.google.com/vertex-ai/docs)
-- [OpenAI API Reference](https://platform.openai.com/docs)
-- [Anthropic Claude API](https://docs.anthropic.com/)
+**Last Updated**: December 2024  
+**Documentation Version**: 1.0.0

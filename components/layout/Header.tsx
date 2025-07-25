@@ -6,15 +6,16 @@ import { usePathname } from "next/navigation";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Activity, 
-  Settings, 
-  History, 
-  Shield, 
-  LogIn, 
+
+import {
+  Activity,
+  Settings,
+  History,
+  Shield,
+  LogIn,
   LogOut,
   Home,
-  User
+  User,
 } from "lucide-react";
 
 export default function Header() {
@@ -29,10 +30,13 @@ export default function Header() {
   };
 
   const getLinkClasses = (href: string) => {
-    const baseClasses = "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200";
-    const activeClasses = "text-primary bg-primary/10 border-b-2 border-primary";
-    const inactiveClasses = "text-muted-foreground hover:text-foreground hover:bg-accent";
-    
+    const baseClasses =
+      "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200";
+    const activeClasses =
+      "text-primary bg-primary/10 border-b-2 border-primary";
+    const inactiveClasses =
+      "text-muted-foreground hover:text-foreground hover:bg-accent";
+
     return `${baseClasses} ${isActive(href) ? activeClasses : inactiveClasses}`;
   };
 
@@ -42,9 +46,14 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
           <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <Link
+              href="/"
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
               <Activity className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-card-foreground">CharismaAI</span>
+              <span className="text-xl font-bold text-card-foreground">
+                CharismaAI
+              </span>
             </Link>
           </div>
 
@@ -91,7 +100,7 @@ export default function Header() {
                       {session.user.name || session.user.email}
                     </Badge>
                   </div>
-                  
+
                   {/* Sign Out */}
                   <Button
                     variant="ghost"
@@ -121,4 +130,4 @@ export default function Header() {
       </div>
     </header>
   );
-} 
+}

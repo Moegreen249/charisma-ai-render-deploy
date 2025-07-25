@@ -194,6 +194,8 @@ DOCs/
 
 ---
 
+**Developed by Mohamed Abdelrazig - MAAM**
+
 **CharismaAI Documentation v2.0** - Comprehensive guides for standardized template system.
 
 *Production-ready system with 100% template compliance, zero errors, and automated validation.*

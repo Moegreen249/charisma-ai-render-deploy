@@ -234,7 +234,7 @@ export async function POST(
           const { jobProcessor } = await import(
             "@/lib/background/job-processor"
           );
-          const jobDetails = await jobProcessor.getJobDetails(jobId);
+          const jobDetails = await jobProcessor.getJobStatus(jobId, "admin");
           result = { jobDetails };
           message = "Job debug information retrieved";
         } catch (debugError) {

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Sparkles, Layers, Clock } from "lucide-react";
+import { Upload, FileText, Sparkles, Layers } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   getSelectedModel,
@@ -29,7 +29,7 @@ import BackgroundAnalysis from "@/components/BackgroundAnalysis";
 interface UploadCardProps {
   onFileSelect: (file: File) => void;
   onAnalyze: () => void;
-  onBackgroundAnalysis?: (result: any) => void;
+  onBackgroundAnalysis?: (result: unknown) => void;
   loading?: boolean;
   error?: string | null;
 }
@@ -56,7 +56,6 @@ export default function UploadCard({
   } | null>(null);
   const [hasApiKey, setHasApiKey] = useState(false);
   const [showBackgroundOption, setShowBackgroundOption] = useState(false);
-  const [fileContent, setFileContent] = useState<string>("");
 
   useEffect(() => {
     const selection = getSelectedModel();
@@ -109,24 +108,11 @@ export default function UploadCard({
       setSelectedFile(file);
       onFileSelect(file);
 
-      // Read file content for background processing
-      const content = await file.text();
-      setFileContent(content);
+      // Show background processing option
       setShowBackgroundOption(true);
     } else {
       alert("Please select a .txt file");
     }
-  };
-
-  const startBackgroundAnalysis = async () => {
-    if (!selectedFile || !fileContent) return;
-
-    const templateId = getSelectedAnalysisTemplate();
-    const modelSelection = getSelectedModel();
-
-    // This would integrate with the BackgroundAnalysis component
-    // For now, we'll show the background analysis UI
-    setShowBackgroundOption(true);
   };
 
   return (
@@ -251,8 +237,8 @@ export default function UploadCard({
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground text-center">
-                    Analysis will run in the background. You'll be notified when
-                    complete.
+                    Analysis will run in the background. You&apos;ll be notified
+                    when complete.
                   </p>
                 </div>
               )}
