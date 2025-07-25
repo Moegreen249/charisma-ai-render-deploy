@@ -1,0 +1,64 @@
+# Vertex AI & Gemini Model Configuration
+#
+# This project supports the latest Google Gemini, Gemma, and other Vertex AI models.
+#
+# For the most up-to-date list of available models, see:
+#   https://cloud.google.com/vertex-ai/generative-ai/docs/models#gemini-models
+#   https://cloud.google.com/vertex-ai/generative-ai/docs/models#gemma_models
+#   https://cloud.google.com/vertex-ai/generative-ai/docs/models#preview_models
+#
+# ---
+# DATABASE CONFIGURATION:
+#
+# PostgreSQL Database URL for Prisma
+# Format: postgresql://username:password@host:port/database_name
+DATABASE_URL="postgresql://charisma_user:charisma_password@localhost:5433/charisma_ai"
+
+# NextAuth.js Configuration
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret-key-here"
+
+# ---
+# LOCAL DEVELOPMENT:
+#
+# For Vertex AI (Google Cloud):
+#   - Use GOOGLE_CLOUD_PROJECT_ID and GOOGLE_CLOUD_REGION for your GCP project/region.
+#   - Authenticate with: gcloud auth application-default login
+#   - API keys for Vertex AI are managed in the Google Cloud Console.
+#
+# For Gemini API (Google AI Studio):
+#   - Use GENAI_API_KEY from https://makersuite.google.com/app/apikey
+#
+# ---
+# PRODUCTION:
+#
+# Set all environment variables in your cloud provider's environment variable dashboard.
+# Never commit service account key files or API keys to version control.
+#
+# ---
+# EXAMPLE VARIABLES:
+# GOOGLE_CLOUD_PROJECT_ID=your_gcp_project_id
+# GOOGLE_CLOUD_REGION=us-central1
+# GENAI_API_KEY=your_gemini_api_key
+#
+# For more details, see the official docs linked above.
+
+# ---
+# DATABASE SETUP COMPLETED:
+#
+# ✅ PostgreSQL installed and running on port 5433
+# ✅ Database 'charisma_ai' created with user 'charisma_user'
+# ✅ All Prisma migrations applied successfully
+# ✅ 6 Analysis modules seeded:
+#    - Emotional Arc Tracking (emotional)
+#    - Key Topic Identification (content)
+#    - Communication Pattern Analysis (pattern)
+#    - Personality Trait Assessment (personality)
+#    - Engagement Level Measurement (overall)
+#    - Decision Making Analysis (pattern)
+# ✅ Admin user created:
+#    Email: admin@charisma-ai.com
+#    Password: admin123
+#    Role: ADMIN
+#
+# To start the development server: npm run dev

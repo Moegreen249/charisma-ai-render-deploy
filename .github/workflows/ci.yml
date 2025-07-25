@@ -1,0 +1,251 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-and-type-check:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run ESLint
+      run: npm run lint
+
+    - name: Run TypeScript type check
+      run: npx tsc --noEmit
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Setup test environment
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+        NEXTAUTH_URL: http://localhost:3000
+      run: |
+        npx prisma generate
+        npx prisma migrate deploy
+
+    - name: Run tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+        NEXTAUTH_URL: http://localhost:3000
+      run: npm test -- --coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: always()
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Generate Prisma client
+      run: npx prisma generate
+
+    - name: Build application
+      env:
+        SKIP_ENV_VALIDATION: true
+      run: npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-files
+        path: .next/
+        retention-days: 1
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run security audit
+      run: npm audit --audit-level high
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+
+  template-validation:
+    name: Template Validation
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Setup database
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      run: |
+        npx prisma generate
+        npx prisma migrate deploy
+
+    - name: Seed templates
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+      run: npx tsx scripts/seedModules.ts
+
+    - name: Validate template standards
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+      run: npx tsx scripts/validate-template-standards.ts
+
+    - name: Test template deployment
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+      run: npx tsx scripts/deploy-all-enhanced-templates.ts
+
+  deployment-ready:
+    name: Deployment Ready Check
+    runs-on: ubuntu-latest
+    needs: [lint-and-type-check, test, build, security-scan, template-validation]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Verify deployment files
+      run: |
+        # Check that essential deployment files exist
+        test -f render.yaml
+        test -f package.json
+        test -f next.config.js
+        test -f prisma/schema.prisma
+        test -f env-example.txt
+
+    - name: Validate render.yaml
+      run: |
+        # Basic validation of render.yaml structure
+        grep -q "services:" render.yaml
+        grep -q "databases:" render.yaml
+        grep -q "runtime: node" render.yaml
+        grep -q "buildCommand:" render.yaml
+        grep -q "startCommand:" render.yaml
+
+    - name: Check documentation
+      run: |
+        # Verify key documentation exists
+        test -f README.md
+        test -f CHANGELOG.md
+        test -f docs/README.md
+        test -f docs/DEPLOYMENT_CHECKLIST.md
+        test -f .github/CONTRIBUTING.md
+        test -f .github/SECURITY.md
+
+    - name: Deployment Ready
+      run: |
+        echo "✅ All checks passed - deployment ready!"
+        echo "📋 Deployment checklist:"
+        echo "- Linting and type checking: ✅"
+        echo "- Tests: ✅"
+        echo "- Build: ✅"
+        echo "- Security scan: ✅"
+        echo "- Template validation: ✅"
+        echo "- Deployment files: ✅"
+        echo "- Documentation: ✅"
