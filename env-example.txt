@@ -1,47 +1,72 @@
-# Vertex AI & Gemini Model Configuration
+# CharismaAI Environment Configuration
+# Developed by Mohamed Abdelrazig - MAAM
 #
-# This project supports the latest Google Gemini, Gemma, and other Vertex AI models.
-#
-# For the most up-to-date list of available models, see:
-#   https://cloud.google.com/vertex-ai/generative-ai/docs/models#gemini-models
-#   https://cloud.google.com/vertex-ai/generative-ai/docs/models#gemma_models
-#   https://cloud.google.com/vertex-ai/generative-ai/docs/models#preview_models
-#
-# ---
-# DATABASE CONFIGURATION:
-#
+# This file contains all environment variables needed for CharismaAI deployment.
+# Copy this file to .env for local development or set these variables in your hosting provider.
+
+# =============================================================================
+# DATABASE CONFIGURATION (Required)
+# =============================================================================
 # PostgreSQL Database URL for Prisma
 # Format: postgresql://username:password@host:port/database_name
 DATABASE_URL="postgresql://charisma_user:charisma_password@localhost:5433/charisma_ai"
 
+# =============================================================================
+# NEXTAUTH CONFIGURATION (Required)
+# =============================================================================
 # NextAuth.js Configuration
 NEXTAUTH_URL="http://localhost:3000"
+# Generate a secure secret: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 NEXTAUTH_SECRET="your-nextauth-secret-key-here"
 
-# ---
-# LOCAL DEVELOPMENT:
-#
-# For Vertex AI (Google Cloud):
-#   - Use GOOGLE_CLOUD_PROJECT_ID and GOOGLE_CLOUD_REGION for your GCP project/region.
-#   - Authenticate with: gcloud auth application-default login
-#   - API keys for Vertex AI are managed in the Google Cloud Console.
-#
-# For Gemini API (Google AI Studio):
-#   - Use GENAI_API_KEY from https://makersuite.google.com/app/apikey
-#
-# ---
-# PRODUCTION:
-#
-# Set all environment variables in your cloud provider's environment variable dashboard.
-# Never commit service account key files or API keys to version control.
-#
-# ---
-# EXAMPLE VARIABLES:
-# GOOGLE_CLOUD_PROJECT_ID=your_gcp_project_id
-# GOOGLE_CLOUD_REGION=us-central1
-# GENAI_API_KEY=your_gemini_api_key
-#
-# For more details, see the official docs linked above.
+# =============================================================================
+# AI PROVIDER CONFIGURATION (At least one required)
+# =============================================================================
+
+# Google AI/Gemini API Key (Recommended)
+# Get from: https://makersuite.google.com/app/apikey
+GOOGLE_API_KEY="your_google_ai_api_key"
+
+# OpenAI API Key (Optional)
+# Get from: https://platform.openai.com/api-keys
+OPENAI_API_KEY="your_openai_api_key"
+
+# Anthropic API Key (Optional)
+# Get from: https://console.anthropic.com/
+ANTHROPIC_API_KEY="your_anthropic_api_key"
+
+# =============================================================================
+# GOOGLE CLOUD CONFIGURATION (For Vertex AI - Optional)
+# =============================================================================
+# Google Cloud Project Configuration
+GOOGLE_CLOUD_PROJECT_ID="your_gcp_project_id"
+GOOGLE_CLOUD_REGION="us-central1"
+GOOGLE_CLOUD_LOCATION="us-central1"
+PROJECT_ID="your_gcp_project_id"
+VERTEX_API_KEY="your_vertex_ai_key"
+
+# =============================================================================
+# GOOGLE OAUTH CONFIGURATION (Optional - for Google Sign-in)
+# =============================================================================
+# Google OAuth Credentials (Optional)
+# Get from: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID="your_google_oauth_client_id"
+GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
+
+# =============================================================================
+# RENDER.COM DEPLOYMENT NOTES
+# =============================================================================
+# For Render.com deployment:
+# 1. The render.yaml file automatically configures most variables
+# 2. You only need to manually set the AI provider keys in Render dashboard
+# 3. DATABASE_URL, NEXTAUTH_SECRET, and NEXTAUTH_URL are auto-generated
+# 4. Set these manually in Render Environment Variables:
+#    - GOOGLE_API_KEY (required)
+#    - OPENAI_API_KEY (optional)
+#    - ANTHROPIC_API_KEY (optional)
+#    - GOOGLE_CLOUD_PROJECT_ID (if using Vertex AI)
+#    - GOOGLE_CLIENT_ID (if using Google OAuth)
+#    - GOOGLE_CLIENT_SECRET (if using Google OAuth)
 
 # ---
 # DATABASE SETUP COMPLETED:

@@ -201,6 +201,8 @@ Your CharismaAI platform is now ready for:
 
 ---
 
+**Developed by Mohamed Abdelrazig - MAAM**
+
 **Organization Completed**: December 2024  
 **Project Status**: 🟢 Production Ready  
 **Documentation Version**: 1.0.0  

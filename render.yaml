@@ -3,9 +3,16 @@ services:
     name: charisma-ai
     runtime: node
     plan: starter
-    buildCommand: npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
+    buildCommand: |
+      npm ci --production=false &&
+      npx prisma generate &&
+      npx prisma migrate deploy &&
+      npm run seed:modules &&
+      npm run migrate:landing &&
+      npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
@@ -20,19 +27,29 @@ services:
           type: web
           name: charisma-ai
           property: host
+      # AI Provider Keys (Set these manually in Render dashboard)
       - key: GOOGLE_API_KEY
         sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+      # Google Cloud Configuration
       - key: GOOGLE_CLOUD_PROJECT_ID
         sync: false
+      - key: GOOGLE_CLOUD_REGION
+        value: us-central1
       - key: GOOGLE_CLOUD_LOCATION
         value: us-central1
+      # OAuth Configuration (Optional - for Google OAuth)
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # Additional Configuration
+      - key: VERTEX_API_KEY
+        sync: false
+      - key: PROJECT_ID
         sync: false
 
 databases:
