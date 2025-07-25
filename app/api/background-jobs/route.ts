@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/lib/auth-config'
 import { prisma, checkDatabaseConnection } from '@/lib/database'
 import { redisQueue } from '@/lib/background/redis-queue'
 import { jobProcessor } from '@/lib/background/job-processor'

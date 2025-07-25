@@ -4,10 +4,11 @@ import { prisma, checkDatabaseConnection } from '@/lib/database'
 
 // Redis Cloud connection
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-  retryDelayOnFailover: 100,
   enableReadyCheck: false,
   maxRetriesPerRequest: 3,
   lazyConnect: true,
+  connectTimeout: 10000,
+  commandTimeout: 5000,
 })
 
 export class RedisJobQueue {
