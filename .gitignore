@@ -152,6 +152,26 @@ data/
 # Windows
 Desktop.ini
 $RECYCLE.BIN/
+# Windows system directories that cause permission errors
+"Application Data"
+"Application Data/"
+AppData/
+"Local Settings"
+"Local Settings/"
+"My Documents"
+"My Documents/"
+NTUSER.*
+ntuser.*
+
+# Deployment archives
+*.zip
+*.tar.gz
+*.rar
+charisma-ai-render-deploy.zip
+
+# Deployment archives
+*.zip
+charisma-ai-render-deploy.zip
 
 # Linux
 *~

@@ -2,10 +2,34 @@
 
 import { createAdminUser } from "../lib/admin-setup";
 
-// Load environment variables like Next.js does
-import { loadEnvConfig } from "@next/env";
-const projectDir = process.cwd();
-loadEnvConfig(projectDir);
+// Load environment variables manually
+import { readFileSync } from "fs";
+import { resolve } from "path";
+
+// Simple env file loader
+function loadEnvFile(path: string) {
+  try {
+    const content = readFileSync(path, "utf8");
+    content.split("\n").forEach((line) => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith("#")) {
+        const [key, ...valueParts] = trimmed.split("=");
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join("=").replace(/^["']|["']$/g, "");
+          if (!process.env[key]) {
+            process.env[key] = value;
+          }
+        }
+      }
+    });
+  } catch (error) {
+    // File doesn't exist, ignore
+  }
+}
+
+// Load .env files in order of precedence
+loadEnvFile(resolve(process.cwd(), ".env"));
+loadEnvFile(resolve(process.cwd(), ".env.local"));
 
 // Check required environment variables
 const requiredVars = [

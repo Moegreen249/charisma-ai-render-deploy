@@ -26,6 +26,30 @@ const nextConfig = {
   async rewrites() {
     return [];
   },
+  // Webpack configuration to exclude Windows system directories
+  webpack: (config) => {
+    // Exclude Windows system directories that cause permission errors
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: [
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/.next/**',
+        '**/Application Data/**',
+        '**/AppData/**',
+        '**/Local Settings/**',
+        '**/My Documents/**',
+        '**/NTUSER.*',
+        '**/ntuser.*',
+        '**/*Application Data*/**',
+        '**/*AppData*/**',
+        '**/*Local Settings*/**',
+        '**/*My Documents*/**',
+      ],
+    };
+    
+    return config;
+  },
 };
 
 module.exports = nextConfig;
