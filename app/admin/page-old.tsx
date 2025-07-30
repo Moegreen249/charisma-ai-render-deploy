@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import UserTable from "@/components/admin/UserTable";
+import UserForm from "@/components/admin/UserForm";
 import {
   Users,
   Activity,

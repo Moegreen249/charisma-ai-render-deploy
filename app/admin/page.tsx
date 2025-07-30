@@ -70,7 +70,7 @@ interface DashboardStats {
 
 interface ChartData {
   name: string;
-  value: number;
+  value?: number;
   users?: number;
   analyses?: number;
 }
@@ -230,11 +230,11 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {stats?.users.total.toLocaleString() || '0'}
+                {stats?.users?.total?.toLocaleString() || '0'}
               </div>
               <div className="flex items-center text-xs text-green-300 mt-1">
                 <TrendingUp className="w-3 h-3 mr-1" />
-                +{stats?.users.newThisWeek || 0} this week
+                +{stats?.users?.newThisWeek || 0} this week
               </div>
             </CardContent>
           </Card>
@@ -247,10 +247,10 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {stats?.users.active.toLocaleString() || '0'}
+                {stats?.users?.active?.toLocaleString() || '0'}
               </div>
               <div className="text-xs text-white/60 mt-1">
-                {stats?.users.newToday || 0} new today
+                {stats?.users?.newToday || 0} new today
               </div>
             </CardContent>
           </Card>
@@ -263,10 +263,10 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {stats?.analyses.total.toLocaleString() || '0'}
+                {stats?.analyses?.total?.toLocaleString() || '0'}
               </div>
               <div className="text-xs text-white/60 mt-1">
-                {stats?.analyses.today || 0} completed today
+                {stats?.analyses?.today || 0} completed today
               </div>
             </CardContent>
           </Card>
@@ -279,10 +279,10 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {stats?.system.uptime || 99.9}%
+                {stats?.system?.uptime || 99.9}%
               </div>
               <div className="text-xs text-white/60 mt-1">
-                {stats?.system.responseTime || 0}ms avg response
+                {stats?.system?.responseTime || 0}ms avg response
               </div>
             </CardContent>
           </Card>
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
@@ -405,7 +405,7 @@ export default function AdminDashboard() {
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Optimal
                 </Badge>
-                <div className="text-xs text-white/60">{stats?.system.responseTime || 245}ms</div>
+                <div className="text-xs text-white/60">{stats?.system?.responseTime || 245}ms</div>
               </div>
             </CardContent>
           </Card>
@@ -441,7 +441,7 @@ export default function AdminDashboard() {
                   <Activity className="w-3 h-3 mr-1" />
                   Active
                 </Badge>
-                <div className="text-xs text-white/60">{stats?.system.activeJobs || 12} running</div>
+                <div className="text-xs text-white/60">{stats?.system?.activeJobs || 12} running</div>
               </div>
             </CardContent>
           </Card>

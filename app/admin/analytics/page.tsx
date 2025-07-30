@@ -237,26 +237,30 @@ export default function AdminAnalytics() {
 
   if (loading || !stats) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading analytics...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto"></div>
+          <p className="mt-4 text-white/70">Loading analytics...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Platform Analytics</h1>
-            <p className="text-muted-foreground">
-              Real-time insights and performance metrics
-            </p>
-          </div>
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white flex items-center">
+                <BarChart className="mr-3 h-8 w-8" />
+                Platform Analytics
+              </h1>
+              <p className="text-white/70 mt-1">
+                Real-time insights and performance metrics
+              </p>
+            </div>
           <div className="flex items-center gap-4">
             <select
               value={selectedTimeRange}
@@ -958,6 +962,7 @@ export default function AdminAnalytics() {
             </div>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </div>
   );

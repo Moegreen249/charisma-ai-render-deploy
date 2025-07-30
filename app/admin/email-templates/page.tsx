@@ -37,7 +37,8 @@ export default function EmailTemplatesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
+      <div className="space-y-6">
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
         <div className="flex items-center justify-between">
@@ -127,6 +128,7 @@ export default function EmailTemplatesPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

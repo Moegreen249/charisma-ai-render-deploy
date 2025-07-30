@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import {
   SupportedLanguage,
-  ComprehensiveTranslations,
   ComprehensiveLanguageContextType,
   detectLanguageCode,
   getComprehensiveTranslations,

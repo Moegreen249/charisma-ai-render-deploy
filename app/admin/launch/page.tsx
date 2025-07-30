@@ -222,32 +222,33 @@ export default function AdminLaunchPage() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-600" />
-          <p className="text-gray-600">Loading admin panel...</p>
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-white" />
+          <p className="text-white/70">Loading admin panel...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg mb-6">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-white flex items-center">
+                <Rocket className="mr-3 h-6 w-6" />
                 Launch Management
               </h1>
-              <p className="text-gray-600">
+              <p className="text-white/70 mt-1">
                 Manage countdown timer and waiting list
               </p>
             </div>
             <Badge
               variant="outline"
-              className="bg-purple-50 text-purple-700 border-purple-200"
+              className="bg-green-500/20 text-green-300 border-green-500/30"
             >
               <Rocket className="w-3 h-3 mr-1" />
               Admin Panel
@@ -258,13 +259,13 @@ export default function AdminLaunchPage() {
 
       {/* Message Display */}
       {message && (
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="mb-6">
           <div
             className={cn(
-              "flex items-center gap-2 p-4 rounded-lg",
+              "flex items-center gap-2 p-4 rounded-lg backdrop-blur-md border",
               message.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : "bg-red-50 text-red-800 border border-red-200",
+                ? "bg-green-500/20 text-green-300 border-green-500/30"
+                : "bg-red-500/20 text-red-300 border-red-500/30",
             )}
           >
             {message.type === "success" ? (
@@ -277,9 +278,9 @@ export default function AdminLaunchPage() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="space-y-6">
         <Tabs defaultValue="countdown" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3 bg-white/10 backdrop-blur-md border border-white/20">
             <TabsTrigger value="countdown" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Countdown Timer
@@ -301,20 +302,20 @@ export default function AdminLaunchPage() {
           <TabsContent value="countdown" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Countdown Configuration */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-white">
                     <Settings className="w-5 h-5" />
                     Countdown Configuration
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-white/70">
                     Configure the launch countdown timer display
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Target Date */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <label className="text-sm font-medium text-white flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       Target Date & Time
                     </label>
@@ -333,7 +334,7 @@ export default function AdminLaunchPage() {
 
                   {/* Title */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-white">
                       Main Title
                     </label>
                     <Input

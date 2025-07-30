@@ -28,7 +28,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
+      <div className="space-y-6">
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
         <div className="flex items-center justify-between">
@@ -251,6 +252,7 @@ export default function SettingsPage() {
           <Save className="w-4 h-4 mr-2" />
           Save Settings
         </Button>
+      </div>
       </div>
     </div>
   );

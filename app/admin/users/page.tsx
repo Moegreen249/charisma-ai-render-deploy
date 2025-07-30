@@ -432,7 +432,10 @@ export default function AdminUsersPage() {
             </Card>
           ))}
         </TabsContent>
-      </Tabs>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
