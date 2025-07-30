@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: charisma-ai
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXTAUTH_URL
+        fromService:
+          type: web
+          name: charisma-ai
+          property: host
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: charisma-ai
+          property: connectionString
+      - key: POSTGRES_URL
+        fromDatabase:
+          name: charisma-ai
+          property: host
+      - key: BREVO_API_KEY
+        sync: false  # Set this manually in Render dashboard
+      # AI Provider Keys (Set these manually in Render dashboard)
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Optional Google Cloud Configuration
+      - key: GOOGLE_CLOUD_PROJECT_ID
+        sync: false
+      - key: GOOGLE_CLOUD_REGION
+        value: us-central1
+      - key: GOOGLE_CLOUD_LOCATION
+        value: us-central1
+
+databases:
+  - name: charisma-ai
+    databaseName: charisma_ai
+    user: charisma_user
+    plan: starter
