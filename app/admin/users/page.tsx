@@ -1,12 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, XCircle, Clock, Users, UserCheck, UserX, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  Users, 
+  UserCheck, 
+  UserX, 
+  Loader2, 
+  Search,
+  Filter,
+  RefreshCw,
+  Plus,
+  Edit,
+  Trash2,
+  Mail,
+  Shield
+} from 'lucide-react';
 
 interface User {
   id: string;
@@ -22,10 +41,27 @@ interface User {
 }
 
 export default function AdminUsersPage() {
+  const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+
+  // Check authentication and role
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!session) {
+      redirect("/auth/signin");
+    }
+
+    if (session.user.role !== "ADMIN") {
+      redirect("/");
+    }
+  }, [session, status]);
 
   const fetchUsers = async () => {
     try {
@@ -33,17 +69,45 @@ export default function AdminUsersPage() {
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users);
+        setFilteredUsers(data.users);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+      setMessage({ type: 'error', text: 'Failed to fetch users' });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (session?.user?.role === 'ADMIN') {
+      fetchUsers();
+    }
+  }, [session]);
+
+  // Filter and search functionality
+  useEffect(() => {
+    let filtered = users;
+
+    // Filter by tab
+    if (activeTab === 'pending') {
+      filtered = filtered.filter(user => !user.isApproved && !user.rejectedAt);
+    } else if (activeTab === 'approved') {
+      filtered = filtered.filter(user => user.isApproved);
+    } else if (activeTab === 'rejected') {
+      filtered = filtered.filter(user => user.rejectedAt);
+    }
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(user => 
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredUsers(filtered);
+  }, [users, activeTab, searchTerm]);
 
   const handleUserAction = async (userId: string, action: 'approve' | 'reject', reason?: string) => {
     setActionLoading(userId);
@@ -80,86 +144,168 @@ export default function AdminUsersPage() {
   const approvedUsers = users.filter(user => user.isApproved);
   const rejectedUsers = users.filter(user => user.rejectedAt);
 
-  if (loading) {
+  if (status === "loading" || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+          <p className="text-white mt-4 text-center">Loading users...</p>
+        </div>
       </div>
     );
   }
 
+  if (!session || session.user.role !== "ADMIN") {
+    return null;
+  }
+
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">User Management</h1>
-        <p className="text-muted-foreground">
-          Manage user registrations and approvals
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              User Management
+            </h1>
+            <p className="text-white/70">
+              Manage user registrations, approvals, and permissions
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={fetchUsers}
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+            <Button
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add User
+            </Button>
+          </div>
+        </div>
 
-      {message && (
-        <Alert className={`mb-6 ${message.type === 'error' ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50'}`}>
-          <AlertDescription className={message.type === 'error' ? 'text-red-700' : 'text-green-700'}>
-            {message.text}
-          </AlertDescription>
-        </Alert>
-      )}
+        {message && (
+          <Alert className={`${message.type === 'error' ? 'bg-red-500/20 border-red-500/30 text-white' : 'bg-green-500/20 border-green-500/30 text-white'}`}>
+            <AlertDescription>
+              {message.text}
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+        {/* Search and Filter */}
+        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
+                <Input
+                  placeholder="Search users by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                />
+              </div>
+              <Button
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Filter
+              </Button>
+            </div>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{pendingUsers.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{approvedUsers.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
-            <UserX className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{rejectedUsers.length}</div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pending">
-            Pending ({pendingUsers.length})
-          </TabsTrigger>
-          <TabsTrigger value="approved">
-            Approved ({approvedUsers.length})
-          </TabsTrigger>
-          <TabsTrigger value="rejected">
-            Rejected ({rejectedUsers.length})
-          </TabsTrigger>
-        </TabsList>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/90">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-purple-300" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{users.length}</div>
+              <p className="text-xs text-white/60 mt-1">Registered users</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/90">Pending Approval</CardTitle>
+              <Clock className="h-4 w-4 text-yellow-300" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-300">{pendingUsers.length}</div>
+              <p className="text-xs text-white/60 mt-1">Awaiting review</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/90">Approved</CardTitle>
+              <UserCheck className="h-4 w-4 text-green-300" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-300">{approvedUsers.length}</div>
+              <p className="text-xs text-white/60 mt-1">Active users</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/90">Rejected</CardTitle>
+              <UserX className="h-4 w-4 text-red-300" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-300">{rejectedUsers.length}</div>
+              <p className="text-xs text-white/60 mt-1">Declined users</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Users Table */}
+        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              User List ({filteredUsers.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+              <TabsList className="bg-white/10 border-white/20">
+                <TabsTrigger 
+                  value="all" 
+                  className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+                >
+                  All ({users.length})
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="pending"
+                  className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+                >
+                  Pending ({pendingUsers.length})
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="approved"
+                  className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+                >
+                  Approved ({approvedUsers.length})
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="rejected"
+                  className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+                >
+                  Rejected ({rejectedUsers.length})
+                </TabsTrigger>
+              </TabsList>
 
         <TabsContent value="pending" className="space-y-4">
           {pendingUsers.length === 0 ? (
