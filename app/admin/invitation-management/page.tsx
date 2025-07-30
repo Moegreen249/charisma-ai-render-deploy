@@ -318,24 +318,28 @@ export default function InvitationManagement() {
   // Show loading while checking authentication
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-white" />
+          <p className="text-white/70">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <div className="flex items-center gap-4 mb-8">
-        <Mail className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold text-primary">Invitation Management</h1>
-          <p className="text-muted-foreground">Send invitations and manage user access</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <Mail className="h-8 w-8 text-white" />
+            <div>
+              <h1 className="text-3xl font-bold text-white">Invitation Management</h1>
+              <p className="text-white/70">Send invitations and manage user access</p>
+            </div>
+          </div>
         </div>
-      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
@@ -758,6 +762,7 @@ export default function InvitationManagement() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

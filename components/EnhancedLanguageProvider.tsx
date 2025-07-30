@@ -227,6 +227,10 @@ export function LocalizedNumber({
 }) {
   const { language } = useEnhancedLanguage();
   
+  const formatNumber = (num: number, lang: string) => {
+    return new Intl.NumberFormat(lang).format(num);
+  };
+
   return (
     <span className={className}>
       {formatNumber(value, language)}
@@ -244,6 +248,10 @@ export function LocalizedDate({
 }) {
   const { language } = useEnhancedLanguage();
   
+  const formatDate = (date: Date, lang: string) => {
+    return new Intl.DateTimeFormat(lang).format(date);
+  };
+
   return (
     <span className={className}>
       {formatDate(date, language)}

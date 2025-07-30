@@ -44,6 +44,18 @@ const adminNavItems = [
     description: 'Approve and manage users'
   },
   {
+    title: 'Blog Management',
+    href: '/admin/blog',
+    icon: FileText,
+    description: 'Create, edit, and manage blog posts'
+  },
+  {
+    title: 'Invitation Management',
+    href: '/admin/invitation-management',
+    icon: Mail,
+    description: 'Send invitations and manage access'
+  },
+  {
     title: 'Launch Control',
     href: '/admin/launch',
     icon: Rocket,
@@ -127,9 +139,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/10 backdrop-blur-md border-r border-white/20 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white/5 backdrop-blur-xl border-r border-white/10 shadow-2xl transform transition-all duration-300 ease-in-out lg:translate-x-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:static lg:inset-0`}>
+      } lg:static lg:inset-0 lg:w-72 xl:w-80`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-white/20">
           <div className="flex items-center space-x-2">
             <Logo size="sm" variant="white" />
@@ -151,8 +163,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Button>
         </div>
 
-        <nav className="mt-6 px-3">
-          <div className="space-y-2">
+        <nav className="flex-1 mt-4 px-4 pb-4 overflow-y-auto">
+          <div className="space-y-1">
             {adminNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -161,20 +173,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-white/20 text-white border border-white/30 shadow-lg backdrop-blur-sm'
-                      : 'text-white/80 hover:bg-white/10 hover:text-white border border-transparent hover:border-white/20'
+                      ? 'bg-white/15 text-white border border-white/20 shadow-lg backdrop-blur-sm'
+                      : 'text-white/75 hover:bg-white/8 hover:text-white border border-transparent hover:border-white/10'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <Icon className={`mr-3 h-5 w-5 transition-colors ${
+                  <Icon className={`mr-3 h-4 w-4 transition-colors flex-shrink-0 ${
                     isActive ? 'text-white' : 'text-white/60 group-hover:text-white/80'
                   }`} />
-                  <div className="flex flex-col">
-                    <span className="font-medium">{item.title}</span>
-                    <span className={`text-xs ${
-                      isActive ? 'text-white/80' : 'text-white/50 group-hover:text-white/60'
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="font-medium truncate">{item.title}</span>
+                    <span className={`text-xs truncate ${
+                      isActive ? 'text-white/70' : 'text-white/50 group-hover:text-white/60'
                     }`}>{item.description}</span>
                   </div>
                 </Link>
@@ -219,7 +231,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64 relative z-10">
+      <div className="lg:pl-72 xl:pl-80 relative z-10 flex flex-col min-h-screen">
         {/* Top bar */}
         <div className="sticky top-0 z-40 bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6">
@@ -253,8 +265,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* Page content */}
-        <main className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 min-h-screen p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto h-full">
             {children}
           </div>
         </main>

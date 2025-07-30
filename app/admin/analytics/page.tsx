@@ -247,8 +247,7 @@ export default function AdminAnalytics() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
-      <div className="space-y-8">
+    <div className="space-y-6">
         {/* Header */}
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6">
           <div className="flex items-center justify-between">
@@ -261,101 +260,99 @@ export default function AdminAnalytics() {
                 Real-time insights and performance metrics
               </p>
             </div>
-          <div className="flex items-center gap-4">
-            <select
-              value={selectedTimeRange}
-              onChange={(e) => setSelectedTimeRange(e.target.value)}
-              className="px-3 py-2 border rounded-md bg-background"
-            >
-              <option value="1d">Last 24 hours</option>
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
-            </select>
-            <Button
-              variant="outline"
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={
-                autoRefresh
-                  ? "bg-primary/10 border-primary/20 text-primary"
-                  : ""
-              }
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${autoRefresh ? "animate-spin" : ""}`}
-              />
-              Auto-refresh {autoRefresh ? "ON" : "OFF"}
-            </Button>
-            <Button onClick={loadAnalytics} disabled={loading}>
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
+            <div className="flex items-center gap-4">
+              <select
+                value={selectedTimeRange}
+                onChange={(e) => setSelectedTimeRange(e.target.value)}
+                className="px-3 py-2 border rounded-md bg-white/10 border-white/20 text-white backdrop-blur-md"
+              >
+                <option value="1d" className="bg-gray-800 text-white">Last 24 hours</option>
+                <option value="7d" className="bg-gray-800 text-white">Last 7 days</option>
+                <option value="30d" className="bg-gray-800 text-white">Last 30 days</option>
+                <option value="90d" className="bg-gray-800 text-white">Last 90 days</option>
+              </select>
+              <Button
+                variant="outline"
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className={`${
+                  autoRefresh
+                    ? "bg-green-500/20 border-green-500/30 text-green-300"
+                    : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                }`}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${autoRefresh ? "animate-spin" : ""}`}
+                />
+                Auto-refresh {autoRefresh ? "ON" : "OFF"}
+              </Button>
+              <Button 
+                onClick={loadAnalytics} 
+                disabled={loading}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
         </div>
 
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-purple-300" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-white">
                 {stats.users.total.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-white/60">
                 +{stats.users.new.thisMonth} this month
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Users
-              </CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Active Users</CardTitle>
+              <Activity className="h-4 w-4 text-green-300" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.users.active.daily}
+              <div className="text-2xl font-bold text-white">
+                {stats.users.active.daily.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-white/60">
                 Daily active users
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Success Rate
-              </CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Success Rate</CardTitle>
+              <CheckCircle className="h-4 w-4 text-blue-300" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-white">
                 {formatPercentage(stats.analyses.successRate)}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-white/60">
                 Analysis success rate
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                System Health
-              </CardTitle>
-              <Server className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">System Health</CardTitle>
+              <Server className="h-4 w-4 text-cyan-300" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-white">
                 {formatPercentage(stats.performance.uptime)}
               </div>
-              <p className="text-xs text-muted-foreground">Uptime this month</p>
+              <p className="text-xs text-white/60">Uptime this month</p>
             </CardContent>
           </Card>
         </div>
@@ -373,10 +370,10 @@ export default function AdminAnalytics() {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Analysis Trends */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader>
-                  <CardTitle>Analysis Activity</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-white">Analysis Activity</CardTitle>
+                  <CardDescription className="text-white/70">
                     Daily analysis requests over time
                   </CardDescription>
                 </CardHeader>
@@ -410,10 +407,10 @@ export default function AdminAnalytics() {
               </Card>
 
               {/* Error Distribution */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader>
-                  <CardTitle>Error Categories</CardTitle>
-                  <CardDescription>Distribution of error types</CardDescription>
+                  <CardTitle className="text-white">Error Categories</CardTitle>
+                  <CardDescription className="text-white/70">Distribution of error types</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={200}>
@@ -446,10 +443,10 @@ export default function AdminAnalytics() {
             </div>
 
             {/* Performance Metrics */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
               <CardHeader>
-                <CardTitle>Performance Overview</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-white">Performance Overview</CardTitle>
+                <CardDescription className="text-white/70">
                   Real-time system performance metrics
                 </CardDescription>
               </CardHeader>
@@ -458,7 +455,7 @@ export default function AdminAnalytics() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Response Time</span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-white/60">
                         {stats.performance.responseTime}s
                       </span>
                     </div>
@@ -469,7 +466,7 @@ export default function AdminAnalytics() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Error Rate</span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-white/60">
                         {formatPercentage(stats.performance.errorRate)}
                       </span>
                     </div>
@@ -481,7 +478,7 @@ export default function AdminAnalytics() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Active Jobs</span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-white/60">
                         {stats.performance.activeJobs}
                       </span>
                     </div>
@@ -492,7 +489,7 @@ export default function AdminAnalytics() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Uptime</span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-white/60">
                         {formatPercentage(stats.performance.uptime)}
                       </span>
                     </div>
@@ -510,9 +507,9 @@ export default function AdminAnalytics() {
           <TabsContent value="errors" className="space-y-6">
             {/* Error Statistics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-white">
                     Total Errors
                   </CardTitle>
                 </CardHeader>
@@ -520,9 +517,9 @@ export default function AdminAnalytics() {
                   <div className="text-2xl font-bold">{stats.errors.total}</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-white">
                     Critical Errors
                   </CardTitle>
                 </CardHeader>
@@ -532,9 +529,9 @@ export default function AdminAnalytics() {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-white">
                     Resolved
                   </CardTitle>
                 </CardHeader>
@@ -544,9 +541,9 @@ export default function AdminAnalytics() {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-white">
                     Resolution Rate
                   </CardTitle>
                 </CardHeader>
@@ -668,7 +665,7 @@ export default function AdminAnalytics() {
                             <p className="font-medium text-sm">
                               {error.message}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-white/60">
                               Occurred {error.count} times • Last:{" "}
                               {error.lastOccurred.toLocaleString()}
                             </p>
@@ -737,7 +734,7 @@ export default function AdminAnalytics() {
                     </Card>
                   ))}
                   {errors.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-8 text-white/60">
                       No errors found for the selected time range.
                     </div>
                   )}
@@ -748,10 +745,10 @@ export default function AdminAnalytics() {
 
           <TabsContent value="users" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader>
-                  <CardTitle>User Growth</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-white">User Growth</CardTitle>
+                  <CardDescription className="text-white/70">
                     New user registrations over time
                   </CardDescription>
                 </CardHeader>
@@ -780,11 +777,11 @@ export default function AdminAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader>
-                  <CardTitle>User Retention</CardTitle>
-                  <CardDescription>
-                    User retention rates by period
+                  <CardTitle className="text-white">User Retention</CardTitle>
+                  <CardDescription className="text-white/70">
+                    User engagement and retention metrics
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -827,7 +824,7 @@ export default function AdminAnalytics() {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-semibold">Error Monitoring</h3>
-                <p className="text-muted-foreground">
+                <p className="text-white/60">
                   Track and resolve platform errors
                 </p>
               </div>
@@ -872,7 +869,7 @@ export default function AdminAnalytics() {
                           )}
                         </div>
                         <p className="font-medium">{error.message}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-white/60">
                           Occurred {error.count} times • Last:{" "}
                           {error.lastOccurred.toLocaleString()}
                         </p>
@@ -897,10 +894,10 @@ export default function AdminAnalytics() {
           {/* Performance Tab */}
           <TabsContent value="performance" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader>
-                  <CardTitle>Response Times</CardTitle>
-                  <CardDescription>API response time trends</CardDescription>
+                  <CardTitle className="text-white">Response Times</CardTitle>
+                  <CardDescription className="text-white/70">API response time trends</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={200}>
@@ -928,10 +925,10 @@ export default function AdminAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
                 <CardHeader>
-                  <CardTitle>System Resources</CardTitle>
-                  <CardDescription>Current system utilization</CardDescription>
+                  <CardTitle className="text-white">System Resources</CardTitle>
+                  <CardDescription className="text-white/70">Current system utilization</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -962,7 +959,6 @@ export default function AdminAnalytics() {
             </div>
           </TabsContent>
         </Tabs>
-        </div>
       </div>
     </div>
   );
