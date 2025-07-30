@@ -1,12 +1,13 @@
 'use client';
 
+import React from 'react';
 import { useEnhancedLanguage } from '@/components/EnhancedLanguageProvider';
 import { cn } from '@/lib/utils';
 
 interface LanguageTextProps {
   children: React.ReactNode;
   className?: string;
-  as?: keyof JSX.IntrinsicElements;
+  as?: React.ElementType;
 }
 
 export function LanguageText({ 
