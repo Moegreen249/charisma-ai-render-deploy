@@ -16,10 +16,7 @@ import {
   isRTL,
   getLanguageDirection,
   getRTLClasses,
-  formatNumber,
-  formatDate,
 } from "@/lib/comprehensive-translations";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Card, 
