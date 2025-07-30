@@ -1,5 +1,5 @@
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../src/generated/prisma';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -8,7 +8,7 @@ async function createAdmin() {
   try {
     // Check if admin already exists
     const existingAdmin = await prisma.user.findUnique({
-      where: { email: 'mo@charisma-ai.com' }
+      where: { email: 'admin@charisma-ai.com' }
     });
 
     if (existingAdmin) {
@@ -16,21 +16,17 @@ async function createAdmin() {
       process.exit(0);
     }
 
-    // Read password from environment variable
-    const plainPassword = process.env.ADMIN_PASSWORD;
-    if (!plainPassword || plainPassword.length < 8) {
-      console.error('❌ Admin password missing or too short in environment variable');
-      process.exit(1);
-    }
-
+    // Use the specified admin password
+    const plainPassword = 'moha12@meme';
+    
     // Hash password
     const hashedPassword = await bcrypt.hash(plainPassword, 12);
 
     // Create admin user
     const admin = await prisma.user.create({
       data: {
-        name: 'Moe',
-        email: 'mo@charisma-ai.com',
+        name: 'Admin',
+        email: 'admin@charisma-ai.com',
         password: hashedPassword,
         role: 'ADMIN',
         emailVerified: new Date(),
