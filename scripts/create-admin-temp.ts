@@ -43,7 +43,7 @@ async function createAdmin() {
     console.log('🔑 Role:', admin.role);
 
   } catch (error) {
-    console.error('❌ Failed to create admin account:', error.message);
+    console.error('❌ Failed to create admin account:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   } finally {
     await prisma.$disconnect();

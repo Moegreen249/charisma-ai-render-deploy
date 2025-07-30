@@ -668,16 +668,18 @@ async function seedBlogPosts() {
         where: { name: post.category },
       });
 
+      const { category: _, ...postData } = post;
+      
       await prisma.blogPost.upsert({
         where: { slug: post.slug },
         update: {
-          ...post,
+          ...postData,
           authorId: adminUser.id,
           categoryId: category?.id,
           publishedAt: new Date(),
         },
         create: {
-          ...post,
+          ...postData,
           authorId: adminUser.id,
           categoryId: category?.id,
           publishedAt: new Date(),
