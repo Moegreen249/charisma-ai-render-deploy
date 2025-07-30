@@ -94,7 +94,7 @@ export default async function RootLayout({
       </head>
       <body className={`${roboto.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}>
         <AnalyticsProvider
-          googleAnalyticsId={seoSettings?.googleAnalyticsId}
+          googleAnalyticsId={seoSettings?.googleAnalyticsId || undefined}
           vercelAnalytics={seoSettings?.vercelAnalytics ?? true}
         >
           <Providers>
