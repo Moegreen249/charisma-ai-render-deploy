@@ -21,6 +21,7 @@ import {
   Brain,
   Globe,
   Rocket,
+  Heart,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ const adminNavItems = [
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
   { icon: FileText, label: 'Blog', href: '/admin/blog' },
   { icon: Brain, label: 'Modules', href: '/admin/modules' },
+  { icon: Heart, label: 'AI Feelings', href: '/admin/charisma-feelings' },
   { icon: Mail, label: 'Email Templates', href: '/admin/email-templates' },
   { icon: Calendar, label: 'Background Tasks', href: '/admin/background-tasks' },
   { icon: Rocket, label: 'Launch', href: '/admin/launch' },
