@@ -11,6 +11,8 @@ export const redis =
     port: parseInt(process.env.REDIS_PORT || "6379"),
     password: process.env.REDIS_PASSWORD,
     lazyConnect: true,
+    maxRetriesPerRequest: 3,
+    enableOfflineQueue: false,
   });
 
 if (process.env.NODE_ENV !== "production") globalForRedis.redis = redis;
