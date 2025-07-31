@@ -80,21 +80,28 @@ export default function UploadCard({
   const [fileValidationError, setFileValidationError] = useState<string | null>(null);
 
   useEffect(() => {
-    const selection = getSelectedModel();
-    setModelLoading(true);
-    getModelInfo(selection.modelId).then((modelInfo) => {
-      const providerConfig = getProviderConfig(selection.provider);
-      if (modelInfo && providerConfig) {
-        setCurrentModel({
-          name: modelInfo.name,
-          provider: providerConfig.name,
-        });
-        // Check if API key exists for the current provider
-        const apiKey = getApiKey(providerConfig.apiKeyName);
-        setHasApiKey(!!apiKey);
+    const loadModel = async () => {
+      const selection = await getSelectedModel();
+      setModelLoading(true);
+      try {
+        const modelInfo = await getModelInfo(selection.modelId);
+        const providerConfig = getProviderConfig(selection.provider);
+        if (modelInfo && providerConfig) {
+          setCurrentModel({
+            name: modelInfo.name,
+            provider: providerConfig.name,
+          });
+          // Check if API key exists for the current provider
+          const apiKey = await getApiKey(providerConfig.apiKeyName);
+          setHasApiKey(!!apiKey);
+        }
+      } catch (error) {
+        console.error("Failed to load model info:", error);
+      } finally {
+        setModelLoading(false);
       }
-      setModelLoading(false);
-    });
+    };
+    loadModel();
     // Load templates if user is authenticated
     if (userId) {
       loadTemplates();
@@ -106,7 +113,7 @@ export default function UploadCard({
       const result = await getTemplatesForUser();
       if (result.success && result.data) {
         // Get current template selection
-        const selectedTemplateId = getSelectedAnalysisTemplate();
+        const selectedTemplateId = await getSelectedAnalysisTemplate();
 
         // Update template selection if needed
         const currentTemplate = result.data.find(

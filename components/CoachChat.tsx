@@ -154,14 +154,14 @@ export default function CoachChat({ analysisData, onClose }: CoachChatProps) {
 
     try {
       // Get current model selection and API key
-      const selection = getSelectedModel();
+      const selection = await getSelectedModel();
       const providerConfig = getProviderConfig(selection.provider);
 
       if (!providerConfig) {
         throw new Error("Invalid provider configuration.");
       }
 
-      const apiKey = getApiKey(providerConfig.apiKeyName);
+      const apiKey = await getApiKey(providerConfig.apiKeyName);
       if (!apiKey) {
         throw new Error(`No API key configured for ${providerConfig.name}.`);
       }
