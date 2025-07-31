@@ -25,9 +25,12 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        'sans': ['var(--font-roboto)', 'system-ui', 'sans-serif'],
+        'sans': ['Gilroy', 'var(--font-roboto)', 'system-ui', 'sans-serif'],
+        'gilroy': ['Gilroy', 'var(--font-roboto)', 'system-ui', 'sans-serif'],
         'arabic': ['Tajawal', 'system-ui', 'sans-serif'],
-        'english': ['var(--font-roboto)', 'system-ui', 'sans-serif'],
+        'english': ['Gilroy', 'var(--font-roboto)', 'system-ui', 'sans-serif'],
+        'primary': ['Gilroy', 'var(--font-roboto)', 'system-ui', 'sans-serif'],
+        'fallback': ['var(--font-roboto)', 'Roboto', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: "8px",

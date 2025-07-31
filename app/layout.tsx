@@ -9,7 +9,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { prisma } from "@/lib/prisma";
 
-// Configure fonts
+// Configure Roboto font (fallback)
 const roboto = Roboto({
   subsets: ['latin'],
   weight: ['300', '400', '500', '700'],
