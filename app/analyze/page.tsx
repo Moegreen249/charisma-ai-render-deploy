@@ -132,14 +132,14 @@ export default function Home() {
 
     try {
       // Get current configuration
-      const selection = getSelectedModel();
+      const selection = await getSelectedModel();
       const providerConfig = getProviderConfig(selection.provider);
 
       if (!providerConfig) {
         throw new Error("Provider configuration not found");
       }
 
-      const apiKey = getApiKey(providerConfig.apiKeyName);
+      const apiKey = await getApiKey(providerConfig.apiKeyName);
       const templateId = await getSelectedAnalysisTemplate();
 
       if (!apiKey) {
