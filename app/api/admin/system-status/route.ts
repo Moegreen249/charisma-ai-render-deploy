@@ -215,12 +215,12 @@ export async function GET(request: NextRequest) {
       setTimeout(() => reject(new Error('Health check timeout')), 10000); // 10 second timeout
     });
 
-    let healthResults;
+    let healthResults: any[];
     try {
       healthResults = await Promise.race([
         Promise.all(healthCheckPromises),
         timeoutPromise
-      ]);
+      ]) as any[];
     } catch (error) {
       console.error('Health check timeout or error:', error);
       // Return fallback status if health checks timeout

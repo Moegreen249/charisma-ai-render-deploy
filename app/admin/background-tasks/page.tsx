@@ -150,19 +150,21 @@ export default function BackgroundTasksAdmin() {
         fetch("/api/admin/system-status", { signal: timeoutController.signal }),
       ];
 
-      const [jobsResponse, usersResponse, statusResponse] = await Promise.all(
+      const responses = await Promise.all(
         requests.map(request => 
           request.catch(error => {
             console.warn("Request failed:", error);
-            return { ok: false, error };
+            return null;
           })
         )
       );
 
       clearTimeout(timeoutId);
 
+      const [jobsResponse, usersResponse, statusResponse] = responses;
+
       // Handle jobs data
-      if (jobsResponse.ok) {
+      if (jobsResponse?.ok) {
         try {
           const jobsData = await jobsResponse.json();
           setJobs(jobsData.jobs || []);
@@ -171,12 +173,12 @@ export default function BackgroundTasksAdmin() {
           setJobs([]);
         }
       } else {
-        console.warn("Jobs request failed:", jobsResponse);
+        console.warn("Jobs request failed or null");
         setJobs([]);
       }
 
       // Handle users data
-      if (usersResponse.ok) {
+      if (usersResponse?.ok) {
         try {
           const usersData = await usersResponse.json();
           setActiveUsers(usersData.users || []);
@@ -185,12 +187,12 @@ export default function BackgroundTasksAdmin() {
           setActiveUsers([]);
         }
       } else {
-        console.warn("Users request failed:", usersResponse);
+        console.warn("Users request failed or null");
         setActiveUsers([]);
       }
 
       // Handle status data
-      if (statusResponse.ok) {
+      if (statusResponse?.ok) {
         try {
           const statusData = await statusResponse.json();
           setSystemStatus(statusData);
@@ -199,14 +201,14 @@ export default function BackgroundTasksAdmin() {
           setSystemStatus(null);
         }
       } else {
-        console.warn("Status request failed:", statusResponse);
+        console.warn("Status request failed or null");
         setSystemStatus(null);
       }
 
       setError(null);
     } catch (err) {
       console.error("Failed to load background tasks data:", err);
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         setError("Request timed out. The server may be experiencing high load.");
       } else {
         setError("Failed to load data. Please check your connection and try again.");
