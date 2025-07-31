@@ -55,7 +55,7 @@ export default function CoachChat({ analysisData, onClose }: CoachChatProps) {
   // Initialize with template-specific greeting
   useEffect(() => {
     const loadTemplate = async () => {
-      const templateId = getSelectedAnalysisTemplate();
+      const templateId = await getSelectedAnalysisTemplate();
       if (templateId) {
         try {
           const result = await getTemplateById(templateId);
