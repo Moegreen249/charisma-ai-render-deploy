@@ -150,15 +150,28 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
+      console.log('Fetching profile...');
       const response = await fetch('/api/user/profile');
+      console.log('Profile response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Profile data received:', data);
         setProfile(data);
       } else {
-        setMessage({ type: 'error', text: 'Failed to load profile' });
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Profile fetch error:', response.status, errorData);
+        setMessage({ 
+          type: 'error', 
+          text: errorData.error || `Failed to load profile (${response.status})` 
+        });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to load profile' });
+      console.error('Profile fetch exception:', error);
+      setMessage({ 
+        type: 'error', 
+        text: `Network error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      });
     } finally {
       setLoading(false);
     }
@@ -581,24 +594,24 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Basic Info Fields */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-white">Full Name</Label>
-                      <Input
-                        id="name"
-                        type="url"
-                        placeholder="https://example.com/avatar.jpg"
-                        value={profile.avatar || ''}
-                        onChange={(e) => updateProfile('avatar', e.target.value)}
-                        className={cn(
-                          "mt-1",
-                          "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
-                          "focus:bg-white/20 focus:border-purple-400",
-                          themeConfig.animation.transition
-                        )}
-                      />
-                    </div>
+                  {/* Avatar URL Field (Optional) */}
+                  <div className="space-y-2">
+                    <Label htmlFor="avatarUrl" className="text-white">Avatar URL (Optional)</Label>
+                    <Input
+                      id="avatarUrl"
+                      type="url"
+                      placeholder="https://example.com/avatar.jpg"
+                      value={profile.avatar || ''}
+                      onChange={(e) => updateProfile('avatar', e.target.value)}
+                      className={cn(
+                        "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
+                        "focus:bg-white/20 focus:border-purple-400",
+                        themeConfig.animation.transition
+                      )}
+                    />
+                    <p className="text-xs text-gray-400">
+                      Alternative to file upload - provide a direct URL to your avatar image
+                    </p>
                   </div>
 
                   {/* Basic Info */}

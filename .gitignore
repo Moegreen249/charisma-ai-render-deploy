@@ -219,3 +219,5 @@ sample-*.txt
 !middleware.ts
 !render.yaml
 !vercel.json
+
+.vercel

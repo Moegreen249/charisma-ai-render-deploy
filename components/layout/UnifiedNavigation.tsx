@@ -157,13 +157,14 @@ export function UnifiedNavigation() {
                   href="/admin"
                   className={cn(
                     'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2',
+                    'bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30',
                     isActiveRoute('/admin')
-                      ? 'bg-white/10 text-white'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-purple-600/40 to-blue-600/40 text-white border-purple-400/50'
+                      : 'text-purple-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-600/30 hover:to-blue-600/30 hover:border-purple-400/40'
                   )}
                 >
                   <LayoutDashboard className="w-4 h-4" />
-                  Admin
+                  Admin Panel
                 </Link>
               )}
             </div>
@@ -345,13 +346,14 @@ export function UnifiedNavigation() {
               className={cn(
                 'block px-4 py-4 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-2 touch-manipulation',
                 'min-h-[44px]', // Enhanced touch target
+                'bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30',
                 isActiveRoute('/admin')
-                  ? 'bg-white/10 text-white'
-                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-purple-600/40 to-blue-600/40 text-white border-purple-400/50'
+                  : 'text-purple-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-600/30 hover:to-blue-600/30'
               )}
             >
               <LayoutDashboard className="w-4 h-4" />
-              Admin Dashboard
+              Admin Panel
             </Link>
           )}
 

@@ -30,14 +30,20 @@ const profileSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Profile API: Starting GET request');
+    
     const session = await getServerSession(authOptions);
+    console.log('Profile API: Session check:', session ? 'Session found' : 'No session');
 
-    if (!session) {
+    if (!session || !session.user?.id) {
+      console.log('Profile API: Unauthorized - no session or user ID');
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please sign in' },
         { status: 401 }
       );
     }
+
+    console.log('Profile API: Looking for profile for user:', session.user.id);
 
     let profile = await prisma.userProfile.findUnique({
       where: { userId: session.user.id },
@@ -54,7 +60,11 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    console.log('Profile API: Profile found:', profile ? 'Yes' : 'No');
+
     if (!profile) {
+      console.log('Profile API: Creating default profile for user:', session.user.id);
+      
       // Create default profile
       profile = await prisma.userProfile.create({
         data: {
@@ -80,14 +90,28 @@ export async function GET(request: NextRequest) {
           },
         },
       });
+      
+      console.log('Profile API: Default profile created');
     }
 
+    console.log('Profile API: Returning profile data');
     return NextResponse.json(profile);
 
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    console.error('Profile API Error:', error);
+    
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

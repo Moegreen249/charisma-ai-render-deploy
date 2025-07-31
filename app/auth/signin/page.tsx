@@ -47,12 +47,17 @@ export default function SignInPage() {
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        // Check if user is admin and redirect accordingly
+        // Force session refresh and redirect
         const session = await getSession();
+        console.log("Session after login:", session); // Debug log
+        
         if (session?.user?.role === "ADMIN") {
+          console.log("Redirecting admin to /admin"); // Debug log
           router.push("/admin");
+          router.refresh(); // Force page refresh
         } else {
-          router.push("/");
+          console.log("Redirecting user to /analyze"); // Debug log
+          router.push("/analyze");
         }
       }
     } catch (error) {

@@ -23,6 +23,11 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "test:quality": "npm run typecheck && npm run lint && npm run format:check",
+    "db:reset": "tsx scripts/reset-db-only.ts",
+    "db:reset-seed": "tsx scripts/reset-and-seed-db.ts",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio",
     "postinstall": "npx prisma generate || echo 'Prisma generate skipped in production'"
   },
   "dependencies": {
