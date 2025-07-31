@@ -1,4 +1,6 @@
-import { Metadata } from 'next';
+'use client';
+
+// Client component for help page
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 import { 
   HelpCircle, 
@@ -19,10 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
-export const metadata: Metadata = {
-  title: 'Help Center - CharismaAI Support',
-  description: 'Get help with CharismaAI. Find answers to common questions, tutorials, and contact support.',
-};
+// Metadata is handled by the parent layout for client components
 
 const helpCategories = [
   {
