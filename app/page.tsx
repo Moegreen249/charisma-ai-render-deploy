@@ -160,6 +160,15 @@ export default function HomePage() {
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
         <div className="absolute top-40 left-40 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        
+        {/* Neural particles */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-cyan-400/30 rounded-full animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-purple-400/25 rounded-full animate-ping"></div>
+          <div className="absolute top-2/3 left-1/5 w-1.5 h-1.5 bg-blue-400/20 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-pink-400/25 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
+          <div className="absolute top-1/2 right-1/6 w-2 h-2 bg-indigo-400/15 rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
+        </div>
       </div>
 
       {/* Hero Section */}
@@ -216,17 +225,20 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-8 py-4 text-lg"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-8 py-4 text-lg relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25"
               onClick={() => (window.location.href = "/auth/signin")}
             >
-              <Rocket className="w-5 h-5 mr-2" />
-              Start Analyzing Free
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <span className="relative z-10 flex items-center">
+                <Rocket className="w-5 h-5 mr-2" />
+                Start Analyzing Free
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </Button>
             <Button
               variant="outline"
               size="lg"
-              className="border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg"
+              className="border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/10"
               onClick={() => (window.location.href = "/auth/signin")}
             >
               <Brain className="w-5 h-5 mr-2" />
@@ -376,12 +388,15 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-8 py-4 text-lg"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-8 py-4 text-lg relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25"
                 onClick={() => (window.location.href = "/auth/signin")}
               >
-                <Rocket className="w-5 h-5 mr-2" />
-                Start Free Analysis
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <span className="relative z-10 flex items-center">
+                  <Rocket className="w-5 h-5 mr-2" />
+                  Start Free Analysis
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
               </Button>
             </div>
           </div>

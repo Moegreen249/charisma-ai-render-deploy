@@ -90,8 +90,16 @@ export default function AuthErrorPage() {
 
   return (
     <UnifiedLayout variant="auth" showFooter={false}>
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <div className="w-full max-w-lg">
+      <div className="min-h-[80vh] flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Neural background particles - error theme */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-12 w-1.5 h-1.5 bg-red-400/20 rounded-full animate-pulse"></div>
+          <div className="absolute top-36 right-16 w-1 h-1 bg-orange-400/25 rounded-full animate-ping"></div>
+          <div className="absolute bottom-40 left-20 w-2 h-2 bg-red-300/15 rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
+          <div className="absolute bottom-28 right-8 w-1 h-1 bg-yellow-400/20 rounded-full animate-ping" style={{animationDelay: '0.8s'}}></div>
+        </div>
+        
+        <div className="w-full max-w-lg relative z-10">
           <div className="text-center mb-8">
             <Badge className={cn("mb-4", "bg-red-500/10 border-red-500/20 text-red-300")}>
               <XCircle className="w-4 h-4 mr-2" />
@@ -109,7 +117,10 @@ export default function AuthErrorPage() {
             themeConfig.colors.glass.background,
             themeConfig.colors.glass.border,
             themeConfig.colors.glass.shadow,
-            "border"
+            "border",
+            "hover:bg-white/[0.15] transition-all duration-500",
+            "hover:shadow-2xl hover:shadow-red-500/10",
+            "backdrop-blur-xl"
           )}>
             <CardContent className="pt-6">
               <div className="space-y-6">
@@ -145,14 +156,18 @@ export default function AuthErrorPage() {
                         "w-full",
                         "bg-gradient-to-r",
                         themeConfig.colors.gradients.button,
-                        "text-white font-medium",
-                        "hover:opacity-90",
-                        themeConfig.animation.transition,
-                        themeConfig.animation.hover
+                        "text-white font-medium relative overflow-hidden",
+                        "hover:opacity-90 hover:shadow-lg hover:shadow-purple-500/25",
+                        "hover:scale-[1.02] active:scale-[0.98]",
+                        "transition-all duration-300",
+                        "group"
                       )}
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Try Again
+                      <span className="relative z-10 flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4" />
+                        Try Again
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                     </Button>
                   </Link>
 

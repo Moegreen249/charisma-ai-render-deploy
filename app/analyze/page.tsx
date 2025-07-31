@@ -213,7 +213,17 @@ export default function Home() {
   // Render based on current state
   return (
     <UnifiedLayout variant="default">
-      <div className="min-h-screen bg-transparent">
+      <div className="min-h-screen bg-transparent relative overflow-hidden">
+        {/* Neural background particles - analysis theme */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-32 left-20 w-2 h-2 bg-purple-400/20 rounded-full animate-pulse"></div>
+          <div className="absolute top-48 right-24 w-1 h-1 bg-cyan-400/25 rounded-full animate-ping"></div>
+          <div className="absolute top-2/3 left-16 w-1.5 h-1.5 bg-blue-400/20 rounded-full animate-pulse" style={{animationDelay: '1.2s'}}></div>
+          <div className="absolute bottom-40 right-20 w-1 h-1 bg-green-400/25 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
+          <div className="absolute bottom-24 left-32 w-2 h-2 bg-indigo-300/15 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+          <div className="absolute top-1/4 right-1/3 w-1 h-1 bg-pink-400/20 rounded-full animate-ping" style={{animationDelay: '3s'}}></div>
+        </div>
+        
       <AnimatePresence mode="wait">
         {state.currentView === "loading" ? (
           <LoadingIndicator key="loading" />

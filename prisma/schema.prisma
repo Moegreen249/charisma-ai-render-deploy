@@ -37,6 +37,7 @@ model User {
   invitationsReceived Invitation[] @relation("invited")
   blogPosts      BlogPost[]
   profile        UserProfile?
+  customThemes   CustomTheme[] @relation("ThemeCreator")
 }
 
 model Account {
@@ -398,6 +399,20 @@ model SeoSettings {
   updatedAt         DateTime @updatedAt
 }
 
+model SystemSettings {
+  id                   Int      @id @default(1)
+  siteName             String   @default("CharismaAI")
+  siteDescription      String   @default("AI-Powered Conversation Analytics")
+  maintenanceMode      Boolean  @default(false)
+  registrationEnabled  Boolean  @default(true)
+  emailNotifications   Boolean  @default(true)
+  analyticsEnabled     Boolean  @default(true)
+  maxFileSize          String   @default("10")
+  sessionTimeout       String   @default("24")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
 model BlogPost {
   id          String      @id @default(uuid())
   title       String
@@ -466,4 +481,20 @@ enum PostStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+model CustomTheme {
+  id        String   @id @default(uuid())
+  name      String
+  config    String   @db.Text // JSON string of theme configuration
+  createdBy String
+  creator   User     @relation(fields: [createdBy], references: [id], name: "ThemeCreator")
+  isActive  Boolean  @default(false)
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdBy])
+  @@index([isActive])
+  @@index([isPublic])
 }

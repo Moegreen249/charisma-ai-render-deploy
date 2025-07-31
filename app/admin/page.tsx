@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { SkeletonStats, SkeletonCard } from "@/components/ui/skeleton";
 import {
   Users,
   Activity,
@@ -172,10 +173,37 @@ export default function AdminDashboard() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-          <p className="text-white mt-4 text-center">Loading dashboard...</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6 relative overflow-hidden">
+        {/* Neural background particles - loading state */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-32 left-8 sm:left-20 w-2 h-2 bg-purple-400/20 rounded-full animate-pulse motion-reduce:animate-none"></div>
+          <div className="absolute top-48 right-12 sm:right-32 w-1 h-1 bg-cyan-400/25 rounded-full animate-ping motion-reduce:animate-none"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+          {/* Header Skeleton */}
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <div className="h-8 w-48 bg-white/10 rounded animate-pulse motion-reduce:animate-none"></div>
+              <div className="h-4 w-64 bg-white/5 rounded animate-pulse motion-reduce:animate-none"></div>
+            </div>
+            <div className="h-10 w-24 bg-white/10 rounded animate-pulse motion-reduce:animate-none"></div>
+          </div>
+
+          {/* Key Metrics Skeleton */}
+          <SkeletonStats count={4} />
+
+          {/* Charts Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkeletonCard className="h-[350px]" />
+            <SkeletonCard className="h-[350px]" />
+          </div>
+
+          {/* System Status Skeleton */}
+          <SkeletonStats count={4} />
+
+          {/* Quick Actions Skeleton */}
+          <SkeletonCard className="h-[200px]" />
         </div>
       </div>
     );
@@ -186,8 +214,19 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6 relative overflow-hidden">
+      {/* Neural background particles - admin theme */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-32 left-8 sm:left-20 w-2 h-2 bg-purple-400/20 rounded-full animate-pulse motion-reduce:animate-none"></div>
+        <div className="absolute top-48 right-12 sm:right-32 w-1 h-1 bg-cyan-400/25 rounded-full animate-ping motion-reduce:animate-none"></div>
+        <div className="absolute top-2/3 left-6 sm:left-16 w-1.5 h-1.5 bg-blue-400/20 rounded-full animate-pulse motion-reduce:animate-none" style={{animationDelay: '1.5s'}}></div>
+        <div className="absolute bottom-40 right-8 sm:right-20 w-1 h-1 bg-green-400/25 rounded-full animate-ping motion-reduce:animate-none" style={{animationDelay: '2.5s'}}></div>
+        {/* Additional particles hidden on small screens for performance */}
+        <div className="hidden sm:block absolute bottom-24 left-32 w-2 h-2 bg-indigo-300/15 rounded-full animate-pulse motion-reduce:animate-none" style={{animationDelay: '0.8s'}}></div>
+        <div className="hidden md:block absolute top-1/4 right-1/3 w-1 h-1 bg-pink-400/20 rounded-full animate-ping motion-reduce:animate-none" style={{animationDelay: '3s'}}></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -221,15 +260,17 @@ export default function AdminDashboard() {
         )}
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Users Metric */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/90">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-purple-300" />
+              <div className="p-2 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+                <Users className="h-4 w-4 text-purple-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
                 {stats?.users?.total?.toLocaleString() || '0'}
               </div>
               <div className="flex items-center text-xs text-green-300 mt-1">
@@ -240,13 +281,15 @@ export default function AdminDashboard() {
           </Card>
 
           {/* Active Users */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/90">Active Users</CardTitle>
-              <Activity className="h-4 w-4 text-green-300" />
+              <div className="p-2 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+                <Activity className="h-4 w-4 text-green-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
                 {stats?.users?.active?.toLocaleString() || '0'}
               </div>
               <div className="text-xs text-white/60 mt-1">
@@ -256,13 +299,15 @@ export default function AdminDashboard() {
           </Card>
 
           {/* Analyses */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/90">Total Analyses</CardTitle>
-              <BarChart3 className="h-4 w-4 text-blue-300" />
+              <div className="p-2 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                <BarChart3 className="h-4 w-4 text-blue-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
                 {stats?.analyses?.total?.toLocaleString() || '0'}
               </div>
               <div className="text-xs text-white/60 mt-1">
@@ -272,13 +317,15 @@ export default function AdminDashboard() {
           </Card>
 
           {/* System Health */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/90">System Uptime</CardTitle>
-              <Server className="h-4 w-4 text-cyan-300" />
+              <div className="p-2 rounded-full bg-cyan-500/20 group-hover:bg-cyan-500/30 transition-colors">
+                <Server className="h-4 w-4 text-cyan-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
                 {stats?.system?.uptime || 99.9}%
               </div>
               <div className="text-xs text-white/60 mt-1">
@@ -291,7 +338,7 @@ export default function AdminDashboard() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Activity Chart */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
@@ -334,7 +381,7 @@ export default function AdminDashboard() {
           </Card>
 
           {/* User Distribution */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Users className="w-5 h-5" />
@@ -373,8 +420,8 @@ export default function AdminDashboard() {
         </div>
 
         {/* System Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-white/90 flex items-center gap-2">
                 <Database className="w-4 h-4" />
@@ -392,7 +439,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-white/90 flex items-center gap-2">
                 <Zap className="w-4 h-4" />
@@ -410,7 +457,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-white/90 flex items-center gap-2">
                 <Shield className="w-4 h-4" />
@@ -428,7 +475,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-white/90 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
@@ -448,7 +495,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Activity className="w-5 h-5" />
@@ -456,10 +503,10 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
               <Button
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25"
                 onClick={() => window.location.href = '/admin/users'}
               >
                 <Users className="w-6 h-6" />
@@ -468,7 +515,7 @@ export default function AdminDashboard() {
               
               <Button
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25"
                 onClick={() => window.location.href = '/admin/analytics'}
               >
                 <BarChart3 className="w-6 h-6" />
@@ -477,7 +524,7 @@ export default function AdminDashboard() {
               
               <Button
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25"
                 onClick={() => window.location.href = '/admin/system'}
               >
                 <Server className="w-6 h-6" />
@@ -486,7 +533,7 @@ export default function AdminDashboard() {
               
               <Button
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25"
                 onClick={() => window.location.href = '/admin/email-templates'}
               >
                 <Mail className="w-6 h-6" />
@@ -495,7 +542,7 @@ export default function AdminDashboard() {
               
               <Button
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25"
                 onClick={() => window.location.href = '/admin/settings'}
               >
                 <Settings className="w-6 h-6" />
@@ -504,7 +551,7 @@ export default function AdminDashboard() {
               
               <Button
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-4 flex flex-col gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25"
                 onClick={() => window.location.href = '/blog'}
               >
                 <Globe className="w-6 h-6" />

@@ -71,6 +71,44 @@ export function UnifiedNavigation() {
     };
   }, [isMobileMenuOpen]);
 
+  // Add swipe gesture support for mobile menu
+  useEffect(() => {
+    let startX = 0;
+    let currentX = 0;
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      if (!isMobileMenuOpen) return;
+      startX = e.touches[0].clientX;
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isMobileMenuOpen) return;
+      currentX = e.touches[0].clientX;
+    };
+    
+    const handleTouchEnd = () => {
+      if (!isMobileMenuOpen) return;
+      const diffX = currentX - startX;
+      
+      // If swipe right more than 100px, close menu
+      if (diffX > 100) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    
+    if (isMobileMenuOpen) {
+      document.addEventListener('touchstart', handleTouchStart);
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isMobileMenuOpen]);
+
   const isActiveRoute = (href: string) => {
     if (href === '/') return pathname === href;
     return pathname.startsWith(href);
@@ -265,7 +303,8 @@ export function UnifiedNavigation() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+              className="md:hidden p-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-colors touch-manipulation focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -288,7 +327,8 @@ export function UnifiedNavigation() {
               key={item.href}
               href={item.href}
               className={cn(
-                'block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200',
+                'block px-4 py-4 rounded-lg text-base font-medium transition-all duration-200 touch-manipulation',
+                'min-h-[44px] flex items-center', // Enhanced touch target
                 isActiveRoute(item.href)
                   ? 'bg-white/10 text-white'
                   : 'text-gray-300 hover:text-white hover:bg-white/5'
@@ -303,7 +343,8 @@ export function UnifiedNavigation() {
             <Link
               href="/admin"
               className={cn(
-                'block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-2',
+                'block px-4 py-4 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-2 touch-manipulation',
+                'min-h-[44px]', // Enhanced touch target
                 isActiveRoute('/admin')
                   ? 'bg-white/10 text-white'
                   : 'text-gray-300 hover:text-white hover:bg-white/5'

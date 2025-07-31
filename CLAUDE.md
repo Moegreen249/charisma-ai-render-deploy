@@ -55,8 +55,8 @@ npm run test        # Alternative
    - API routes in `app/api/` for streaming and data operations
 
 2. **Multi-Provider AI System**
-   - Abstracted provider interface in `lib/ai/`
-   - Template-based analysis system
+   - Abstracted provider interface in `lib/ai-providers.ts`
+   - Template-based analysis system in `lib/analysis-templates.ts`
    - Streaming response support
    - Provider switching capabilities
 
@@ -82,9 +82,9 @@ npm run test        # Alternative
 ### Important Implementation Notes
 
 1. **AI Integration**
-   - Provider modules in `lib/ai/providers/`
-   - Template validation in `lib/templates/`
-   - Streaming utilities in `lib/ai/stream.ts`
+   - Provider modules in `lib/ai-providers.ts`
+   - Template validation in `lib/template-standards.ts`
+   - Streaming utilities in API routes
 
 2. **State Management**
    - Server state with Prisma

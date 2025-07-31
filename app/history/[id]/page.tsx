@@ -66,8 +66,17 @@ export default async function AnalysisPage({ params }: PageProps) {
 
   return (
     <UnifiedLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="container mx-auto px-4 py-8 relative overflow-hidden">
+        {/* Neural background particles - analysis theme */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-24 left-16 w-2 h-2 bg-purple-400/20 rounded-full animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-1 h-1 bg-blue-400/25 rounded-full animate-ping"></div>
+          <div className="absolute top-2/3 left-12 w-1.5 h-1.5 bg-cyan-400/20 rounded-full animate-pulse" style={{animationDelay: '1.2s'}}></div>
+          <div className="absolute bottom-32 right-24 w-1 h-1 bg-green-400/25 rounded-full animate-ping" style={{animationDelay: '2.5s'}}></div>
+          <div className="absolute bottom-48 left-28 w-2 h-2 bg-purple-300/15 rounded-full animate-pulse" style={{animationDelay: '0.8s'}}></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
           {/* Page Header */}
           <div className="text-center mb-8">
             <Badge className={cn("mb-4", themeConfig.colors.glass.background, themeConfig.colors.glass.border)}>
@@ -102,11 +111,15 @@ export default async function AnalysisPage({ params }: PageProps) {
             themeConfig.colors.glass.background,
             themeConfig.colors.glass.border,
             themeConfig.colors.glass.shadow,
-            "border transition-all duration-300 hover:scale-105"
+            "border transition-all duration-300 hover:scale-105",
+            "hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10",
+            "backdrop-blur-xl group"
           )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">File</CardTitle>
-              <FileText className="h-4 w-4 text-purple-400" />
+              <div className="p-2 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+                <FileText className="h-4 w-4 text-purple-400" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-sm font-medium truncate text-white">
@@ -120,11 +133,15 @@ export default async function AnalysisPage({ params }: PageProps) {
             themeConfig.colors.glass.background,
             themeConfig.colors.glass.border,
             themeConfig.colors.glass.shadow,
-            "border transition-all duration-300 hover:scale-105"
+            "border transition-all duration-300 hover:scale-105",
+            "hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10",
+            "backdrop-blur-xl group"
           )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">Provider</CardTitle>
-              <Zap className="h-4 w-4 text-yellow-400" />
+              <div className="p-2 rounded-full bg-yellow-500/20 group-hover:bg-yellow-500/30 transition-colors">
+                <Zap className="h-4 w-4 text-yellow-400" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
@@ -140,11 +157,15 @@ export default async function AnalysisPage({ params }: PageProps) {
             themeConfig.colors.glass.background,
             themeConfig.colors.glass.border,
             themeConfig.colors.glass.shadow,
-            "border transition-all duration-300 hover:scale-105"
+            "border transition-all duration-300 hover:scale-105",
+            "hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10",
+            "backdrop-blur-xl group"
           )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">Duration</CardTitle>
-              <Clock className="h-4 w-4 text-blue-400" />
+              <div className="p-2 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                <Clock className="h-4 w-4 text-blue-400" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-sm font-medium text-white">
@@ -158,11 +179,15 @@ export default async function AnalysisPage({ params }: PageProps) {
             themeConfig.colors.glass.background,
             themeConfig.colors.glass.border,
             themeConfig.colors.glass.shadow,
-            "border transition-all duration-300 hover:scale-105"
+            "border transition-all duration-300 hover:scale-105",
+            "hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10",
+            "backdrop-blur-xl group"
           )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">Date</CardTitle>
-              <Calendar className="h-4 w-4 text-green-400" />
+              <div className="p-2 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+                <Calendar className="h-4 w-4 text-green-400" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-sm font-medium text-white">
@@ -181,7 +206,9 @@ export default async function AnalysisPage({ params }: PageProps) {
           themeConfig.colors.glass.background,
           themeConfig.colors.glass.border,
           themeConfig.colors.glass.shadow,
-          "border"
+          "border",
+          "hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10",
+          "transition-all duration-300 backdrop-blur-xl"
         )}>
           <CardHeader>
             <CardTitle className="text-lg text-white">Analysis Template</CardTitle>

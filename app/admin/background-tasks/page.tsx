@@ -46,6 +46,7 @@ import {
   Database,
   Zap,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BackgroundJob {
   id: string;
@@ -287,77 +288,90 @@ Check your API keys, provider settings, and file format.
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading background tasks...</p>
+          <p className="text-white/70">Loading background tasks...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Activity className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-3xl font-bold text-card-foreground">
-                  Background Tasks Management
-                </h1>
-                <p className="text-muted-foreground">
-                  Monitor and control all background processing tasks
-                </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6 relative overflow-hidden">
+      {/* Neural background particles - background tasks theme */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-32 left-8 sm:left-20 w-2 h-2 bg-orange-400/20 rounded-full animate-pulse motion-reduce:animate-none"></div>
+        <div className="absolute top-48 right-12 sm:right-32 w-1 h-1 bg-cyan-400/25 rounded-full animate-ping motion-reduce:animate-none"></div>
+        <div className="absolute bottom-32 left-6 sm:left-16 w-1.5 h-1.5 bg-purple-400/20 rounded-full animate-pulse motion-reduce:animate-none" style={{animationDelay: '1.2s'}}></div>
+        <div className="absolute bottom-12 right-20 w-1 h-1 bg-green-400/25 rounded-full animate-ping motion-reduce:animate-none" style={{animationDelay: '2.1s'}}></div>
+        <div className="absolute top-1/3 left-32 w-2 h-2 bg-blue-300/15 rounded-full animate-pulse motion-reduce:animate-none" style={{animationDelay: '0.9s'}}></div>
+      </div>
+      
+      <div className="relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Header */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Activity className="h-8 w-8 text-orange-400" />
+                <div>
+                  <h1 className="text-3xl font-bold text-white">
+                    Background Tasks Management
+                  </h1>
+                  <p className="text-white/70">
+                    Monitor and control all background processing tasks
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setAutoRefresh(!autoRefresh)}
+                  className={cn(
+                    "bg-white/10 border-white/20 text-white hover:bg-white/20",
+                    autoRefresh && "bg-orange-500/20 border-orange-400/30 text-orange-300"
+                  )}
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${autoRefresh ? "animate-spin" : ""}`}
+                  />
+                  Auto-refresh {autoRefresh ? "ON" : "OFF"}
+                </Button>
+                <Button 
+                  onClick={loadData} 
+                  disabled={loading}
+                  className="bg-gradient-to-r from-orange-500 to-purple-500 hover:from-orange-600 hover:to-purple-600 text-white h-12 touch-manipulation hover:scale-[1.02] transition-all duration-300"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setAutoRefresh(!autoRefresh)}
-                className={
-                  autoRefresh
-                    ? "bg-primary/10 border-primary/20 text-primary"
-                    : ""
-                }
-              >
-                <RefreshCw
-                  className={`h-4 w-4 ${autoRefresh ? "animate-spin" : ""}`}
-                />
-                Auto-refresh {autoRefresh ? "ON" : "OFF"}
-              </Button>
-              <Button onClick={loadData} disabled={loading}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
           </div>
-        </div>
 
-        {/* Error Alert */}
-        {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+          {/* Error Alert */}
+          {error && (
+            <Alert className="bg-red-500/20 border-red-500/30 text-white mb-6 backdrop-blur-sm">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-        {/* System Status Overview */}
-        {systemStatus && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Server className="h-5 w-5" />
-                System Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          {/* System Status Overview */}
+          {systemStatus && (
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Server className="h-5 w-5" />
+                  System Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <div className="text-center">
                   <Database className="h-6 w-6 mx-auto mb-2" />
-                  <p className="text-sm font-medium">Database</p>
+                  <p className="text-sm font-medium text-white">Database</p>
                   <p
                     className={`text-xs ${getSystemStatusColor(
                       systemStatus.database.status,
@@ -368,7 +382,7 @@ Check your API keys, provider settings, and file format.
                 </div>
                 <div className="text-center">
                   <Zap className="h-6 w-6 mx-auto mb-2" />
-                  <p className="text-sm font-medium">Redis</p>
+                  <p className="text-sm font-medium text-white">Redis</p>
                   <p
                     className={`text-xs ${getSystemStatusColor(
                       systemStatus.redis.status,
@@ -379,7 +393,7 @@ Check your API keys, provider settings, and file format.
                 </div>
                 <div className="text-center">
                   <Activity className="h-6 w-6 mx-auto mb-2" />
-                  <p className="text-sm font-medium">Job Processor</p>
+                  <p className="text-sm font-medium text-white">Job Processor</p>
                   <p
                     className={`text-xs ${getSystemStatusColor(
                       systemStatus.jobProcessor.status,
@@ -392,7 +406,7 @@ Check your API keys, provider settings, and file format.
                   <div className="w-6 h-6 mx-auto mb-2 bg-green-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">AI</span>
                   </div>
-                  <p className="text-sm font-medium">OpenAI</p>
+                  <p className="text-sm font-medium text-white">OpenAI</p>
                   <p
                     className={`text-xs ${getSystemStatusColor(
                       systemStatus.aiProviders.openai.status,
@@ -405,7 +419,7 @@ Check your API keys, provider settings, and file format.
                   <div className="w-6 h-6 mx-auto mb-2 bg-blue-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">G</span>
                   </div>
-                  <p className="text-sm font-medium">Google AI</p>
+                  <p className="text-sm font-medium text-white">Google AI</p>
                   <p
                     className={`text-xs ${getSystemStatusColor(
                       systemStatus.aiProviders.google.status,
@@ -418,7 +432,7 @@ Check your API keys, provider settings, and file format.
                   <div className="w-6 h-6 mx-auto mb-2 bg-purple-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">A</span>
                   </div>
-                  <p className="text-sm font-medium">Anthropic</p>
+                  <p className="text-sm font-medium text-white">Anthropic</p>
                   <p
                     className={`text-xs ${getSystemStatusColor(
                       systemStatus.aiProviders.anthropic.status,
@@ -428,38 +442,38 @@ Check your API keys, provider settings, and file format.
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
-        <Tabs defaultValue="tasks" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="tasks">Background Tasks</TabsTrigger>
-            <TabsTrigger value="users">Active Users</TabsTrigger>
-            <TabsTrigger value="monitoring">Real-time Monitoring</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="tasks" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 bg-white/10 backdrop-blur-sm border border-white/20">
+              <TabsTrigger value="tasks" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Background Tasks</TabsTrigger>
+              <TabsTrigger value="users" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Active Users</TabsTrigger>
+              <TabsTrigger value="monitoring" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Real-time Monitoring</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="tasks" className="space-y-6">
-            {/* Controls */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Task Controls</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <TabsContent value="tasks" className="space-y-6">
+              {/* Controls */}
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <CardTitle className="text-white">Task Controls</CardTitle>
+                </CardHeader>
+                <CardContent>
                 <div className="flex flex-wrap gap-4">
                   <div className="flex-1 min-w-64">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 h-4 w-4" />
                       <Input
                         placeholder="Search jobs by file name, user, or ID..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50"
                       />
                     </div>
                   </div>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
                       <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
@@ -473,18 +487,18 @@ Check your API keys, provider settings, and file format.
                     </SelectContent>
                   </Select>
                 </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Jobs Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Background Jobs ({filteredJobs.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
+              {/* Jobs Table */}
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <CardTitle className="text-white">Background Jobs ({filteredJobs.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
                 <div className="space-y-4">
                   {filteredJobs.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-8 text-white/60">
                       No background jobs found.
                     </div>
                   ) : (
@@ -493,7 +507,7 @@ Check your API keys, provider settings, and file format.
                         key={job.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="border rounded-lg p-4 space-y-3"
+                        className="border border-white/20 rounded-lg p-4 space-y-3 bg-white/5"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -501,10 +515,10 @@ Check your API keys, provider settings, and file format.
                               className={`w-2 h-2 rounded-full ${getStatusColor(job.status)}`}
                             />
                             <div>
-                              <p className="font-medium">
+                              <p className="font-medium text-white">
                                 {job.fileName || "Unknown File"}
                               </p>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-white/60">
                                 {job.user.name || job.user.email} •{" "}
                                 {job.id.slice(0, 8)}
                               </p>
@@ -518,7 +532,7 @@ Check your API keys, provider settings, and file format.
                               {getStatusIcon(job.status)}
                               {job.status}
                             </Badge>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-sm text-white/60">
                               {job.progress}%
                             </span>
                           </div>
@@ -541,7 +555,7 @@ Check your API keys, provider settings, and file format.
                           </div>
                         )}
 
-                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center justify-between text-sm text-white/60">
                           <span>
                             Created: {new Date(job.createdAt).toLocaleString()}
                           </span>
@@ -550,6 +564,7 @@ Check your API keys, provider settings, and file format.
                               size="sm"
                               variant="outline"
                               onClick={() => setSelectedJob(job)}
+                              className="bg-white/10 border-white/20 text-white hover:bg-white/20 touch-manipulation hover:scale-105 transition-all duration-300"
                             >
                               <Eye className="h-3 w-3 mr-1" />
                               View
@@ -562,6 +577,7 @@ Check your API keys, provider settings, and file format.
                                   handleJobAction(job.id, "cancel")
                                 }
                                 disabled={actionLoading === job.id}
+                                className="bg-yellow-600/20 border-yellow-500/30 text-yellow-300 hover:bg-yellow-600/30 touch-manipulation hover:scale-105 transition-all duration-300"
                               >
                                 <Square className="h-3 w-3 mr-1" />
                                 Cancel
@@ -576,6 +592,7 @@ Check your API keys, provider settings, and file format.
                                     handleJobAction(job.id, "retry")
                                   }
                                   disabled={actionLoading === job.id}
+                                  className="bg-green-600/20 border-green-500/30 text-green-300 hover:bg-green-600/30 touch-manipulation hover:scale-105 transition-all duration-300"
                                 >
                                   <RefreshCw className="h-3 w-3 mr-1" />
                                   Retry
@@ -587,7 +604,7 @@ Check your API keys, provider settings, and file format.
                                     handleJobAction(job.id, "debug")
                                   }
                                   disabled={actionLoading === job.id}
-                                  className="text-blue-600 hover:text-blue-700"
+                                  className="bg-blue-600/20 border-blue-500/30 text-blue-300 hover:bg-blue-600/30 touch-manipulation hover:scale-105 transition-all duration-300"
                                 >
                                   <svg
                                     className="h-3 w-3 mr-1"
@@ -616,7 +633,7 @@ Check your API keys, provider settings, and file format.
                                   handleJobAction(job.id, "delete")
                                 }
                                 disabled={actionLoading === job.id}
-                                className="text-red-600 hover:text-red-700"
+                                className="bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-600/30 touch-manipulation hover:scale-105 transition-all duration-300"
                               >
                                 <Trash2 className="h-3 w-3 mr-1" />
                                 Delete
@@ -628,49 +645,49 @@ Check your API keys, provider settings, and file format.
                     ))
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="users" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Active Users ({activeUsers.length})
-                </CardTitle>
-                <CardDescription>
-                  Users currently active on the platform
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            <TabsContent value="users" className="space-y-6">
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Users className="h-5 w-5" />
+                    Active Users ({activeUsers.length})
+                  </CardTitle>
+                  <CardDescription className="text-white/60">
+                    Users currently active on the platform
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                 <div className="space-y-4">
                   {activeUsers.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-8 text-white/60">
                       No active users found.
                     </div>
                   ) : (
                     activeUsers.map((user) => (
                       <div
                         key={user.id}
-                        className="flex items-center justify-between p-4 border rounded-lg"
+                        className="flex items-center justify-between p-4 border border-white/20 rounded-lg bg-white/5"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
                           <div>
-                            <p className="font-medium">
+                            <p className="font-medium text-white">
                               {user.name || "Anonymous"}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-white/60">
                               {user.email}
                             </p>
                           </div>
                         </div>
                         <div className="text-right text-sm">
-                          <p className="text-muted-foreground">
+                          <p className="text-white/60">
                             {user.currentPage}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-white/50">
                             {user.actions} actions •{" "}
                             {Math.round(user.sessionDuration / 60)}m session
                           </p>
@@ -679,38 +696,38 @@ Check your API keys, provider settings, and file format.
                     ))
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="monitoring" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Real-time System Monitoring
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <TabsContent value="monitoring" className="space-y-6">
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Activity className="h-5 w-5" />
+                    Real-time System Monitoring
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <h3 className="font-medium">Queue Status</h3>
+                    <h3 className="font-medium text-white">Queue Status</h3>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <span>Pending:</span>
-                        <span>
+                        <span className="text-white/70">Pending:</span>
+                        <span className="text-white">
                           {jobs.filter((j) => j.status === "PENDING").length}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Processing:</span>
-                        <span>
+                        <span className="text-white/70">Processing:</span>
+                        <span className="text-white">
                           {jobs.filter((j) => j.status === "PROCESSING").length}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Completed Today:</span>
-                        <span>
+                        <span className="text-white/70">Completed Today:</span>
+                        <span className="text-white">
                           {
                             jobs.filter(
                               (j) =>
@@ -726,11 +743,11 @@ Check your API keys, provider settings, and file format.
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="font-medium">Performance</h3>
+                    <h3 className="font-medium text-white">Performance</h3>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <span>Avg Duration:</span>
-                        <span>
+                        <span className="text-white/70">Avg Duration:</span>
+                        <span className="text-white">
                           {jobs.filter((j) => j.completedAt && j.startedAt)
                             .length > 0
                             ? Math.round(
@@ -752,8 +769,8 @@ Check your API keys, provider settings, and file format.
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Success Rate:</span>
-                        <span>
+                        <span className="text-white/70">Success Rate:</span>
+                        <span className="text-white">
                           {jobs.length > 0
                             ? Math.round(
                                 (jobs.filter((j) => j.status === "COMPLETED")
@@ -768,23 +785,24 @@ Check your API keys, provider settings, and file format.
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="font-medium">System Health</h3>
+                    <h3 className="font-medium text-white">System Health</h3>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <span>Active Users:</span>
-                        <span>{activeUsers.length}</span>
+                        <span className="text-white/70">Active Users:</span>
+                        <span className="text-white">{activeUsers.length}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>System Load:</span>
-                        <span className="text-green-600">Normal</span>
+                        <span className="text-white/70">System Load:</span>
+                        <span className="text-green-400">Normal</span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       {/* Job Details Modal */}
@@ -794,19 +812,19 @@ Check your API keys, provider settings, and file format.
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
             onClick={() => setSelectedJob(null)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-card border rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-lg"
+              className="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Job Details</h2>
-                <Button variant="ghost" onClick={() => setSelectedJob(null)}>
+                <h2 className="text-xl font-bold text-white">Job Details</h2>
+                <Button variant="ghost" onClick={() => setSelectedJob(null)} className="text-white hover:bg-white/10">
                   <XCircle className="h-5 w-5" />
                 </Button>
               </div>
@@ -814,36 +832,36 @@ Check your API keys, provider settings, and file format.
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium">ID:</span>
-                    <p className="text-muted-foreground">{selectedJob.id}</p>
+                    <span className="font-medium text-white">ID:</span>
+                    <p className="text-white/70">{selectedJob.id}</p>
                   </div>
                   <div>
-                    <span className="font-medium">Status:</span>
-                    <p className="text-muted-foreground">
+                    <span className="font-medium text-white">Status:</span>
+                    <p className="text-white/70">
                       {selectedJob.status}
                     </p>
                   </div>
                   <div>
-                    <span className="font-medium">User:</span>
-                    <p className="text-muted-foreground">
+                    <span className="font-medium text-white">User:</span>
+                    <p className="text-white/70">
                       {selectedJob.user.name || selectedJob.user.email}
                     </p>
                   </div>
                   <div>
-                    <span className="font-medium">File:</span>
-                    <p className="text-muted-foreground">
+                    <span className="font-medium text-white">File:</span>
+                    <p className="text-white/70">
                       {selectedJob.fileName}
                     </p>
                   </div>
                   <div>
-                    <span className="font-medium">Provider:</span>
-                    <p className="text-muted-foreground">
+                    <span className="font-medium text-white">Provider:</span>
+                    <p className="text-white/70">
                       {selectedJob.provider}
                     </p>
                   </div>
                   <div>
-                    <span className="font-medium">Model:</span>
-                    <p className="text-muted-foreground">
+                    <span className="font-medium text-white">Model:</span>
+                    <p className="text-white/70">
                       {selectedJob.modelId}
                     </p>
                   </div>
@@ -851,8 +869,8 @@ Check your API keys, provider settings, and file format.
 
                 {selectedJob.error && (
                   <div>
-                    <span className="font-medium text-red-600">Error:</span>
-                    <pre className="text-sm bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded mt-1 overflow-x-auto">
+                    <span className="font-medium text-red-400">Error:</span>
+                    <pre className="text-sm bg-red-500/10 border border-red-500/20 text-red-300 p-3 rounded mt-1 overflow-x-auto">
                       {selectedJob.error}
                     </pre>
                   </div>
@@ -860,8 +878,8 @@ Check your API keys, provider settings, and file format.
 
                 {selectedJob.result && (
                   <div>
-                    <span className="font-medium">Result:</span>
-                    <pre className="text-sm bg-muted border p-3 rounded mt-1 overflow-x-auto">
+                    <span className="font-medium text-white">Result:</span>
+                    <pre className="text-sm bg-white/10 border border-white/20 text-white p-3 rounded mt-1 overflow-x-auto">
                       {JSON.stringify(selectedJob.result, null, 2)}
                     </pre>
                   </div>

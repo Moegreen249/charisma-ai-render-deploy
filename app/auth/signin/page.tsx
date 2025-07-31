@@ -64,8 +64,18 @@ export default function SignInPage() {
 
   return (
     <UnifiedLayout variant="auth" showFooter={false}>
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div className="min-h-[80vh] flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
+        {/* Neural background particles */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-4 sm:left-10 w-2 h-2 bg-purple-400/20 rounded-full animate-pulse motion-reduce:animate-none"></div>
+          <div className="absolute top-40 right-8 sm:right-20 w-1 h-1 bg-blue-400/30 rounded-full animate-ping motion-reduce:animate-none"></div>
+          <div className="absolute bottom-32 left-6 sm:left-16 w-1.5 h-1.5 bg-cyan-400/25 rounded-full animate-pulse motion-reduce:animate-none" style={{animationDelay: '1s'}}></div>
+          <div className="absolute bottom-20 right-4 sm:right-12 w-1 h-1 bg-purple-300/20 rounded-full animate-ping motion-reduce:animate-none" style={{animationDelay: '2s'}}></div>
+          {/* Additional particles hidden on small screens for performance */}
+          <div className="hidden sm:block absolute top-1/3 right-1/4 w-1 h-1 bg-indigo-300/15 rounded-full animate-pulse motion-reduce:animate-none" style={{animationDelay: '0.5s'}}></div>
+        </div>
+        
+        <div className="w-full max-w-md relative z-10">
           <div className="text-center mb-8">
             <Badge className={cn("mb-4", themeConfig.colors.glass.background, themeConfig.colors.glass.border)}>
               <Sparkles className="w-4 h-4 mr-2" />
@@ -80,10 +90,15 @@ export default function SignInPage() {
           </div>
 
           <Card className={cn(
+            "w-full max-w-md mx-auto", // Ensure proper mobile width
+            "touch-pan-y", // Enable smooth touch scrolling
             themeConfig.colors.glass.background,
             themeConfig.colors.glass.border,
             themeConfig.colors.glass.shadow,
-            "border"
+            "border",
+            "hover:bg-white/[0.15] transition-all duration-500",
+            "hover:shadow-2xl hover:shadow-purple-500/10",
+            "backdrop-blur-xl"
           )}>
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -112,11 +127,14 @@ export default function SignInPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={cn(
-                        "pl-10",
+                        "pl-10 h-12 sm:h-11", // Enhanced mobile touch target
+                        "text-base sm:text-sm", // Prevent zoom on iOS
                         "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
                         "focus:bg-white/20 focus:border-purple-400",
+                        "touch-manipulation", // Optimize touch events
                         themeConfig.animation.transition
                       )}
+                      autoComplete="email"
                       required
                     />
                   </div>
@@ -141,17 +159,20 @@ export default function SignInPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className={cn(
-                        "pl-10 pr-10",
+                        "pl-10 pr-10 h-12 sm:h-11", // Enhanced mobile touch target
+                        "text-base sm:text-sm", // Prevent zoom on iOS
                         "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
                         "focus:bg-white/20 focus:border-purple-400",
+                        "touch-manipulation", // Optimize touch events
                         themeConfig.animation.transition
                       )}
+                      autoComplete="current-password"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-gray-400 hover:text-white transition-colors"
+                      className="absolute right-3 top-3 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white transition-colors touch-manipulation"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -161,23 +182,28 @@ export default function SignInPage() {
                 <Button 
                   type="submit" 
                   className={cn(
-                    "w-full",
+                    "w-full h-12 sm:h-11", // Enhanced mobile touch target
                     "bg-gradient-to-r",
                     themeConfig.colors.gradients.button,
-                    "text-white font-medium",
-                    "hover:opacity-90",
-                    themeConfig.animation.transition,
-                    themeConfig.animation.hover
+                    "text-white font-medium relative overflow-hidden",
+                    "hover:opacity-90 hover:shadow-lg hover:shadow-purple-500/25",
+                    "hover:scale-[1.02] active:scale-[0.98]",
+                    "transition-all duration-300",
+                    "touch-manipulation", // Optimize touch events
+                    "group"
                   )}
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Signing in...
+                      <span className="animate-pulse">Processing...</span>
                     </div>
                   ) : (
-                    "Sign In"
+                    <>
+                      <span className="relative z-10">Sign In</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    </>
                   )}
                 </Button>
 

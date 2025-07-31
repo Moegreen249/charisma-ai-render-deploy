@@ -572,7 +572,7 @@ export default function EnhancedAnalysisView({
                 </span>
               </div>
               <Button
-                variant={selectedCategory === null ? "default" : "outline"}
+                variant={selectedCategory === null ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
@@ -590,7 +590,7 @@ export default function EnhancedAnalysisView({
                   <Button
                     key={category}
                     variant={
-                      selectedCategory === category ? "default" : "outline"
+                      selectedCategory === category ? "secondary" : "outline"
                     }
                     size="sm"
                     onClick={() => setSelectedCategory(category)}

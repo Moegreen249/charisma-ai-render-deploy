@@ -160,8 +160,17 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6 relative overflow-hidden">
+      {/* Neural background particles - admin users theme */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-28 left-16 w-2 h-2 bg-blue-400/20 rounded-full animate-pulse"></div>
+        <div className="absolute top-44 right-20 w-1 h-1 bg-purple-400/25 rounded-full animate-ping"></div>
+        <div className="absolute top-2/3 left-12 w-1.5 h-1.5 bg-cyan-400/20 rounded-full animate-pulse" style={{animationDelay: '1.8s'}}></div>
+        <div className="absolute bottom-36 right-28 w-1 h-1 bg-green-400/25 rounded-full animate-ping" style={{animationDelay: '2.2s'}}></div>
+        <div className="absolute bottom-20 left-24 w-2 h-2 bg-purple-300/15 rounded-full animate-pulse" style={{animationDelay: '0.7s'}}></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -182,6 +191,7 @@ export default function AdminUsersPage() {
               Refresh
             </Button>
             <Button
+              onClick={() => window.location.href = '/admin/users/add'}
               variant="outline"
               className="bg-white/10 border-white/20 text-white hover:bg-white/20"
             >
@@ -200,7 +210,7 @@ export default function AdminUsersPage() {
         )}
 
         {/* Search and Filter */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
@@ -213,6 +223,10 @@ export default function AdminUsersPage() {
                 />
               </div>
               <Button
+                onClick={() => {
+                  // Toggle advanced filter UI (implementation can be expanded)
+                  alert('Advanced filtering options coming soon!');
+                }}
                 variant="outline"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               >
@@ -225,53 +239,61 @@ export default function AdminUsersPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/90">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-purple-300" />
+              <div className="p-2 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+                <Users className="h-4 w-4 text-purple-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{users.length}</div>
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">{users.length}</div>
               <p className="text-xs text-white/60 mt-1">Registered users</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/90">Pending Approval</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-300" />
+              <div className="p-2 rounded-full bg-yellow-500/20 group-hover:bg-yellow-500/30 transition-colors">
+                <Clock className="h-4 w-4 text-yellow-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-300">{pendingUsers.length}</div>
+              <div className="text-2xl font-bold text-yellow-300 group-hover:scale-110 transition-transform duration-300">{pendingUsers.length}</div>
               <p className="text-xs text-white/60 mt-1">Awaiting review</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/90">Approved</CardTitle>
-              <UserCheck className="h-4 w-4 text-green-300" />
+              <div className="p-2 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+                <UserCheck className="h-4 w-4 text-green-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-300">{approvedUsers.length}</div>
+              <div className="text-2xl font-bold text-green-300 group-hover:scale-110 transition-transform duration-300">{approvedUsers.length}</div>
               <p className="text-xs text-white/60 mt-1">Active users</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white/90">Rejected</CardTitle>
-              <UserX className="h-4 w-4 text-red-300" />
+              <div className="p-2 rounded-full bg-red-500/20 group-hover:bg-red-500/30 transition-colors">
+                <UserX className="h-4 w-4 text-red-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-300">{rejectedUsers.length}</div>
+              <div className="text-2xl font-bold text-red-300 group-hover:scale-110 transition-transform duration-300">{rejectedUsers.length}</div>
               <p className="text-xs text-white/60 mt-1">Declined users</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Users Table */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Users className="w-5 h-5" />

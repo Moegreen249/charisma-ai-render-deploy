@@ -102,8 +102,17 @@ export default function SignUpPage() {
 
   return (
     <UnifiedLayout variant="auth" showFooter={false}>
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div className="min-h-[80vh] flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
+        {/* Neural background particles */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-16 left-4 sm:left-8 w-1.5 h-1.5 bg-cyan-400/25 rounded-full animate-pulse"></div>
+          <div className="absolute top-32 right-6 sm:right-16 w-1 h-1 bg-purple-400/30 rounded-full animate-ping"></div>
+          <div className="absolute top-1/2 left-6 sm:left-12 w-2 h-2 bg-blue-400/20 rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
+          <div className="absolute bottom-40 right-8 sm:right-20 w-1 h-1 bg-cyan-300/25 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
+          <div className="absolute bottom-24 left-8 sm:left-20 w-1.5 h-1.5 bg-purple-300/20 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+        </div>
+        
+        <div className="w-full max-w-md relative z-10">
           <div className="text-center mb-8">
             <Badge className={cn("mb-4", themeConfig.colors.glass.background, themeConfig.colors.glass.border)}>
               <UserPlus className="w-4 h-4 mr-2" />
@@ -121,7 +130,10 @@ export default function SignUpPage() {
             themeConfig.colors.glass.background,
             themeConfig.colors.glass.border,
             themeConfig.colors.glass.shadow,
-            "border"
+            "border",
+            "hover:bg-white/[0.15] transition-all duration-500",
+            "hover:shadow-2xl hover:shadow-purple-500/10",
+            "backdrop-blur-xl"
           )}>
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -144,11 +156,14 @@ export default function SignUpPage() {
                       value={formData.name}
                       onChange={handleChange}
                       className={cn(
-                        "pl-10",
+                        "pl-10 h-12 sm:h-11", // Enhanced mobile touch target
+                        "text-base sm:text-sm", // Prevent zoom on iOS
                         "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
                         "focus:bg-white/20 focus:border-purple-400",
+                        "touch-manipulation", // Optimize touch events
                         themeConfig.animation.transition
                       )}
+                      autoComplete="name"
                       disabled={isLoading}
                       required
                     />
@@ -167,11 +182,14 @@ export default function SignUpPage() {
                       value={formData.email}
                       onChange={handleChange}
                       className={cn(
-                        "pl-10",
+                        "pl-10 h-12 sm:h-11", // Enhanced mobile touch target
+                        "text-base sm:text-sm", // Prevent zoom on iOS
                         "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
                         "focus:bg-white/20 focus:border-purple-400",
+                        "touch-manipulation", // Optimize touch events
                         themeConfig.animation.transition
                       )}
+                      autoComplete="email"
                       disabled={isLoading}
                       required
                     />
@@ -288,26 +306,31 @@ export default function SignUpPage() {
                 <Button
                   type="submit"
                   className={cn(
-                    "w-full",
+                    "w-full h-12 sm:h-11", // Enhanced mobile touch target
                     "bg-gradient-to-r",
                     themeConfig.colors.gradients.button,
-                    "text-white font-medium",
-                    "hover:opacity-90",
-                    themeConfig.animation.transition,
-                    themeConfig.animation.hover
+                    "text-white font-medium relative overflow-hidden",
+                    "hover:opacity-90 hover:shadow-lg hover:shadow-purple-500/25",
+                    "hover:scale-[1.02] active:scale-[0.98]",
+                    "transition-all duration-300",
+                    "touch-manipulation", // Optimize touch events
+                    "group"
                   )}
                   disabled={isLoading || !acceptedTerms}
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Creating Account...
+                      <span className="animate-pulse">Creating Account...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <UserPlus className="w-4 h-4" />
-                      Create Account
-                    </div>
+                    <>
+                      <div className="flex items-center gap-2 relative z-10">
+                        <UserPlus className="w-4 h-4" />
+                        Create Account
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    </>
                   )}
                 </Button>
               </form>

@@ -302,7 +302,7 @@ export default function AdminLaunchPage() {
           <TabsContent value="countdown" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Countdown Configuration */}
-              <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-white">
                     <Settings className="w-5 h-5" />
@@ -328,7 +328,7 @@ export default function AdminLaunchPage() {
                           targetDate: new Date(e.target.value).toISOString(),
                         }))
                       }
-                      className="w-full"
+                      className="w-full bg-white/10 border-white/20 text-white"
                     />
                   </div>
 
@@ -346,12 +346,13 @@ export default function AdminLaunchPage() {
                         }))
                       }
                       placeholder="CharismaAI is Coming Soon"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                     />
                   </div>
 
                   {/* Subtitle */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-white">
                       Subtitle
                     </label>
                     <Textarea
@@ -364,6 +365,7 @@ export default function AdminLaunchPage() {
                       }
                       placeholder="Get ready for AI-powered communication insights"
                       rows={2}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                     />
                   </div>
 
@@ -371,7 +373,7 @@ export default function AdminLaunchPage() {
 
                   {/* Completion Messages */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-white">
                       Completion Title
                     </label>
                     <Input
@@ -383,11 +385,12 @@ export default function AdminLaunchPage() {
                         }))
                       }
                       placeholder="CharismaAI is Now Live!"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-white">
                       Completion Subtitle
                     </label>
                     <Textarea
@@ -400,35 +403,36 @@ export default function AdminLaunchPage() {
                       }
                       placeholder="Start analyzing your conversations today"
                       rows={2}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                     />
                   </div>
                 </CardContent>
               </Card>
 
               {/* Display Options */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-white">
                     <Eye className="w-5 h-5" />
                     Display Options
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-white/60">
                     Choose which elements to display in the countdown
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Active Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
                     <div>
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-white">
                         Countdown Active
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-white/60">
                         Show countdown on landing page
                       </div>
                     </div>
                     <Button
-                      variant={countdownData.isActive ? "default" : "outline"}
+                      variant={countdownData.isActive ? "secondary" : "outline"}
                       size="sm"
                       onClick={() =>
                         setCountdownData((prev) => ({
@@ -447,7 +451,7 @@ export default function AdminLaunchPage() {
 
                   {/* Time Unit Toggles */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-white">
                       Show Time Units
                     </label>
                     <div className="space-y-2">
@@ -461,7 +465,7 @@ export default function AdminLaunchPage() {
                           key={key}
                           className="flex items-center justify-between"
                         >
-                          <span className="text-sm text-gray-600">{label}</span>
+                          <span className="text-sm text-white/70">{label}</span>
                           <input
                             type="checkbox"
                             checked={
@@ -475,7 +479,7 @@ export default function AdminLaunchPage() {
                                 [key]: e.target.checked,
                               }))
                             }
-                            className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            className="rounded border-white/30 bg-white/10 text-purple-400 focus:ring-purple-400"
                           />
                         </div>
                       ))}
@@ -488,7 +492,7 @@ export default function AdminLaunchPage() {
                   <Button
                     onClick={handleSaveCountdown}
                     disabled={isSaving}
-                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white h-12 touch-manipulation hover:scale-[1.02] transition-all duration-300"
                   >
                     {isSaving ? (
                       <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -506,15 +510,15 @@ export default function AdminLaunchPage() {
           <TabsContent value="waiting-list" className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
                 <CardContent className="p-6">
                   <div className="flex items-center">
                     <Users className="w-8 h-8 text-purple-600" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-white/70">
                         Total Signups
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-white">
                         {waitingListStats.totalSignups}
                       </p>
                     </div>
@@ -522,15 +526,15 @@ export default function AdminLaunchPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
                 <CardContent className="p-6">
                   <div className="flex items-center">
                     <Mail className="w-8 h-8 text-blue-600" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-white/70">
                         Notified Users
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-white">
                         {waitingListStats.notifiedCount}
                       </p>
                     </div>
@@ -538,15 +542,15 @@ export default function AdminLaunchPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
                 <CardContent className="p-6">
                   <div className="flex items-center">
                     <Clock className="w-8 h-8 text-green-600" />
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-white/70">
                         Recent (7 days)
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-white">
                         {waitingListStats.recentSignups}
                       </p>
                     </div>
@@ -556,16 +560,20 @@ export default function AdminLaunchPage() {
             </div>
 
             {/* Waiting List Table */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Waiting List Entries</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-white">Waiting List Entries</CardTitle>
+                    <CardDescription className="text-white/60">
                       Manage users waiting for access
                     </CardDescription>
                   </div>
-                  <Button onClick={exportWaitingList} variant="outline">
+                  <Button 
+                    onClick={exportWaitingList} 
+                    variant="outline"
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-10 touch-manipulation hover:scale-105 transition-all duration-300"
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Export CSV
                   </Button>
@@ -575,36 +583,36 @@ export default function AdminLaunchPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-2">#</th>
-                        <th className="text-left p-2">Name</th>
-                        <th className="text-left p-2">Email</th>
-                        <th className="text-left p-2">Company</th>
-                        <th className="text-left p-2">Use Case</th>
-                        <th className="text-left p-2">Source</th>
-                        <th className="text-left p-2">Signup Date</th>
-                        <th className="text-left p-2">Status</th>
+                      <tr className="border-b border-white/20">
+                        <th className="text-left p-2 text-white">#</th>
+                        <th className="text-left p-2 text-white">Name</th>
+                        <th className="text-left p-2 text-white">Email</th>
+                        <th className="text-left p-2 text-white">Company</th>
+                        <th className="text-left p-2 text-white">Use Case</th>
+                        <th className="text-left p-2 text-white">Source</th>
+                        <th className="text-left p-2 text-white">Signup Date</th>
+                        <th className="text-left p-2 text-white">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {waitingList.map((entry) => (
                         <tr
                           key={entry.id}
-                          className="border-b hover:bg-gray-50"
+                          className="border-b border-white/10 hover:bg-white/5"
                         >
-                          <td className="p-2 font-medium">#{entry.position}</td>
-                          <td className="p-2">{entry.name}</td>
-                          <td className="p-2">{entry.email}</td>
-                          <td className="p-2">{entry.company || "-"}</td>
-                          <td className="p-2">{entry.useCase || "-"}</td>
-                          <td className="p-2">{entry.source || "-"}</td>
-                          <td className="p-2">
+                          <td className="p-2 font-medium text-white">#{entry.position}</td>
+                          <td className="p-2 text-white/80">{entry.name}</td>
+                          <td className="p-2 text-white/80">{entry.email}</td>
+                          <td className="p-2 text-white/70">{entry.company || "-"}</td>
+                          <td className="p-2 text-white/70">{entry.useCase || "-"}</td>
+                          <td className="p-2 text-white/70">{entry.source || "-"}</td>
+                          <td className="p-2 text-white/70">
                             {new Date(entry.createdAt).toLocaleDateString()}
                           </td>
                           <td className="p-2">
                             <Badge
                               variant={
-                                entry.isNotified ? "default" : "secondary"
+                                entry.isNotified ? "secondary" : "outline"
                               }
                             >
                               {entry.isNotified ? "Notified" : "Waiting"}
@@ -616,7 +624,7 @@ export default function AdminLaunchPage() {
                   </table>
 
                   {waitingList.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-white/60">
                       No waiting list entries yet
                     </div>
                   )}
@@ -627,21 +635,21 @@ export default function AdminLaunchPage() {
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <BarChart3 className="w-5 h-5" />
                   Launch Analytics
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-white/60">
                   Track launch performance and user engagement
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>Analytics dashboard coming soon</p>
-                  <p className="text-sm">
+                <div className="text-center py-8 text-white/60">
+                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-white/30" />
+                  <p className="text-white">Analytics dashboard coming soon</p>
+                  <p className="text-sm text-white/70">
                     Track signup rates, conversion metrics, and user engagement
                   </p>
                 </div>

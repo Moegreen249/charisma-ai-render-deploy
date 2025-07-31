@@ -41,6 +41,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RichTextEditor } from '@/components/editor/RichTextEditor';
 
 interface BlogPost {
   id: string;
@@ -278,10 +279,19 @@ export default function BlogManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
-      <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6 relative overflow-hidden">
+      {/* Neural background particles - blog theme */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-32 left-8 sm:left-20 w-2 h-2 bg-purple-400/20 rounded-full animate-pulse motion-reduce:animate-none"></div>
+        <div className="absolute top-48 right-12 sm:right-32 w-1 h-1 bg-cyan-400/25 rounded-full animate-ping motion-reduce:animate-none"></div>
+        <div className="absolute bottom-32 left-6 sm:left-16 w-1.5 h-1.5 bg-blue-400/20 rounded-full animate-pulse motion-reduce:animate-none" style={{animationDelay: '1.5s'}}></div>
+        <div className="absolute bottom-12 right-20 w-1 h-1 bg-green-400/25 rounded-full animate-ping motion-reduce:animate-none" style={{animationDelay: '2.3s'}}></div>
+        <div className="absolute top-1/3 left-32 w-2 h-2 bg-indigo-300/15 rounded-full animate-pulse motion-reduce:animate-none" style={{animationDelay: '0.8s'}}></div>
+      </div>
+      
+      <div className="space-y-6 relative z-10">
         {/* Header */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6">
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-white flex items-center">
@@ -293,18 +303,26 @@ export default function BlogManagementPage() {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+              <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
                 <Sparkles className="w-3 h-3 mr-1" />
                 {posts.length} Posts
               </Badge>
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-green-600 hover:bg-green-700 text-white">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Post
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700">
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => window.location.href = '/admin/blog/editor'}
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white h-12 touch-manipulation hover:scale-[1.02] transition-all duration-300"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Professional Editor
+                </Button>
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-12 touch-manipulation hover:scale-[1.02] transition-all duration-300">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Quick Create
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700">
                   <DialogHeader>
                     <DialogTitle className="text-white">Create New Blog Post</DialogTitle>
                     <DialogDescription className="text-gray-300">
@@ -335,14 +353,20 @@ export default function BlogManagementPage() {
                     </div>
                     <div>
                       <Label htmlFor="content" className="text-white">Content</Label>
-                      <Textarea
-                        id="content"
-                        value={formData.content}
-                        onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                        placeholder="Write your blog post content here..."
-                        className="bg-gray-800 border-gray-600 text-white"
-                        rows={10}
-                      />
+                      <div className="mt-2">
+                        <RichTextEditor
+                          value={formData.content}
+                          onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                          placeholder="Write your blog post content here..."
+                          height="400px"
+                          features={{
+                            aiAssistant: true,
+                            templates: true,
+                            export: false,
+                            fullscreen: true,
+                          }}
+                        />
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
@@ -388,14 +412,15 @@ export default function BlogManagementPage() {
                       <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={handleCreatePost} className="bg-green-600 hover:bg-green-700">
+                      <Button onClick={handleCreatePost} className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 h-12 touch-manipulation hover:scale-[1.02] transition-all duration-300">
                         <Save className="w-4 h-4 mr-2" />
                         Create Post
                       </Button>
                     </div>
                   </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </div>
         </div>
@@ -412,7 +437,7 @@ export default function BlogManagementPage() {
         )}
 
         {/* Filters and Search */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
           <CardHeader>
             <CardTitle className="text-white">Filter Posts</CardTitle>
           </CardHeader>
@@ -466,7 +491,7 @@ export default function BlogManagementPage() {
                     setFilterStatus('all');
                     setFilterCategory('all');
                   }}
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-12 touch-manipulation hover:scale-[1.02] transition-all duration-300"
                 >
                   Clear Filters
                 </Button>
@@ -476,7 +501,7 @@ export default function BlogManagementPage() {
         </Card>
 
         {/* Posts Table */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group">
           <CardHeader>
             <CardTitle className="text-white">Blog Posts ({filteredPosts.length})</CardTitle>
           </CardHeader>
@@ -525,8 +550,9 @@ export default function BlogManagementPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => openEditDialog(post)}
-                            className="bg-blue-600/20 border-blue-500/30 text-blue-300 hover:bg-blue-600/30"
+                            onClick={() => window.location.href = `/admin/blog/editor?id=${post.id}`}
+                            className="bg-blue-600/20 border-blue-500/30 text-blue-300 hover:bg-blue-600/30 touch-manipulation hover:scale-105 transition-all duration-300"
+                            title="Edit in Professional Editor"
                           >
                             <Edit className="w-3 h-3" />
                           </Button>
@@ -534,7 +560,7 @@ export default function BlogManagementPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleDeletePost(post.id)}
-                            className="bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-600/30"
+                            className="bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-600/30 touch-manipulation hover:scale-105 transition-all duration-300"
                           >
                             <Trash2 className="w-3 h-3" />
                           </Button>
@@ -579,13 +605,20 @@ export default function BlogManagementPage() {
               </div>
               <div>
                 <Label htmlFor="edit-content" className="text-white">Content</Label>
-                <Textarea
-                  id="edit-content"
-                  value={formData.content}
-                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white"
-                  rows={10}
-                />
+                <div className="mt-2">
+                  <RichTextEditor
+                    value={formData.content}
+                    onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                    placeholder="Edit your blog post content..."
+                    height="400px"
+                    features={{
+                      aiAssistant: true,
+                      templates: true,
+                      export: true,
+                      fullscreen: true,
+                    }}
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -630,7 +663,7 @@ export default function BlogManagementPage() {
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleEditPost} className="bg-blue-600 hover:bg-blue-700">
+                <Button onClick={handleEditPost} className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 h-12 touch-manipulation hover:scale-[1.02] transition-all duration-300">
                   <Save className="w-4 h-4 mr-2" />
                   Update Post
                 </Button>

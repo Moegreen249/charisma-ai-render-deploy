@@ -21,13 +21,20 @@ export default async function AdminModulesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-4 relative overflow-hidden">
+        {/* Neural background particles - error state */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-32 left-20 w-2 h-2 bg-red-400/20 rounded-full animate-pulse"></div>
+          <div className="absolute top-48 right-32 w-1 h-1 bg-orange-400/25 rounded-full animate-ping"></div>
+          <div className="absolute bottom-40 left-16 w-1.5 h-1.5 bg-red-300/15 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center py-12 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 mt-20">
+            <h1 className="text-2xl font-bold text-red-400 mb-4">
               Error Loading Modules
             </h1>
-            <p className="text-muted-foreground">{error}</p>
+            <p className="text-white/70">{error}</p>
           </div>
         </div>
       </div>
@@ -35,14 +42,23 @@ export default async function AdminModulesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-4 relative overflow-hidden">
+      {/* Neural background particles - modules theme */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-24 left-16 w-2 h-2 bg-purple-400/20 rounded-full animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-1 h-1 bg-cyan-400/25 rounded-full animate-ping"></div>
+        <div className="absolute top-2/3 left-12 w-1.5 h-1.5 bg-blue-400/20 rounded-full animate-pulse" style={{animationDelay: '1.3s'}}></div>
+        <div className="absolute bottom-32 right-28 w-1 h-1 bg-indigo-400/25 rounded-full animate-ping" style={{animationDelay: '2.1s'}}></div>
+        <div className="absolute bottom-16 left-24 w-2 h-2 bg-purple-300/15 rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
+            <div className="p-3 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300">
               <svg
-                className="h-8 w-8 text-primary"
+                className="h-8 w-8 text-purple-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -56,8 +72,8 @@ export default async function AdminModulesPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Prompt Engineering Studio</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-3xl font-bold text-white">Prompt Engineering Studio</h1>
+              <p className="text-white/70">
                 Manage AI analysis modules and their prompts
               </p>
             </div>

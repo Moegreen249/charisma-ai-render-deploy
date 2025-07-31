@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { themeConfig } from '@/lib/theme-config';
 import { cn } from '@/lib/utils';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -168,9 +169,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </div>
 
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
-              <Bell className="w-5 h-5" />
-            </Button>
+            <div className="relative">
+              <NotificationBell className="h-10 w-10 p-2 rounded-lg bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-200" />
+            </div>
           </div>
         </header>
 
