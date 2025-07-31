@@ -31,7 +31,7 @@ export async function GET() {
     const [userCount, analysisCount, activeJobs] = await Promise.all([
       prisma.user.count(),
       prisma.analysis.count(),
-      prisma.backgroundJob.count({ where: { status: 'RUNNING' } })
+      prisma.backgroundJob.count({ where: { status: 'PROCESSING' } })
     ]);
 
     // Check database connectivity
