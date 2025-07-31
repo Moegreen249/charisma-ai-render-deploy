@@ -129,7 +129,12 @@ export default function BackgroundProcessingView({
             }
           }
         } else {
-          console.error("Failed to fetch job status:", response.status);
+          const errorText = await response.text();
+          console.error("Failed to fetch job status:", {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText
+          });
         }
       } catch (error) {
         console.error("Error polling job status:", error);

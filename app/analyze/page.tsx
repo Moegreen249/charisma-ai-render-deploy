@@ -166,8 +166,21 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to start analysis");
+        const errorText = await response.text();
+        console.error("Analysis request failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || "Failed to start analysis" };
+        }
+        
+        throw new Error(errorData.error || `Server error (${response.status}): ${response.statusText}`);
       }
 
       const result = await response.json();

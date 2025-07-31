@@ -576,7 +576,7 @@ export class BackgroundJobProcessor {
           throw new Error("No response from OpenAI");
         }
 
-        console.log("Google AI response length:", content.length);
+        console.log("OpenAI response length:", content.length);
         console.log("Response starts with:", content.substring(0, 50));
         console.log(
           "Response ends with:",
