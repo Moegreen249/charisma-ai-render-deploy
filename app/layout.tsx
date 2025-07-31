@@ -4,8 +4,6 @@ import "./globals.css";
 import "./rtl-globals.css";
 import "@xyflow/react/dist/style.css";
 import Providers from "@/components/Providers";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import { prisma } from "@/lib/prisma";
 
@@ -92,17 +90,13 @@ export default async function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#a855f7" />
       </head>
-      <body className={`${roboto.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}>
+      <body className={`${roboto.variable} antialiased min-h-screen`}>
         <AnalyticsProvider
           googleAnalyticsId={seoSettings?.googleAnalyticsId || undefined}
           vercelAnalytics={seoSettings?.vercelAnalytics ?? true}
         >
           <Providers>
-            <Header />
-            <main className="flex-grow">
-              {children}
-            </main>
-            <Footer />
+            {children}
           </Providers>
         </AnalyticsProvider>
       </body>

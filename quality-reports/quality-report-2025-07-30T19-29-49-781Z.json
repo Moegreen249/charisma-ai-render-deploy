@@ -1,0 +1,45 @@
+{
+  "timestamp": "2025-07-30T19:29:49.782Z",
+  "duration": 539257,
+  "summary": {
+    "totalChecks": 4,
+    "passed": 1,
+    "failed": 3,
+    "totalErrors": 6540,
+    "totalWarnings": 542
+  },
+  "results": [
+    {
+      "name": "TypeScript Compilation",
+      "passed": true,
+      "errors": 0,
+      "warnings": 0,
+      "output": "",
+      "duration": 119017
+    },
+    {
+      "name": "ESLint",
+      "passed": false,
+      "errors": 6538,
+      "warnings": 542,
+      "output": "[{\"filePath\":\"D:\\\\projects\\\\charisma-ai-render-deploy-admin-ui\\\\charisma-ai-render-deploy\\\\app\\\\actions\\\\analyze.ts\",\"messages\":[{\"ruleId\":\"@typescript-eslint/no-explicit-any\",\"severity\":1,\"message\":\"Unexpected any. Specify a different type.\",\"line\":317,\"column\":21,\"nodeType\":\"TSAnyKeyword\",\"messageId\":\"unexpectedAny\",\"endLine\":317,\"endColumn\":24,\"suggestions\":[{\"messageId\":\"suggestUnknown\",\"fix\":{\"range\":[9713,9716],\"text\":\"unknown\"},\"desc\":\"Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct.\"},{\"messageId\":\"suggestNever\",\"fix\":{\"range\":[9713,9716],\"text\":\"never\"},\"desc\":\"Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of.\"}]},{\"ruleId\":\"@typescript-eslint/no-explicit-any\",\"severity\":1,\"message\":\"Unexpected any. Specify a different type.\",\"line\":413,\"column\":32,\"nodeType\":\"TSAnyKeyword\",\"messageId\":\"unexpectedAny\",\"endLine\":413,\"endColumn\":35,\"suggestions\":[{\"messageId\":\"su",
+      "duration": 177924
+    },
+    {
+      "name": "Build Test",
+      "passed": false,
+      "errors": 1,
+      "warnings": 0,
+      "output": "\n> charisma-ai@0.1.0 build\n> next build\n\n   ▲ Next.js 15.4.1\n   - Environments: .env.local, .env\n\n   Creating an optimized production build ...\n",
+      "duration": 185016
+    },
+    {
+      "name": "Prettier Format Check",
+      "passed": false,
+      "errors": 1,
+      "warnings": 0,
+      "output": "Checking formatting...\n",
+      "duration": 57222
+    }
+  ]
+}

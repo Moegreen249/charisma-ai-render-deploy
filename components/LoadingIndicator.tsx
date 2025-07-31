@@ -2,6 +2,8 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { themeConfig } from "@/lib/theme-config";
+import { cn } from "@/lib/utils";
 
 export default function LoadingIndicator() {
   return (
@@ -15,7 +17,7 @@ export default function LoadingIndicator() {
       <div className="relative w-24 h-24">
         {/* Outer ring */}
         <motion.div
-          className="absolute inset-0 border-4 border-primary/20 rounded-full"
+          className="absolute inset-0 border-4 border-purple-400/20 rounded-full"
           animate={{
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.1, 0.3],
@@ -29,7 +31,7 @@ export default function LoadingIndicator() {
 
         {/* Middle ring */}
         <motion.div
-          className="absolute inset-2 border-4 border-primary/40 rounded-full"
+          className="absolute inset-2 border-4 border-purple-400/40 rounded-full"
           animate={{
             scale: [1, 1.1, 1],
             opacity: [0.5, 0.2, 0.5],
@@ -44,7 +46,7 @@ export default function LoadingIndicator() {
 
         {/* Inner spinning circle */}
         <motion.div
-          className="absolute inset-4 border-4 border-primary border-t-transparent rounded-full"
+          className="absolute inset-4 border-4 border-purple-400 border-t-transparent rounded-full"
           animate={{
             rotate: 360,
           }}
@@ -57,7 +59,7 @@ export default function LoadingIndicator() {
       </div>
 
       <motion.p
-        className="mt-8 text-lg font-medium text-foreground/80"
+        className={cn("mt-8 text-lg font-medium", themeConfig.typography.gradient)}
         animate={{
           opacity: [0.5, 1, 0.5],
         }}
@@ -71,7 +73,7 @@ export default function LoadingIndicator() {
       </motion.p>
 
       <motion.p
-        className="mt-2 text-sm text-muted-foreground"
+        className="mt-2 text-sm text-gray-400"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}

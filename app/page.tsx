@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CountdownTimer from "@/components/countdown-timer";
 import WaitingListForm from "@/components/waiting-list-form";
+import { UnifiedLayout } from "@/components/layout/UnifiedLayout";
 
 import Logo from "@/components/ui/logo";
 import {
@@ -37,12 +38,12 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showWaitingList, setShowWaitingList] = useState(true);
 
-  // Redirect authenticated users to analyze page
-  useEffect(() => {
-    if (status === "authenticated") {
-      window.location.href = "/analyze";
-    }
-  }, [status]);
+  // Optional: Redirect authenticated users to analyze page (disabled to allow home page access)
+  // useEffect(() => {
+  //   if (status === "authenticated") {
+  //     window.location.href = "/analyze";
+  //   }
+  // }, [status]);
 
   // Fetch launch countdown data
   useEffect(() => {
@@ -145,14 +146,15 @@ export default function HomePage() {
     );
   }
 
-  // Only show landing page to unauthenticated users
-  if (status === "authenticated") {
-    return null; // Will redirect via useEffect
-  }
+  // Show landing page to all users (authenticated and unauthenticated)
+  // if (status === "authenticated") {
+  //   return null; // Will redirect via useEffect
+  // }
 
   // Landing page for all users
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white overflow-hidden">
+    <UnifiedLayout variant="default" showFooter={true}>
+      <div className="text-white overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-12">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -265,7 +267,7 @@ export default function HomePage() {
       )}
 
       {/* Features Section */}
-      <section className="relative z-10 px-6 py-20">
+      <section id="features" className="relative z-10 px-6 py-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
@@ -315,7 +317,7 @@ export default function HomePage() {
       </section>
 
       {/* Use Cases Section */}
-      <section className="relative z-10 px-6 py-20">
+      <section id="use-cases" className="relative z-10 px-6 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white to-white/80">
@@ -417,6 +419,7 @@ export default function HomePage() {
           animation-delay: 4s;
         }
       `}</style>
-    </div>
+      </div>
+    </UnifiedLayout>
   );
 }

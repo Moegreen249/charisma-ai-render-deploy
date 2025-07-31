@@ -32,12 +32,29 @@ import {
   Filter,
   Grid,
   List,
+  Download,
+  Share2,
+  Printer,
+  Copy,
+  MoreHorizontal,
+  Maximize2,
+  RefreshCw,
+  GitCompare,
+  PieChart,
+  LineChart,
+  BarChart,
+  Calendar,
+  Clock,
+  Users,
+  Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { AnalysisResult, Insight } from "@/src/types";
 import { getTemplateById } from "@/app/actions/templates";
 import { useEnhancedLanguage } from "@/components/EnhancedLanguageProvider";
 import FlexibleInsightRenderer from "@/components/FlexibleInsightRenderer";
+import { themeConfig } from "@/lib/theme-config";
+import { cn } from "@/lib/utils";
 
 interface EnhancedAnalysisViewProps {
   analysisData: AnalysisResult;
@@ -55,7 +72,7 @@ const getCategoryInfo = (category: string, t: any) => {
     psychology: {
       title: t.psychologyInsights || "Psychology",
       icon: Brain,
-      color: "text-purple-600 bg-purple-100 border-purple-200",
+      color: "text-purple-300 bg-purple-500/20 border-purple-500/30",
       description:
         t.psychologyDescription ||
         "Deep psychological analysis and behavioral patterns",
@@ -63,7 +80,7 @@ const getCategoryInfo = (category: string, t: any) => {
     relationship: {
       title: t.relationshipInsights || "Relationship",
       icon: Heart,
-      color: "text-pink-600 bg-pink-100 border-pink-200",
+      color: "text-pink-300 bg-pink-500/20 border-pink-500/30",
       description:
         t.relationshipDescription ||
         "Relationship dynamics and interpersonal connections",
@@ -71,7 +88,7 @@ const getCategoryInfo = (category: string, t: any) => {
     communication: {
       title: t.communicationInsights || "Communication",
       icon: MessageCircle,
-      color: "text-blue-600 bg-blue-100 border-blue-200",
+      color: "text-blue-300 bg-blue-500/20 border-blue-500/30",
       description:
         t.communicationDescription ||
         "Communication patterns and effectiveness",
@@ -79,60 +96,60 @@ const getCategoryInfo = (category: string, t: any) => {
     emotional: {
       title: t.emotionalInsights || "Emotional",
       icon: Heart,
-      color: "text-red-600 bg-red-100 border-red-200",
+      color: "text-red-300 bg-red-500/20 border-red-500/30",
       description:
         t.emotionalDescription || "Emotional intelligence and regulation",
     },
     leadership: {
       title: t.leadershipInsights || "Leadership",
       icon: Target,
-      color: "text-indigo-600 bg-indigo-100 border-indigo-200",
+      color: "text-indigo-300 bg-indigo-500/20 border-indigo-500/30",
       description:
         t.leadershipDescription || "Leadership competencies and team dynamics",
     },
     business: {
       title: t.businessInsights || "Business",
       icon: BarChart3,
-      color: "text-green-600 bg-green-100 border-green-200",
+      color: "text-green-300 bg-green-500/20 border-green-500/30",
       description:
         t.businessDescription || "Professional and business analysis",
     },
     coaching: {
       title: t.coachingInsights || "Coaching",
       icon: Award,
-      color: "text-yellow-600 bg-yellow-100 border-yellow-200",
+      color: "text-yellow-300 bg-yellow-500/20 border-yellow-500/30",
       description: t.coachingDescription || "Development and goal achievement",
     },
     clinical: {
       title: t.clinicalInsights || "Clinical",
       icon: Shield,
-      color: "text-teal-600 bg-teal-100 border-teal-200",
+      color: "text-teal-300 bg-teal-500/20 border-teal-500/30",
       description:
         t.clinicalDescription || "Therapeutic and mental health indicators",
     },
     data: {
       title: t.dataInsights || "Data",
       icon: Activity,
-      color: "text-cyan-600 bg-cyan-100 border-cyan-200",
+      color: "text-cyan-300 bg-cyan-500/20 border-cyan-500/30",
       description: t.dataDescription || "Quantitative analysis and metrics",
     },
     subtext: {
       title: t.subtextInsights || "Subtext",
       icon: Eye,
-      color: "text-orange-600 bg-orange-100 border-orange-200",
+      color: "text-orange-300 bg-orange-500/20 border-orange-500/30",
       description: t.subtextDescription || "Hidden meanings and intentions",
     },
     predictive: {
       title: t.predictiveInsights || "Predictive",
       icon: TrendingUp,
-      color: "text-violet-600 bg-violet-100 border-violet-200",
+      color: "text-violet-300 bg-violet-500/20 border-violet-500/30",
       description:
         t.predictiveDescription || "Future trajectory and forecasting",
     },
     general: {
       title: t.generalInsights || "General",
       icon: Sparkles,
-      color: "text-gray-600 bg-gray-100 border-gray-200",
+      color: "text-gray-300 bg-gray-500/20 border-gray-500/30",
       description: t.generalDescription || "General analysis and observations",
     },
   };
@@ -145,24 +162,24 @@ const getPriorityInfo = (priority: number) => {
   if (priority >= 5)
     return {
       label: "Critical",
-      color: "bg-red-500",
-      textColor: "text-red-700",
+      color: "bg-red-500/20 border-red-500/30",
+      textColor: "text-red-300",
     };
   if (priority >= 4)
     return {
       label: "High",
-      color: "bg-orange-500",
-      textColor: "text-orange-700",
+      color: "bg-orange-500/20 border-orange-500/30",
+      textColor: "text-orange-300",
     };
   if (priority >= 3)
     return {
       label: "Medium",
-      color: "bg-blue-500",
-      textColor: "text-blue-700",
+      color: "bg-blue-500/20 border-blue-500/30",
+      textColor: "text-blue-300",
     };
   if (priority >= 2)
-    return { label: "Low", color: "bg-green-500", textColor: "text-green-700" };
-  return { label: "Info", color: "bg-gray-500", textColor: "text-gray-700" };
+    return { label: "Low", color: "bg-green-500/20 border-green-500/30", textColor: "text-green-300" };
+  return { label: "Info", color: "bg-gray-500/20 border-gray-500/30", textColor: "text-gray-300" };
 };
 
 export default function EnhancedAnalysisView({
@@ -177,6 +194,9 @@ export default function EnhancedAnalysisView({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [template, setTemplate] = useState<any>(null);
   const [expandedInsight, setExpandedInsight] = useState<string | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [comparisonMode, setComparisonMode] = useState(false);
+  const [chartType, setChartType] = useState<"pie" | "bar" | "line">("pie");
 
   useEffect(() => {
     const loadTemplate = async () => {
@@ -255,34 +275,41 @@ export default function EnhancedAnalysisView({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`min-h-screen bg-background p-4 ${direction === "rtl" ? "rtl" : "ltr"}`}
+      className={`min-h-screen p-4 ${direction === "rtl" ? "rtl" : "ltr"}`}
       dir={direction}
     >
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Enhanced Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl">
-              <BarChart3 className="h-8 w-8 text-primary" />
+            <div className={cn(
+              "p-3 rounded-xl",
+              "bg-gradient-to-br from-purple-500/20 to-blue-500/20",
+              "border border-white/20"
+            )}>
+              <BarChart3 className="h-8 w-8 text-purple-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <h1 className={cn(
+                "text-3xl font-bold",
+                themeConfig.typography.gradient
+              )}>
                 {t.detailedAnalysis}
               </h1>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 {analysisData.detectedLanguage && (
-                  <Badge variant="secondary" className="gap-1">
+                  <Badge className="gap-1 bg-green-600/20 border-green-500/30 text-green-200">
                     <Globe className="h-3 w-3" />
                     {t.detectedLanguage}: {analysisData.detectedLanguage}
                   </Badge>
                 )}
                 {template && (
-                  <Badge variant="outline" className="gap-1">
+                  <Badge variant="outline" className="gap-1 border-white/20 text-white bg-white/5">
                     <span>{template.icon}</span>
                     {template.name}
                   </Badge>
                 )}
-                <Badge variant="secondary" className="gap-1">
+                <Badge className="gap-1 bg-blue-600/20 border-blue-500/30 text-blue-200">
                   <Sparkles className="h-3 w-3" />
                   {analysisData.insights?.length || 0}{" "}
                   {t.insights || "Insights"}
@@ -296,6 +323,11 @@ export default function EnhancedAnalysisView({
               variant="outline"
               size="sm"
               onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+              className={cn(
+                "bg-white/10 border-white/20 text-white",
+                "hover:bg-white/20 hover:border-white/30",
+                themeConfig.animation.transition
+              )}
             >
               {viewMode === "grid" ? (
                 <List className="h-4 w-4" />
@@ -305,7 +337,15 @@ export default function EnhancedAnalysisView({
             </Button>
             <Button
               onClick={() => setCoachOpen && setCoachOpen(true)}
-              className="gap-2"
+              className={cn(
+                "gap-2",
+                "bg-gradient-to-r",
+                themeConfig.colors.gradients.button,
+                "text-white font-medium",
+                "hover:opacity-90",
+                themeConfig.animation.transition,
+                themeConfig.animation.hover
+              )}
               disabled={!setCoachOpen}
             >
               <MessageCircle className="h-4 w-4" />
@@ -320,29 +360,64 @@ export default function EnhancedAnalysisView({
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">{t.overview}</TabsTrigger>
-            <TabsTrigger value="insights">
+          <TabsList className={cn(
+            "grid w-full grid-cols-4",
+            "bg-white/5 border border-white/10"
+          )}>
+            <TabsTrigger 
+              value="overview"
+              className="text-white data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
+              {t.overview}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="insights"
+              className="text-white data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
               {t.insights || "Insights"}
             </TabsTrigger>
-            <TabsTrigger value="categories">
+            <TabsTrigger 
+              value="categories"
+              className="text-white data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
               {t.categories || "Categories"}
             </TabsTrigger>
-            <TabsTrigger value="metrics">{t.metrics || "Metrics"}</TabsTrigger>
+            <TabsTrigger 
+              value="metrics"
+              className="text-white data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
+              {t.metrics || "Metrics"}
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             {/* Executive Summary Card */}
-            <Card className="border-l-4 border-l-primary">
+            <Card className={cn(
+              "border-l-4 border-l-purple-500",
+              themeConfig.colors.glass.background,
+              themeConfig.colors.glass.border,
+              themeConfig.colors.glass.shadow,
+              "border"
+            )}>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <Network className="h-5 w-5" />
                   {t.overallSummary}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-lg leading-relaxed text-muted-foreground">
+                <p 
+                  className="text-lg leading-relaxed text-gray-300"
+                  dir="auto"
+                  style={{
+                    unicodeBidi: 'plaintext',
+                    textAlign: 'start',
+                    lineHeight: '1.6',
+                    wordBreak: 'break-word',
+                    textRendering: 'optimizeLegibility'
+                  }}
+                >
                   {analysisData.overallSummary}
                 </p>
               </CardContent>
@@ -350,82 +425,107 @@ export default function EnhancedAnalysisView({
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card>
+              <Card className={cn(
+                themeConfig.colors.glass.background,
+                themeConfig.colors.glass.border,
+                themeConfig.colors.glass.shadow,
+                "border"
+              )}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-400">
                         {t.totalInsights || "Total Insights"}
                       </p>
-                      <p className="text-2xl font-bold text-primary">
+                      <p className="text-2xl font-bold text-purple-400">
                         {analysisData.insights?.length || 0}
                       </p>
                     </div>
-                    <Sparkles className="h-8 w-8 text-primary/60" />
+                    <Sparkles className="h-8 w-8 text-purple-400/60" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className={cn(
+                themeConfig.colors.glass.background,
+                themeConfig.colors.glass.border,
+                themeConfig.colors.glass.shadow,
+                "border"
+              )}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-400">
                         {t.categories || "Categories"}
                       </p>
-                      <p className="text-2xl font-bold text-primary">
+                      <p className="text-2xl font-bold text-purple-400">
                         {categoryStats.length}
                       </p>
                     </div>
-                    <Hash className="h-8 w-8 text-primary/60" />
+                    <Hash className="h-8 w-8 text-purple-400/60" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className={cn(
+                themeConfig.colors.glass.background,
+                themeConfig.colors.glass.border,
+                themeConfig.colors.glass.shadow,
+                "border"
+              )}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-400">
                         {t.highPriority || "High Priority"}
                       </p>
-                      <p className="text-2xl font-bold text-orange-600">
+                      <p className="text-2xl font-bold text-orange-400">
                         {categoryStats.reduce(
                           (sum, cat) => sum + cat.highPriority,
                           0,
                         )}
                       </p>
                     </div>
-                    <AlertTriangle className="h-8 w-8 text-orange-500/60" />
+                    <AlertTriangle className="h-8 w-8 text-orange-400/60" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className={cn(
+                themeConfig.colors.glass.background,
+                themeConfig.colors.glass.border,
+                themeConfig.colors.glass.shadow,
+                "border"
+              )}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-400">
                         {t.keyMetrics || "Key Metrics"}
                       </p>
-                      <p className="text-2xl font-bold text-primary">
+                      <p className="text-2xl font-bold text-purple-400">
                         {keyMetrics.length}
                       </p>
                     </div>
-                    <BarChart3 className="h-8 w-8 text-primary/60" />
+                    <BarChart3 className="h-8 w-8 text-purple-400/60" />
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Top Priority Insights */}
-            <Card>
+            <Card className={cn(
+              themeConfig.colors.glass.background,
+              themeConfig.colors.glass.border,
+              themeConfig.colors.glass.shadow,
+              "border"
+            )}>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <Star className="h-5 w-5" />
                   {t.topPriorityInsights || "Top Priority Insights"}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-400">
                   {t.mostImportantFindings ||
                     "Most important findings from the analysis"}
                 </CardDescription>
@@ -467,7 +567,7 @@ export default function EnhancedAnalysisView({
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium text-white">
                   {t.filterBy || "Filter by"}:
                 </span>
               </div>
@@ -475,6 +575,12 @@ export default function EnhancedAnalysisView({
                 variant={selectedCategory === null ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(null)}
+                className={cn(
+                  selectedCategory === null 
+                    ? "bg-purple-600 hover:bg-purple-700 text-white" 
+                    : "bg-white/10 border-white/20 text-white hover:bg-white/20",
+                  themeConfig.animation.transition
+                )}
               >
                 {t.all || "All"} (
                 {Object.values(organizedInsights).flat().length})
@@ -488,7 +594,13 @@ export default function EnhancedAnalysisView({
                     }
                     size="sm"
                     onClick={() => setSelectedCategory(category)}
-                    className="gap-1"
+                    className={cn(
+                      "gap-1",
+                      selectedCategory === category 
+                        ? "bg-purple-600 hover:bg-purple-700 text-white" 
+                        : "bg-white/10 border-white/20 text-white hover:bg-white/20",
+                      themeConfig.animation.transition
+                    )}
                   >
                     <Icon className="h-3 w-3" />
                     {title} ({count})
@@ -526,7 +638,7 @@ export default function EnhancedAnalysisView({
                         </Badge>
                       )}
                       {insight.metadata?.confidence && (
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="border-white/30 text-white bg-white/10">
                           {Math.round(insight.metadata.confidence * 100)}%
                         </Badge>
                       )}
@@ -537,10 +649,15 @@ export default function EnhancedAnalysisView({
             </div>
 
             {filteredInsights.length === 0 && (
-              <Card>
+              <Card className={cn(
+                themeConfig.colors.glass.background,
+                themeConfig.colors.glass.border,
+                themeConfig.colors.glass.shadow,
+                "border"
+              )}>
                 <CardContent className="p-8 text-center">
-                  <Eye className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
+                  <Eye className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-400">
                     {t.noInsightsFound ||
                       "No insights found for the selected category."}
                   </p>
@@ -564,10 +681,17 @@ export default function EnhancedAnalysisView({
                 }) => (
                   <Card
                     key={category}
-                    className={`cursor-pointer hover:shadow-lg transition-all duration-200 border-l-4 ${color.split(" ")[2]}`}
+                    className={cn(
+                      "cursor-pointer hover:shadow-lg transition-all duration-200 border-l-4",
+                      color.split(" ")[2],
+                      themeConfig.colors.glass.background,
+                      themeConfig.colors.glass.border,
+                      themeConfig.colors.glass.shadow,
+                      "border"
+                    )}
                   >
                     <CardHeader className="pb-2">
-                      <CardTitle className="flex items-center justify-between">
+                      <CardTitle className="flex items-center justify-between text-white">
                         <div className="flex items-center gap-2">
                           <div className={`p-2 rounded-lg ${color}`}>
                             <Icon className="h-4 w-4" />
@@ -576,11 +700,11 @@ export default function EnhancedAnalysisView({
                         </div>
                         <Badge variant="secondary">{count}</Badge>
                       </CardTitle>
-                      <CardDescription>{description}</CardDescription>
+                      <CardDescription className="text-gray-400">{description}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">
+                        <span className="text-gray-400">
                           {t.highPriority || "High Priority"}
                         </span>
                         <Badge
@@ -614,13 +738,18 @@ export default function EnhancedAnalysisView({
           <TabsContent value="metrics" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {keyMetrics.map(({ key, value, label }) => (
-                <Card key={key}>
+                <Card key={key} className={cn(
+                  themeConfig.colors.glass.background,
+                  themeConfig.colors.glass.border,
+                  themeConfig.colors.glass.shadow,
+                  "border"
+                )}>
                   <CardContent className="p-4">
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-1">
+                      <p className="text-sm text-gray-400 mb-1">
                         {label}
                       </p>
-                      <p className="text-2xl font-bold text-primary">
+                      <p className="text-2xl font-bold text-purple-400">
                         {typeof value === "number" && value <= 1 && value >= 0
                           ? `${Math.round(value * 100)}%`
                           : String(value)}

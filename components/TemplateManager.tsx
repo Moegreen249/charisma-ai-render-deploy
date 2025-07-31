@@ -57,6 +57,8 @@ import {
   updateUserTemplate,
   deleteUserTemplate,
 } from "@/app/actions/user-templates";
+import { themeConfig } from "@/lib/theme-config";
+import { cn } from "@/lib/utils";
 
 interface TemplateManagerProps {
   onTemplateChange?: () => void;
@@ -276,31 +278,41 @@ export default function TemplateManager({
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading templates...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+        <span className="ml-2 text-white">Loading templates...</span>
       </div>
     );
   }
 
   if (!userId) {
     return (
-      <div className="p-8 text-center text-muted-foreground">
+      <div className="p-8 text-center text-gray-400">
         Please sign in to manage your custom templates.
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Template Management</h2>
-          <p className="text-muted-foreground">
-            Create and manage your custom analysis templates
-          </p>
-        </div>
-        <Button onClick={handleCreateNew} className="gap-2">
+      <div className="text-center mb-8">
+        <h2 className={cn("text-3xl font-bold mb-2", themeConfig.typography.gradient)}>
+          Template Management
+        </h2>
+        <p className="text-gray-300 mb-6">
+          Create and manage your custom analysis templates
+        </p>
+        <Button 
+          onClick={handleCreateNew} 
+          className={cn(
+            "gap-2",
+            "bg-gradient-to-r",
+            themeConfig.colors.gradients.button,
+            "text-white font-medium",
+            "hover:opacity-90",
+            themeConfig.animation.transition
+          )}
+        >
           <Plus className="h-4 w-4" />
           New Template
         </Button>
@@ -314,7 +326,7 @@ export default function TemplateManager({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <Alert>
+            <Alert className="bg-green-500/10 border-green-500/20 text-green-300">
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>Template saved successfully!</AlertDescription>
             </Alert>
@@ -327,7 +339,7 @@ export default function TemplateManager({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <Alert variant="destructive">
+            <Alert className="bg-red-500/10 border-red-500/20 text-red-300">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -342,19 +354,24 @@ export default function TemplateManager({
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
         >
-          <Card>
+          <Card className={cn(
+            themeConfig.colors.glass.background,
+            themeConfig.colors.glass.border,
+            themeConfig.colors.glass.shadow,
+            "border"
+          )}>
             <CardHeader>
-              <CardTitle>
+              <CardTitle className="text-white">
                 {editingTemplate ? "Edit Template" : "Create New Template"}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-300">
                 Configure your custom analysis template
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="name">Template Name</Label>
+                  <Label htmlFor="name" className="text-white">Template Name</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -362,20 +379,31 @@ export default function TemplateManager({
                       setFormData({ ...formData, name: e.target.value })
                     }
                     placeholder="Enter template name"
+                    className={cn(
+                      "mt-2",
+                      "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
+                      "focus:bg-white/20 focus:border-purple-400",
+                      themeConfig.animation.transition
+                    )}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category" className="text-white">Category</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) =>
                       setFormData({ ...formData, category: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={cn(
+                      "mt-2",
+                      "bg-white/10 border-white/20 text-white",
+                      "focus:bg-white/20 focus:border-purple-400",
+                      themeConfig.animation.transition
+                    )}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-gray-800 border-white/20 text-white">
                       <SelectItem value="general">General</SelectItem>
                       <SelectItem value="business">Business</SelectItem>
                       <SelectItem value="personal">Personal</SelectItem>
@@ -386,9 +414,9 @@ export default function TemplateManager({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="icon">Icon</Label>
+                  <Label htmlFor="icon" className="text-white">Icon</Label>
                   <Input
                     id="icon"
                     value={formData.icon}
@@ -397,10 +425,16 @@ export default function TemplateManager({
                     }
                     placeholder="🎯"
                     maxLength={10}
+                    className={cn(
+                      "mt-2",
+                      "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
+                      "focus:bg-white/20 focus:border-purple-400",
+                      themeConfig.animation.transition
+                    )}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description" className="text-white">Description</Label>
                   <Input
                     id="description"
                     value={formData.description}
@@ -408,12 +442,18 @@ export default function TemplateManager({
                       setFormData({ ...formData, description: e.target.value })
                     }
                     placeholder="Brief description of the template"
+                    className={cn(
+                      "mt-2",
+                      "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
+                      "focus:bg-white/20 focus:border-purple-400",
+                      themeConfig.animation.transition
+                    )}
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="systemPrompt">System Prompt</Label>
+                <Label htmlFor="systemPrompt" className="text-white">System Prompt</Label>
                 <Textarea
                   id="systemPrompt"
                   value={formData.systemPrompt}
@@ -422,11 +462,17 @@ export default function TemplateManager({
                   }
                   placeholder="Enter the system prompt for the AI"
                   rows={3}
+                  className={cn(
+                    "mt-2",
+                    "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
+                    "focus:bg-white/20 focus:border-purple-400",
+                    themeConfig.animation.transition
+                  )}
                 />
               </div>
 
               <div>
-                <Label htmlFor="analysisPrompt">Analysis Prompt</Label>
+                <Label htmlFor="analysisPrompt" className="text-white">Analysis Prompt</Label>
                 <Textarea
                   id="analysisPrompt"
                   value={formData.analysisPrompt}
@@ -435,15 +481,32 @@ export default function TemplateManager({
                   }
                   placeholder="Enter the analysis prompt template"
                   rows={10}
+                  className={cn(
+                    "mt-2",
+                    "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
+                    "focus:bg-white/20 focus:border-purple-400",
+                    themeConfig.animation.transition
+                  )}
                 />
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-gray-400 mt-2">
                   Use $&#123;chatContent&#125; to reference the conversation
                   content
                 </p>
               </div>
 
-              <div className="flex gap-2">
-                <Button onClick={handleSave} disabled={loading}>
+              <div className="flex flex-wrap gap-3 pt-4">
+                <Button 
+                  onClick={handleSave} 
+                  disabled={loading}
+                  className={cn(
+                    "gap-2",
+                    "bg-gradient-to-r",
+                    themeConfig.colors.gradients.button,
+                    "text-white font-medium",
+                    "hover:opacity-90",
+                    themeConfig.animation.transition
+                  )}
+                >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
@@ -451,11 +514,26 @@ export default function TemplateManager({
                   )}
                   Save Template
                 </Button>
-                <Button variant="outline" onClick={handleCancel}>
+                <Button 
+                  variant="outline" 
+                  onClick={handleCancel}
+                  className={cn(
+                    "border-white/20 text-white hover:bg-white/10",
+                    themeConfig.animation.transition
+                  )}
+                >
+                  <X className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>
-                <Button variant="outline" onClick={handleTestTemplate}>
-                  <Target className="h-4 w-4" />
+                <Button 
+                  variant="outline" 
+                  onClick={handleTestTemplate}
+                  className={cn(
+                    "border-purple-400/20 text-purple-400 hover:bg-purple-500/10",
+                    themeConfig.animation.transition
+                  )}
+                >
+                  <Target className="h-4 w-4 mr-2" />
                   Test Template
                 </Button>
               </div>
@@ -465,9 +543,9 @@ export default function TemplateManager({
       )}
 
       {/* Template List */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Your Templates</h3>
-        <div className="grid gap-4">
+      <div className="space-y-6">
+        <h3 className="text-xl font-semibold text-white">Your Templates</h3>
+        <div className="grid gap-6">
           {templates.map((template) => (
             <motion.div
               key={template.id || `builtin-${template.name}`}
@@ -475,28 +553,34 @@ export default function TemplateManager({
               animate={{ opacity: 1, y: 0 }}
               className="group"
             >
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
+              <Card className={cn(
+                "hover:shadow-lg transition-all duration-300",
+                themeConfig.colors.glass.background,
+                themeConfig.colors.glass.border,
+                themeConfig.colors.glass.shadow,
+                "border"
+              )}>
+                <CardContent className="p-6">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">{template.icon}</div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-3xl p-2 rounded-lg bg-white/10">{template.icon}</div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold">{template.name}</h4>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold text-white text-lg">{template.name}</h4>
                           {template.isBuiltIn && (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge className="text-xs bg-blue-500/20 border-blue-500/30 text-blue-200">
                               <Lock className="h-3 w-3 mr-1" />
                               Built-in
                             </Badge>
                           )}
                           <Badge
                             variant="outline"
-                            className="text-xs capitalize"
+                            className="text-xs capitalize border-white/20 text-white bg-white/5"
                           >
                             {template.category}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-gray-300">
                           {template.description}
                         </p>
                       </div>
@@ -507,6 +591,7 @@ export default function TemplateManager({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(template)}
+                          className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -515,31 +600,42 @@ export default function TemplateManager({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDuplicate(template)}
+                        className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
                       {!template.isBuiltIn && template.id && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent className={cn(
+                            themeConfig.colors.glass.background,
+                            themeConfig.colors.glass.border,
+                            "border text-white"
+                          )}>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>
+                              <AlertDialogTitle className="text-white">
                                 Delete Template
                               </AlertDialogTitle>
-                              <AlertDialogDescription>
+                              <AlertDialogDescription className="text-gray-300">
                                 Are you sure you want to delete "{template.name}
                                 "? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogCancel className="border-white/20 text-white hover:bg-white/10">
+                                Cancel
+                              </AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(template)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                className="bg-red-600 text-white hover:bg-red-700"
                               >
                                 Delete
                               </AlertDialogAction>

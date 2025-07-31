@@ -101,11 +101,11 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
     return (
       <div className={cn("text-center py-8", className)}>
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-48 mx-auto mb-8"></div>
+          <div className="h-8 bg-white/20 rounded w-64 mx-auto mb-4"></div>
+          <div className="h-4 bg-white/10 rounded w-48 mx-auto mb-8"></div>
           <div className="flex justify-center gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-gray-200 rounded-lg p-4 w-20 h-20"></div>
+              <div key={i} className="bg-white/10 border border-white/20 rounded-lg p-4 w-20 h-20"></div>
             ))}
           </div>
         </div>

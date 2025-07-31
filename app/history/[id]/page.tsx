@@ -3,12 +3,15 @@ import { authOptions } from "@/lib/auth-config";
 import { redirect, notFound } from "next/navigation";
 import { getAnalysisById } from "@/app/actions/history";
 import EnhancedAnalysisView from "@/components/EnhancedAnalysisView";
+import { UnifiedLayout } from "@/components/layout/UnifiedLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, Clock, Zap, Calendar } from "lucide-react";
+import { ArrowLeft, FileText, Clock, Zap, Calendar, BarChart3 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+import { themeConfig } from "@/lib/theme-config";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{
@@ -43,18 +46,18 @@ export default async function AnalysisPage({ params }: PageProps) {
 
   const getProviderBadge = (provider: string) => {
     const colors = {
-      google: "bg-primary/10 text-primary border-primary/20",
-      openai: "bg-green-500/10 text-green-500 border-green-500/20",
-      anthropic: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      google: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+      openai: "bg-green-500/20 text-green-300 border-green-500/30",
+      anthropic: "bg-purple-500/20 text-purple-300 border-purple-500/30",
     };
 
     return (
       <Badge
-        variant="outline"
-        className={
+        className={cn(
           colors[provider as keyof typeof colors] ||
-          "bg-muted text-muted-foreground border-border"
-        }
+          "bg-gray-500/20 text-gray-300 border-gray-500/30",
+          "border"
+        )}
       >
         {provider.toUpperCase()}
       </Badge>
@@ -62,83 +65,110 @@ export default async function AnalysisPage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-2">
+    <UnifiedLayout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Page Header */}
+          <div className="text-center mb-8">
+            <Badge className={cn("mb-4", themeConfig.colors.glass.background, themeConfig.colors.glass.border)}>
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analysis Report
+            </Badge>
+            <h1 className={cn("text-3xl font-bold mb-2", themeConfig.typography.gradient)}>
+              Analysis Details
+            </h1>
+            <p className="text-gray-400 mb-4">
+              {analysis.fileName}
+            </p>
             <Link href="/history">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                className={cn(
+                  "inline-flex items-center gap-2",
+                  "bg-white/5 border-white/20 text-white",
+                  "hover:bg-white/10 hover:border-white/30",
+                  themeConfig.animation.transition
+                )}
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to History
               </Button>
             </Link>
-            <div className="h-6 w-px bg-border" />
-            <div>
-              <h1 className="text-3xl font-bold text-card-foreground">
-                Analysis Details
-              </h1>
-              <p className="text-muted-foreground">{analysis.fileName}</p>
-            </div>
           </div>
-        </div>
         {/* Analysis Metadata */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className={cn(
+            themeConfig.colors.glass.background,
+            themeConfig.colors.glass.border,
+            themeConfig.colors.glass.shadow,
+            "border transition-all duration-300 hover:scale-105"
+          )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">File</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">File</CardTitle>
+              <FileText className="h-4 w-4 text-purple-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-sm font-medium truncate">
+              <div className="text-sm font-medium truncate text-white">
                 {analysis.fileName}
               </div>
-              <p className="text-xs text-muted-foreground">Analyzed file</p>
+              <p className="text-xs text-gray-400">Analyzed file</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={cn(
+            themeConfig.colors.glass.background,
+            themeConfig.colors.glass.border,
+            themeConfig.colors.glass.shadow,
+            "border transition-all duration-300 hover:scale-105"
+          )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Provider</CardTitle>
-              <Zap className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Provider</CardTitle>
+              <Zap className="h-4 w-4 text-yellow-400" />
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 {getProviderBadge(analysis.provider)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-gray-400 mt-1">
                 {analysis.modelId}
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={cn(
+            themeConfig.colors.glass.background,
+            themeConfig.colors.glass.border,
+            themeConfig.colors.glass.shadow,
+            "border transition-all duration-300 hover:scale-105"
+          )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Duration</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Duration</CardTitle>
+              <Clock className="h-4 w-4 text-blue-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-sm font-medium">
+              <div className="text-sm font-medium text-white">
                 {formatDuration(analysis.durationMs)}
               </div>
-              <p className="text-xs text-muted-foreground">Analysis time</p>
+              <p className="text-xs text-gray-400">Analysis time</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={cn(
+            themeConfig.colors.glass.background,
+            themeConfig.colors.glass.border,
+            themeConfig.colors.glass.shadow,
+            "border transition-all duration-300 hover:scale-105"
+          )}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Date</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Date</CardTitle>
+              <Calendar className="h-4 w-4 text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-sm font-medium">
+              <div className="text-sm font-medium text-white">
                 {format(new Date(analysis.createdAt), "MMM d, yyyy")}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-400">
                 {format(new Date(analysis.createdAt), "h:mm a")}
               </p>
             </CardContent>
@@ -146,14 +176,22 @@ export default async function AnalysisPage({ params }: PageProps) {
         </div>
 
         {/* Template Info */}
-        <Card className="mb-8">
+        <Card className={cn(
+          "mb-8",
+          themeConfig.colors.glass.background,
+          themeConfig.colors.glass.border,
+          themeConfig.colors.glass.shadow,
+          "border"
+        )}>
           <CardHeader>
-            <CardTitle className="text-lg">Analysis Template</CardTitle>
+            <CardTitle className="text-lg text-white">Analysis Template</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">{analysis.templateId}</Badge>
-              <span className="text-sm text-muted-foreground">
+              <Badge className="bg-purple-600/20 border-purple-500/30 text-purple-200">
+                {analysis.templateId}
+              </Badge>
+              <span className="text-sm text-gray-400">
                 Template used for this analysis
               </span>
             </div>
@@ -162,7 +200,7 @@ export default async function AnalysisPage({ params }: PageProps) {
 
         {/* Analysis Results */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-card-foreground">
+          <h2 className={cn("text-2xl font-bold mb-6", themeConfig.typography.gradient)}>
             Analysis Results
           </h2>
           <EnhancedAnalysisView
@@ -170,7 +208,8 @@ export default async function AnalysisPage({ params }: PageProps) {
             templateId={analysis.templateId}
           />
         </div>
+        </div>
       </div>
-    </div>
+    </UnifiedLayout>
   );
 }

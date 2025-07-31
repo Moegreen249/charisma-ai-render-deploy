@@ -453,6 +453,7 @@ model UserProfile {
   skills      String[]
   socialLinks Json?     // Twitter, LinkedIn, GitHub, etc.
   preferences Json?     // Theme, notifications, etc.
+  settings    Json?     // AI settings, API keys, templates, etc.
   isPublic    Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

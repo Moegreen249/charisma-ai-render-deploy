@@ -44,6 +44,108 @@ import type {
 } from "@/src/types/analysis";
 import { useEnhancedLanguage } from "@/components/EnhancedLanguageProvider";
 import { getComprehensiveTranslations } from "@/lib/comprehensive-translations";
+import { themeConfig } from "@/lib/theme-config";
+import { cn } from "@/lib/utils";
+
+// Enhanced utility function to detect Arabic text and handle bidirectional text
+const detectTextDirection = (text: string) => {
+  const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  const hasArabic = arabicRegex.test(text);
+  const englishRegex = /[a-zA-Z]/;
+  const hasEnglish = englishRegex.test(text);
+  const numbersRegex = /[0-9]/;
+  const hasNumbers = numbersRegex.test(text);
+  
+  // Count Arabic vs English characters to determine primary direction
+  const arabicMatches = text.match(arabicRegex) || [];
+  const englishMatches = text.match(/[a-zA-Z]/g) || [];
+  const arabicCount = arabicMatches.length;
+  const englishCount = englishMatches.length;
+  
+  // Determine primary direction based on character count
+  let primaryDirection = 'ltr';
+  if (arabicCount > englishCount) {
+    primaryDirection = 'rtl';
+  } else if (englishCount > arabicCount) {
+    primaryDirection = 'ltr';
+  }
+  
+  return {
+    hasArabic,
+    hasEnglish,
+    hasNumbers,
+    isMixed: hasArabic && hasEnglish,
+    primaryDirection,
+    arabicCount,
+    englishCount
+  };
+};
+
+// Enhanced component for rendering bidirectional text without breaking sentences
+const BidirectionalText: React.FC<{ 
+  children: string;
+  className?: string;
+  as?: 'span' | 'p' | 'div';
+}> = ({ children, className = "", as: Component = 'span' }) => {
+  const textInfo = detectTextDirection(children);
+  const { isRTL } = useEnhancedLanguage();
+  
+  // For mixed content, use intelligent text direction handling
+  const getTextDirection = () => {
+    if (!textInfo.isMixed) {
+      return textInfo.primaryDirection;
+    }
+    
+    // For mixed content, use 'auto' to let the browser handle it
+    // This preserves sentence structure while handling direction changes
+    return 'auto';
+  };
+  
+  const getTextAlign = () => {
+    if (textInfo.isMixed) {
+      // For mixed content, use 'start' to maintain natural flow
+      return 'start';
+    }
+    
+    // For single-direction text, align based on primary direction
+    if (textInfo.primaryDirection === 'rtl') {
+      return 'right';
+    }
+    
+    return 'left';
+  };
+  
+  const getUnicodeBidi = () => {
+    if (textInfo.isMixed) {
+      // Use 'plaintext' for mixed content to preserve sentence structure
+      // This allows each sentence to maintain its natural direction
+      return 'plaintext';
+    }
+    
+    return 'normal';
+  };
+  
+  return (
+    <Component 
+      className={cn(className)}
+      dir={getTextDirection()}
+      style={{
+        unicodeBidi: getUnicodeBidi(),
+        textAlign: getTextAlign(),
+        // Ensure proper line height for mixed scripts
+        lineHeight: textInfo.isMixed ? '1.6' : '1.5',
+        // Preserve word spacing for mixed content
+        wordSpacing: textInfo.isMixed ? '0.1em' : 'normal',
+        // Handle text wrapping for long mixed content
+        wordBreak: textInfo.isMixed ? 'break-word' : 'normal',
+        // Ensure proper text rendering
+        textRendering: 'optimizeLegibility'
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
 
 interface FlexibleInsightRendererProps {
   insight: Insight;
@@ -153,13 +255,18 @@ const TextInsightRenderer: React.FC<{ insight: Insight }> = ({ insight }) => {
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <IconComponent className={`h-4 w-4 text-${colorTheme}-500`} />
-        <span className="text-sm font-medium">{insight.title}</span>
+        <BidirectionalText className="text-sm font-medium text-white">
+          {insight.title}
+        </BidirectionalText>
       </div>
-      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+      <BidirectionalText 
+        as="p" 
+        className="text-sm text-gray-300 leading-relaxed"
+      >
         {typeof insight.content === "string"
           ? insight.content
           : JSON.stringify(insight.content)}
-      </p>
+      </BidirectionalText>
     </div>
   );
 };
@@ -177,15 +284,17 @@ const ListInsightRenderer: React.FC<{ insight: Insight }> = ({ insight }) => {
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <IconComponent className={`h-4 w-4 text-${colorTheme}-500`} />
-        <span className="text-sm font-medium">{insight.title}</span>
+        <BidirectionalText className="text-sm font-medium text-white">
+          {insight.title}
+        </BidirectionalText>
       </div>
       <ul className="space-y-1 text-sm">
         {items.map((item, i) => (
           <li key={i} className="flex items-start gap-2">
-            <span className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></span>
-            <span className="text-gray-700 dark:text-gray-300">
+            <span className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 flex-shrink-0"></span>
+            <BidirectionalText className="text-gray-300">
               {typeof item === "string" ? item : JSON.stringify(item)}
-            </span>
+            </BidirectionalText>
           </li>
         ))}
       </ul>
@@ -207,7 +316,9 @@ const ScoreInsightRenderer: React.FC<{ insight: Insight }> = ({ insight }) => {
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <IconComponent className={`h-4 w-4 text-${colorTheme}-500`} />
-        <span className="text-sm font-medium">{insight.title}</span>
+        <BidirectionalText className="text-sm font-medium text-white">
+          {insight.title}
+        </BidirectionalText>
       </div>
       <div className="space-y-1">
         <div className="flex justify-between text-sm">
@@ -245,12 +356,14 @@ const MetricInsightRenderer: React.FC<{ insight: Insight }> = ({ insight }) => {
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <IconComponent className={`h-4 w-4 text-${colorTheme}-500`} />
-        <span className="text-sm font-medium">{insight.title}</span>
+        <BidirectionalText className="text-sm font-medium text-white">
+          {insight.title}
+        </BidirectionalText>
       </div>
-      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="text-2xl font-bold text-white">
         {renderMetricValue(insight.content)}
         {insight.metadata?.unit && (
-          <span className="text-sm text-gray-500 ml-1">
+          <span className="text-sm text-gray-400 ml-1">
             {insight.metadata.unit}
           </span>
         )}
@@ -274,23 +387,25 @@ const TimelineInsightRenderer: React.FC<{ insight: Insight }> = ({
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <IconComponent className={`h-4 w-4 text-${colorTheme}-500`} />
-        <span className="text-sm font-medium">{insight.title}</span>
+        <BidirectionalText className="text-sm font-medium text-white">
+          {insight.title}
+        </BidirectionalText>
       </div>
       <div className="space-y-2">
         {items.map((item, i) => (
           <div
             key={i}
-            className="flex items-start gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded"
+            className="flex items-start gap-3 p-2 bg-white/10 border border-white/20 rounded"
           >
             <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
             <div className="flex-1">
-              <div className="text-sm font-medium">
+              <BidirectionalText className="text-sm font-medium text-white">
                 {typeof item === "string"
                   ? item
                   : item.title || item.name || JSON.stringify(item)}
-              </div>
+              </BidirectionalText>
               {typeof item === "object" && item !== null && item.timestamp && (
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-gray-400 mt-1">
                   {item.timestamp}
                 </div>
               )}
@@ -521,7 +636,7 @@ const ChartInsightRenderer: React.FC<{ insight: Insight }> = ({ insight }) => {
       );
     default:
       return (
-        <div className="text-muted-foreground p-4">
+        <div className="text-gray-400 p-4">
           Unsupported chart type: {metadata.chartTypeHint}
         </div>
       );
@@ -561,28 +676,34 @@ const TableInsightRenderer: React.FC<{ insight: Insight }> = ({ insight }) => {
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <IconComponent className={`h-4 w-4 text-${colorTheme}-500`} />
-        <span className="text-sm font-medium">{insight.title}</span>
+        <BidirectionalText className="text-sm font-medium text-white">
+          {insight.title}
+        </BidirectionalText>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b">
+            <tr className="border-b border-white/20">
               {headers.map((header, i) => (
                 <th
                   key={i}
-                  className="text-left font-medium text-gray-600 dark:text-gray-300 p-2"
+                  className="text-left font-medium text-gray-300 p-2"
                 >
-                  {header}
+                  <BidirectionalText>
+                    {header}
+                  </BidirectionalText>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {tableData.map((row, i) => (
-              <tr key={i} className="border-b">
+              <tr key={i} className="border-b border-white/10">
                 {headers.map((header, j) => (
-                  <td key={j} className="p-2 text-gray-700 dark:text-gray-300">
-                    {typeof row === "object" ? row[header] : row}
+                  <td key={j} className="p-2 text-gray-300">
+                    <BidirectionalText>
+                      {typeof row === "object" ? row[header] : row}
+                    </BidirectionalText>
                   </td>
                 ))}
               </tr>
@@ -642,15 +763,19 @@ const CategoryInsightRenderer: React.FC<{ insight: Insight }> = ({
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <IconComponent className={`h-4 w-4 text-${colorTheme}-500`} />
-        <span className="text-sm font-medium">{insight.title}</span>
+        <BidirectionalText className="text-sm font-medium text-white">
+          {insight.title}
+        </BidirectionalText>
       </div>
       <div className="space-y-2">
         {categories.map((category, i) => (
           <div
             key={i}
-            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
+            className="flex items-center justify-between p-2 bg-white/10 border border-white/20 rounded"
           >
-            <span className="text-sm font-medium">{category.name}</span>
+            <BidirectionalText className="text-sm font-medium text-white">
+              {category.name}
+            </BidirectionalText>
             <div className="flex items-center gap-2">
               {category.count && (
                 <Badge variant="secondary" className="text-xs">
@@ -679,11 +804,11 @@ const FlexibleInsightRenderer: React.FC<FlexibleInsightRendererProps> = ({
   const colorTheme = getColorTheme(insight);
 
   const getPriorityBorderClass = () => {
-    if (priority >= 5) return "border-red-200 dark:border-red-800";
-    if (priority >= 4) return "border-orange-200 dark:border-orange-800";
-    if (priority >= 3) return "border-blue-200 dark:border-blue-800";
-    if (priority >= 2) return "border-green-200 dark:border-green-800";
-    return "border-gray-200 dark:border-gray-800";
+    if (priority >= 5) return "border-red-500/30";
+    if (priority >= 4) return "border-orange-500/30";
+    if (priority >= 3) return "border-blue-500/30";
+    if (priority >= 2) return "border-green-500/30";
+    return "border-gray-500/30";
   };
 
   const renderInsightContent = () => {
@@ -710,12 +835,19 @@ const FlexibleInsightRenderer: React.FC<FlexibleInsightRendererProps> = ({
   };
 
   return (
-    <Card className={`${className} ${getPriorityBorderClass()}`}>
+    <Card className={cn(
+      className,
+      getPriorityBorderClass(),
+      themeConfig.colors.glass.background,
+      themeConfig.colors.glass.border,
+      themeConfig.colors.glass.shadow,
+      "border"
+    )}>
       <CardContent className="p-4">
         {renderInsightContent()}
         {insight.metadata?.timestamp && (
-          <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-            <div className="text-xs text-gray-500 flex items-center gap-1">
+          <div className="mt-2 pt-2 border-t border-white/20">
+            <div className="text-xs text-gray-400 flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {insight.metadata.timestamp}
             </div>

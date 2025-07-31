@@ -26,6 +26,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useEnhancedLanguage } from "@/components/EnhancedLanguageProvider";
+import { themeConfig } from "@/lib/theme-config";
+import { cn } from "@/lib/utils";
 
 interface BackgroundProcessingViewProps {
   jobId?: string;
@@ -154,13 +156,13 @@ export default function BackgroundProcessingView({
 
     switch (jobStatus.status) {
       case "PENDING":
-        return <Clock className="h-6 w-6 text-yellow-500" />;
+        return <Clock className="h-6 w-6 text-yellow-400" />;
       case "PROCESSING":
-        return <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />;
+        return <Loader2 className="h-6 w-6 text-blue-400 animate-spin" />;
       case "COMPLETED":
-        return <CheckCircle className="h-6 w-6 text-green-500" />;
+        return <CheckCircle className="h-6 w-6 text-green-400" />;
       case "FAILED":
-        return <CheckCircle className="h-6 w-6 text-red-500" />;
+        return <CheckCircle className="h-6 w-6 text-red-400" />;
       default:
         return <Clock className="h-6 w-6 text-gray-400" />;
     }
@@ -195,7 +197,7 @@ export default function BackgroundProcessingView({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -203,7 +205,13 @@ export default function BackgroundProcessingView({
         className="w-full max-w-2xl"
       >
         {/* Main Status Card */}
-        <Card className="mb-6 shadow-lg">
+        <Card className={cn(
+          "mb-6 shadow-lg",
+          themeConfig.colors.glass.background,
+          themeConfig.colors.glass.border,
+          themeConfig.colors.glass.shadow,
+          "border"
+        )}>
           <CardHeader className="text-center">
             <motion.div
               animate={{
@@ -217,14 +225,14 @@ export default function BackgroundProcessingView({
               }}
               className="mx-auto mb-4"
             >
-              <Sparkles className="h-12 w-12 text-primary" />
+              <Sparkles className="h-12 w-12 text-purple-400" />
             </motion.div>
-            <CardTitle className="text-2xl font-bold">
+            <CardTitle className={cn("text-2xl font-bold", themeConfig.typography.gradient)}>
               Analysis in Progress
             </CardTitle>
-            <CardDescription className="text-lg">
+            <CardDescription className="text-lg text-gray-300">
               {fileName && (
-                <span className="block font-medium text-primary mb-2">
+                <span className="block font-medium text-purple-400 mb-2">
                   {fileName}
                 </span>
               )}
@@ -235,13 +243,13 @@ export default function BackgroundProcessingView({
             {/* Status Section */}
             <div className="flex items-center justify-center space-x-3">
               {getStatusIcon()}
-              <span className="text-lg font-medium">{getStatusMessage()}</span>
+              <span className="text-lg font-medium text-white">{getStatusMessage()}</span>
             </div>
 
             {/* Progress Bar */}
             {jobStatus && (
               <div className="space-y-3">
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="flex justify-between text-sm text-gray-400">
                   <span>
                     Step{" "}
                     {Math.ceil(
@@ -254,7 +262,7 @@ export default function BackgroundProcessingView({
                 <Progress value={jobStatus.progress} className="h-3" />
                 {jobStatus.estimatedTimeRemaining &&
                   jobStatus.status === "PROCESSING" && (
-                    <div className="text-center text-sm text-muted-foreground">
+                    <div className="text-center text-sm text-gray-400">
                       Estimated time remaining:{" "}
                       {formatTimeRemaining(jobStatus.estimatedTimeRemaining)}
                     </div>
@@ -264,23 +272,23 @@ export default function BackgroundProcessingView({
 
             {/* Notification Settings */}
             {notificationSupported && (
-              <Alert className="border-primary/20 bg-primary/10">
+              <Alert className="border-purple-500/20 bg-purple-500/10 text-purple-200">
                 <Bell className="h-4 w-4" />
                 <AlertDescription>
                   {notificationEnabled ? (
-                    <span className="text-green-700">
+                    <span className="text-green-300">
                       ✓ You'll receive a notification when your analysis is
                       complete.
                     </span>
                   ) : (
                     <>
-                      <span className="text-orange-700">
+                      <span className="text-orange-300">
                         Enable notifications to be alerted when your analysis is
                         ready.
                       </span>
                       <Button
                         variant="link"
-                        className="ml-2 p-0 h-auto text-primary hover:text-primary/80"
+                        className="ml-2 p-0 h-auto text-purple-400 hover:text-purple-300"
                         onClick={() => {
                           Notification.requestPermission().then(
                             (permission) => {
@@ -300,9 +308,15 @@ export default function BackgroundProcessingView({
         </Card>
 
         {/* Navigation Suggestions */}
-        <Card className="shadow-lg">
+        <Card className={cn(
+          "shadow-lg",
+          themeConfig.colors.glass.background,
+          themeConfig.colors.glass.border,
+          themeConfig.colors.glass.shadow,
+          "border"
+        )}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <ArrowRight className="h-5 w-5" />
               What would you like to do while you wait?
             </CardTitle>
@@ -311,36 +325,51 @@ export default function BackgroundProcessingView({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Button
                 variant="outline"
-                className="h-auto p-4 flex-col space-y-2"
+                className={cn(
+                  "h-auto p-4 flex-col space-y-2",
+                  "bg-white/10 border-white/20 text-white",
+                  "hover:bg-white/20 hover:border-white/30",
+                  themeConfig.animation.transition
+                )}
                 onClick={() => (window.location.href = "/")}
               >
                 <Home className="h-6 w-6" />
                 <span>Upload Another File</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-gray-400">
                   Start a new analysis
                 </span>
               </Button>
 
               <Button
                 variant="outline"
-                className="h-auto p-4 flex-col space-y-2"
+                className={cn(
+                  "h-auto p-4 flex-col space-y-2",
+                  "bg-white/10 border-white/20 text-white",
+                  "hover:bg-white/20 hover:border-white/30",
+                  themeConfig.animation.transition
+                )}
                 onClick={() => (window.location.href = "/history")}
               >
                 <History className="h-6 w-6" />
                 <span>View History</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-gray-400">
                   Check past analyses
                 </span>
               </Button>
 
               <Button
                 variant="outline"
-                className="h-auto p-4 flex-col space-y-2"
+                className={cn(
+                  "h-auto p-4 flex-col space-y-2",
+                  "bg-white/10 border-white/20 text-white",
+                  "hover:bg-white/20 hover:border-white/30",
+                  themeConfig.animation.transition
+                )}
                 onClick={() => (window.location.href = "/settings")}
               >
                 <Settings className="h-6 w-6" />
                 <span>Settings</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-gray-400">
                   Configure preferences
                 </span>
               </Button>
@@ -356,7 +385,10 @@ export default function BackgroundProcessingView({
               setIsPolling(false);
               setTimeout(() => setIsPolling(true), 100);
             }}
-            className="text-muted-foreground"
+            className={cn(
+              "text-gray-400 hover:text-white hover:bg-white/10",
+              themeConfig.animation.transition
+            )}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh Status

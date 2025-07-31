@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 // PUT - Update blog post
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,7 +26,7 @@ export async function PUT(
     }
 
     const { title, content, excerpt, category, tags, status } = await request.json();
-    const postId = params.id;
+    const { id: postId } = await context.params;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -119,7 +119,7 @@ export async function PUT(
 // DELETE - Delete blog post
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -138,7 +138,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const postId = params.id;
+    const { id: postId } = await context.params;
 
     // Check if post exists
     const existingPost = await prisma.blogPost.findUnique({

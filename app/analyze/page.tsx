@@ -2,6 +2,7 @@
 
 import React, { useReducer, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { UnifiedLayout } from "@/components/layout/UnifiedLayout";
 import UploadCard from "@/components/UploadCard";
 import LoadingIndicator from "@/components/LoadingIndicator";
 import CoachChat from "@/components/CoachChat";
@@ -211,7 +212,8 @@ export default function Home() {
 
   // Render based on current state
   return (
-    <div className="min-h-screen bg-background">
+    <UnifiedLayout variant="default">
+      <div className="min-h-screen bg-transparent">
       <AnimatePresence mode="wait">
         {state.currentView === "loading" ? (
           <LoadingIndicator key="loading" />
@@ -258,6 +260,7 @@ export default function Home() {
           analysisData={state.analysisData}
         />
       )}
-    </div>
+      </div>
+    </UnifiedLayout>
   );
 }

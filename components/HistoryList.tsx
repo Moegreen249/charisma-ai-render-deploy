@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { themeConfig } from "@/lib/theme-config";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -92,13 +94,13 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
 
   const getProviderBadge = (provider: string) => {
     const colors = {
-      google: "bg-primary/10 text-primary border-primary/20",
-      openai: "bg-green-500/10 text-green-500 border-green-500/20",
-      anthropic: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      google: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+      openai: "bg-green-500/20 text-green-300 border-green-500/30",
+      anthropic: "bg-purple-500/20 text-purple-300 border-purple-500/30",
     };
     
     return (
-      <Badge variant="outline" className={colors[provider as keyof typeof colors] || "bg-muted text-muted-foreground border-border"}>
+      <Badge variant="outline" className={colors[provider as keyof typeof colors] || "bg-gray-500/20 text-gray-300 border-gray-500/30"}>
         {provider.toUpperCase()}
       </Badge>
     );
@@ -114,62 +116,72 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
   };
 
   return (
-    <Card>
+    <Card className={cn(
+      themeConfig.colors.glass.background,
+      themeConfig.colors.glass.border,
+      themeConfig.colors.glass.shadow,
+      "border"
+    )}>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <FileText className="h-5 w-5" />
             Analysis History
           </CardTitle>
           <div className="flex items-center space-x-2">
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search analyses..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 w-64"
+                className={cn(
+                  "pl-8 w-64",
+                  "bg-white/10 border-white/20 text-white placeholder:text-gray-400",
+                  "focus:bg-white/20 focus:border-purple-400",
+                  themeConfig.animation.transition
+                )}
               />
             </div>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
+        <div className="rounded-md border border-white/20 bg-white/5">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>File</TableHead>
-                <TableHead>Template</TableHead>
-                <TableHead>Provider</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="w-[50px]">Actions</TableHead>
+            <TableHeader className="border-b border-white/20">
+              <TableRow className="border-b border-white/20 hover:bg-white/5">
+                <TableHead className="text-gray-300 font-medium">File</TableHead>
+                <TableHead className="text-gray-300 font-medium">Template</TableHead>
+                <TableHead className="text-gray-300 font-medium">Provider</TableHead>
+                <TableHead className="text-gray-300 font-medium">Model</TableHead>
+                <TableHead className="text-gray-300 font-medium">Duration</TableHead>
+                <TableHead className="text-gray-300 font-medium">Date</TableHead>
+                <TableHead className="w-[50px] text-gray-300 font-medium">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredHistory.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableRow className="border-b border-white/10">
+                  <TableCell colSpan={7} className="text-center text-gray-400">
                     {searchTerm ? "No analyses found matching your search." : "No analyses found."}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredHistory.map((analysis) => (
-                  <TableRow key={analysis.id}>
+                  <TableRow key={analysis.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                     <TableCell>
                       <div className="flex flex-col">
-                        <div className="font-medium truncate max-w-[200px]">
+                        <div className="font-medium truncate max-w-[200px] text-white">
                           {analysis.fileName}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-gray-400">
                           {analysis.analysisResult?.overallSummary?.substring(0, 50)}...
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
+                      <Badge className="bg-purple-600/20 border-purple-500/30 text-purple-200">
                         {analysis.templateId}
                       </Badge>
                     </TableCell>
@@ -177,18 +189,18 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
                       {getProviderBadge(analysis.provider)}
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-gray-400">
                         {analysis.modelId}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1 text-sm text-gray-400">
                         <Zap className="h-3 w-3" />
                         {formatDuration(analysis.durationMs)}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1 text-sm text-gray-400">
                         <Calendar className="h-3 w-3" />
                         {format(new Date(analysis.createdAt), "MMM d, yyyy")}
                       </div>
@@ -196,13 +208,16 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
+                          <Button variant="ghost" className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-white/10">
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => router.push(`/history/${analysis.id}`)}>
+                        <DropdownMenuContent align="end" className="bg-gray-800 border-white/20 text-white">
+                          <DropdownMenuItem 
+                            onClick={() => router.push(`/history/${analysis.id}`)} 
+                            className="text-white hover:bg-white/10 focus:bg-white/10"
+                          >
                             <Eye className="h-4 w-4 mr-2" />
                             View Analysis
                           </DropdownMenuItem>
@@ -210,26 +225,30 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
                             <AlertDialogTrigger asChild>
                               <DropdownMenuItem
                                 onSelect={(e) => e.preventDefault()}
-                                className="text-red-600 focus:text-red-600"
+                                className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Delete Analysis
                               </DropdownMenuItem>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className={cn(
+                              themeConfig.colors.glass.background,
+                              themeConfig.colors.glass.border,
+                              "border text-white"
+                            )}>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Analysis</AlertDialogTitle>
-                                <AlertDialogDescription>
+                                <AlertDialogTitle className="text-white">Delete Analysis</AlertDialogTitle>
+                                <AlertDialogDescription className="text-gray-400">
                                   Are you sure you want to delete the analysis for{" "}
                                   <strong>{analysis.fileName}</strong>? This action
                                   cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleDelete(analysis.id)}
-                                  className="bg-red-600 hover:bg-red-700"
+                                  className="bg-red-600 hover:bg-red-700 text-white"
                                   disabled={loading}
                                 >
                                   {loading ? "Deleting..." : "Delete"}
@@ -246,7 +265,7 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
             </TableBody>
           </Table>
         </div>
-        <div className="mt-4 text-sm text-muted-foreground">
+        <div className="mt-4 text-sm text-gray-400">
           Showing {filteredHistory.length} of {history.length} analyses
         </div>
       </CardContent>

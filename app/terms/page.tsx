@@ -1,4 +1,7 @@
 import { Metadata } from 'next';
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
+import { themeConfig } from '@/lib/theme-config';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Terms of Service - CharismaAI',
@@ -7,10 +10,15 @@ export const metadata: Metadata = {
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="container mx-auto px-4 py-16">
+    <UnifiedLayout variant="default">
+      <div className="text-white py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+          <div className={cn(
+            "rounded-2xl p-8 border",
+            themeConfig.colors.glass.background,
+            themeConfig.colors.glass.border,
+            themeConfig.colors.glass.shadow
+          )}>
             <h1 className="text-4xl font-bold text-white mb-8 text-center">
               Terms of Service
             </h1>
@@ -222,6 +230,6 @@ export default function TermsOfServicePage() {
           </div>
         </div>
       </div>
-    </div>
+    </UnifiedLayout>
   );
 }

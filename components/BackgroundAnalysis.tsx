@@ -32,6 +32,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { useEnhancedLanguage } from "@/components/EnhancedLanguageProvider";
+import { themeConfig } from "@/lib/theme-config";
+import { cn } from "@/lib/utils";
 
 interface BackgroundJob {
   id: string;
@@ -234,21 +236,21 @@ const BackgroundAnalysis = forwardRef<
   const getStatusDisplay = (status: string) => {
     switch (status) {
       case "PENDING":
-        return { icon: Clock, color: "text-yellow-500", bg: "bg-yellow-100" };
+        return { icon: Clock, color: "text-yellow-400", bg: "bg-yellow-500/20 border-yellow-500/30" };
       case "PROCESSING":
-        return { icon: Loader2, color: "text-blue-500", bg: "bg-blue-100" };
+        return { icon: Loader2, color: "text-blue-400", bg: "bg-blue-500/20 border-blue-500/30" };
       case "COMPLETED":
         return {
           icon: CheckCircle,
-          color: "text-green-500",
-          bg: "bg-green-100",
+          color: "text-green-400",
+          bg: "bg-green-500/20 border-green-500/30",
         };
       case "FAILED":
-        return { icon: AlertCircle, color: "text-red-500", bg: "bg-red-100" };
+        return { icon: AlertCircle, color: "text-red-400", bg: "bg-red-500/20 border-red-500/30" };
       case "CANCELLED":
-        return { icon: X, color: "text-gray-500", bg: "bg-gray-100" };
+        return { icon: X, color: "text-gray-400", bg: "bg-gray-500/20 border-gray-500/30" };
       default:
-        return { icon: Clock, color: "text-gray-500", bg: "bg-gray-100" };
+        return { icon: Clock, color: "text-gray-400", bg: "bg-gray-500/20 border-gray-500/30" };
     }
   };
 
@@ -275,7 +277,13 @@ const BackgroundAnalysis = forwardRef<
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="border-l-4 border-l-primary">
+            <Card className={cn(
+              "border-l-4 border-l-purple-500",
+              themeConfig.colors.glass.background,
+              themeConfig.colors.glass.border,
+              themeConfig.colors.glass.shadow,
+              "border"
+            )}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -286,7 +294,7 @@ const BackgroundAnalysis = forwardRef<
                         bg,
                       } = getStatusDisplay(currentJob.status);
                       return (
-                        <div className={`p-2 rounded-full ${bg}`}>
+                        <div className={cn("p-2 rounded-full border", bg)}>
                           <StatusIcon
                             className={`h-4 w-4 ${color} ${currentJob.status === "PROCESSING" ? "animate-spin" : ""}`}
                           />
@@ -294,10 +302,10 @@ const BackgroundAnalysis = forwardRef<
                       );
                     })()}
                     <div>
-                      <CardTitle className="text-lg">
+                      <CardTitle className="text-lg text-white">
                         {"Background Analysis"}
                       </CardTitle>
-                      <CardDescription className="flex items-center gap-2">
+                      <CardDescription className="flex items-center gap-2 text-gray-400">
                         <FileText className="h-3 w-3" />
                         {currentJob.fileName}
                       </CardDescription>
@@ -305,11 +313,11 @@ const BackgroundAnalysis = forwardRef<
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge
-                      variant={
+                      className={cn(
                         currentJob.status === "COMPLETED"
-                          ? "default"
-                          : "secondary"
-                      }
+                          ? "bg-green-600/20 border-green-500/30 text-green-200"
+                          : "bg-blue-600/20 border-blue-500/30 text-blue-200"
+                      )}
                     >
                       {currentJob.status}
                     </Badge>
@@ -319,7 +327,11 @@ const BackgroundAnalysis = forwardRef<
                         variant="outline"
                         size="sm"
                         onClick={cancelJob}
-                        className="text-red-600 hover:text-red-700"
+                        className={cn(
+                          "bg-white/10 border-white/20 text-red-400",
+                          "hover:bg-red-500/10 hover:border-red-500/30",
+                          themeConfig.animation.transition
+                        )}
                       >
                         <X className="h-3 w-3" />
                         Cancel
@@ -333,15 +345,15 @@ const BackgroundAnalysis = forwardRef<
                   {/* Progress Bar */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
+                      <span className="text-gray-400">
                         {currentJob.currentStep}
                       </span>
-                      <span className="text-muted-foreground">
+                      <span className="text-gray-400">
                         {currentJob.progress}%
                       </span>
                     </div>
                     <Progress value={currentJob.progress} className="h-2" />
-                    <div className="flex justify-between text-xs text-muted-foreground">
+                    <div className="flex justify-between text-xs text-gray-400">
                       <span>
                         Step{" "}
                         {Math.ceil(
@@ -364,7 +376,7 @@ const BackgroundAnalysis = forwardRef<
 
                   {/* Error Display */}
                   {currentJob.status === "FAILED" && currentJob.error && (
-                    <Alert variant="destructive">
+                    <Alert className="bg-red-500/10 border-red-500/20 text-red-300">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>{currentJob.error}</AlertDescription>
                     </Alert>
@@ -372,7 +384,7 @@ const BackgroundAnalysis = forwardRef<
 
                   {/* Completion Message */}
                   {currentJob.status === "COMPLETED" && (
-                    <Alert>
+                    <Alert className="bg-green-500/10 border-green-500/20 text-green-300">
                       <CheckCircle className="h-4 w-4" />
                       <AlertDescription>
                         {
@@ -384,7 +396,7 @@ const BackgroundAnalysis = forwardRef<
 
                   {/* Real-time Updates Indicator */}
                   {isPolling && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
                       <RefreshCw className="h-3 w-3 animate-spin" />
                       Live updates enabled
                     </div>
@@ -402,7 +414,12 @@ const BackgroundAnalysis = forwardRef<
           variant="outline"
           size="sm"
           onClick={() => setShowHistory(!showHistory)}
-          className="gap-2"
+          className={cn(
+            "gap-2",
+            "bg-white/10 border-white/20 text-white",
+            "hover:bg-white/20 hover:border-white/30",
+            themeConfig.animation.transition
+          )}
         >
           <History className="h-4 w-4" />
           Recent Jobs ({recentJobs.length})
@@ -412,7 +429,11 @@ const BackgroundAnalysis = forwardRef<
             variant="ghost"
             size="sm"
             onClick={loadRecentJobs}
-            className="gap-2"
+            className={cn(
+              "gap-2",
+              "text-gray-400 hover:text-white hover:bg-white/10",
+              themeConfig.animation.transition
+            )}
           >
             <RefreshCw className="h-3 w-3" />
             Refresh
@@ -431,8 +452,13 @@ const BackgroundAnalysis = forwardRef<
             className="space-y-2"
           >
             {recentJobs.length === 0 ? (
-              <Card>
-                <CardContent className="p-6 text-center text-muted-foreground">
+              <Card className={cn(
+                themeConfig.colors.glass.background,
+                themeConfig.colors.glass.border,
+                themeConfig.colors.glass.shadow,
+                "border"
+              )}>
+                <CardContent className="p-6 text-center text-gray-400">
                   <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p>No recent analysis jobs found.</p>
                 </CardContent>
@@ -451,24 +477,30 @@ const BackgroundAnalysis = forwardRef<
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Card className="hover:shadow-md transition-shadow">
+                    <Card className={cn(
+                      "hover:shadow-md transition-shadow",
+                      themeConfig.colors.glass.background,
+                      themeConfig.colors.glass.border,
+                      themeConfig.colors.glass.shadow,
+                      "border"
+                    )}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-full ${bg}`}>
+                            <div className={cn("p-1.5 rounded-full border", bg)}>
                               <StatusIcon className={`h-3 w-3 ${color}`} />
                             </div>
                             <div>
-                              <p className="font-medium text-sm">
+                              <p className="font-medium text-sm text-white">
                                 {job.fileName}
                               </p>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-gray-400">
                                 {new Date(job.createdAt).toLocaleString()}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs border-white/20 text-white bg-white/5">
                               {job.status}
                             </Badge>
                             {job.status === "COMPLETED" && (
@@ -478,7 +510,11 @@ const BackgroundAnalysis = forwardRef<
                                 onClick={() =>
                                   job.result && onAnalysisComplete?.(job.result)
                                 }
-                                className="text-xs"
+                                className={cn(
+                                  "text-xs",
+                                  "text-gray-400 hover:text-white hover:bg-white/10",
+                                  themeConfig.animation.transition
+                                )}
                               >
                                 View Results
                               </Button>
@@ -495,35 +531,7 @@ const BackgroundAnalysis = forwardRef<
         )}
       </AnimatePresence>
 
-      {/* Coming Soon Features */}
-      <Card className="border-dashed border-2">
-        <CardContent className="p-6 text-center">
-          <div className="space-y-3">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Sparkles className="h-5 w-5" />
-              <span className="font-medium">Coming Soon</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-              <div className="space-y-1">
-                <p className="font-medium">🔄 Bulk Analysis</p>
-                <p>Process multiple conversations at once</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium">📊 Analysis Comparison</p>
-                <p>Compare results across conversations</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium">📈 Historical Trends</p>
-                <p>Track communication patterns over time</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium">🤖 Smart Recommendations</p>
-                <p>AI-powered insights and suggestions</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 });
