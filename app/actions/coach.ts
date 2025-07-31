@@ -25,7 +25,7 @@ export async function coachChat(
 ) {
   try {
     // Get the template info for context
-    const templateId = getSelectedAnalysisTemplate();
+    const templateId = await getSelectedAnalysisTemplate();
     let templateInfo = { name: "Communication Analysis", icon: "💬" };
 
     if (templateId) {
@@ -250,7 +250,7 @@ export async function streamCoachResponse(body: {
   const { messages, analysisData, provider, modelId, apiKey } = body;
 
   // Get the template info for context
-  const templateId = getSelectedAnalysisTemplate();
+  const templateId = await getSelectedAnalysisTemplate();
   let templateInfo = { name: "Communication Analysis", icon: "💬" };
 
   if (templateId) {
