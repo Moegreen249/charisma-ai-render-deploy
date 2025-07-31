@@ -17,7 +17,7 @@ export interface BreadcrumbProps {
   className?: string;
 }
 
-const Breadcrumb = React.forwardRef<HTMLNavElement, BreadcrumbProps>(
+const Breadcrumb = React.forwardRef<HTMLElement, BreadcrumbProps>(
   ({ items, separator = <ChevronRight className="h-4 w-4" />, showHome = true, className }, ref) => {
     return (
       <nav
