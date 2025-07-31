@@ -185,9 +185,9 @@ export async function setSelectedAnalysisTemplate(templateId: string): Promise<v
 }
 
 export async function saveNotificationSettings(notifications: Partial<Settings['notifications']>): Promise<void> {
-  await saveSettings({ notifications });
+  await saveSettings({ notifications: notifications as Settings['notifications'] });
 }
 
 export async function savePreferences(preferences: Partial<Settings['preferences']>): Promise<void> {
-  await saveSettings({ preferences });
+  await saveSettings({ preferences: preferences as Settings['preferences'] });
 }
