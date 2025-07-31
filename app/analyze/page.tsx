@@ -114,8 +114,11 @@ export default function Home() {
 
   // Load current template on mount
   useEffect(() => {
-    const templateId = getSelectedAnalysisTemplate();
-    setCurrentTemplateId(templateId);
+    const loadTemplate = async () => {
+      const templateId = await getSelectedAnalysisTemplate();
+      setCurrentTemplateId(templateId);
+    };
+    loadTemplate();
   }, []);
 
   const handleFileSelect = (file: File) => {
@@ -137,7 +140,7 @@ export default function Home() {
       }
 
       const apiKey = getApiKey(providerConfig.apiKeyName);
-      const templateId = getSelectedAnalysisTemplate();
+      const templateId = await getSelectedAnalysisTemplate();
 
       if (!apiKey) {
         throw new Error(`No API key found for ${providerConfig.name}`);
