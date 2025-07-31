@@ -140,31 +140,77 @@ export default function BackgroundTasksAdmin() {
 
   const loadData = useCallback(async () => {
     try {
-      const [jobsResponse, usersResponse, statusResponse] = await Promise.all([
-        fetch("/api/admin/background-tasks"),
-        fetch("/api/admin/active-users"),
-        fetch("/api/admin/system-status"),
-      ]);
+      // Add timeout to prevent hanging requests
+      const timeoutController = new AbortController();
+      const timeoutId = setTimeout(() => timeoutController.abort(), 15000); // 15 second timeout
 
+      const requests = [
+        fetch("/api/admin/background-tasks", { signal: timeoutController.signal }),
+        fetch("/api/admin/active-users", { signal: timeoutController.signal }),
+        fetch("/api/admin/system-status", { signal: timeoutController.signal }),
+      ];
+
+      const [jobsResponse, usersResponse, statusResponse] = await Promise.all(
+        requests.map(request => 
+          request.catch(error => {
+            console.warn("Request failed:", error);
+            return { ok: false, error };
+          })
+        )
+      );
+
+      clearTimeout(timeoutId);
+
+      // Handle jobs data
       if (jobsResponse.ok) {
-        const jobsData = await jobsResponse.json();
-        setJobs(jobsData.jobs || []);
+        try {
+          const jobsData = await jobsResponse.json();
+          setJobs(jobsData.jobs || []);
+        } catch (parseError) {
+          console.error("Failed to parse jobs data:", parseError);
+          setJobs([]);
+        }
+      } else {
+        console.warn("Jobs request failed:", jobsResponse);
+        setJobs([]);
       }
 
+      // Handle users data
       if (usersResponse.ok) {
-        const usersData = await usersResponse.json();
-        setActiveUsers(usersData.users || []);
+        try {
+          const usersData = await usersResponse.json();
+          setActiveUsers(usersData.users || []);
+        } catch (parseError) {
+          console.error("Failed to parse users data:", parseError);
+          setActiveUsers([]);
+        }
+      } else {
+        console.warn("Users request failed:", usersResponse);
+        setActiveUsers([]);
       }
 
+      // Handle status data
       if (statusResponse.ok) {
-        const statusData = await statusResponse.json();
-        setSystemStatus(statusData);
+        try {
+          const statusData = await statusResponse.json();
+          setSystemStatus(statusData);
+        } catch (parseError) {
+          console.error("Failed to parse status data:", parseError);
+          setSystemStatus(null);
+        }
+      } else {
+        console.warn("Status request failed:", statusResponse);
+        setSystemStatus(null);
       }
 
       setError(null);
     } catch (err) {
       console.error("Failed to load background tasks data:", err);
-      setError("Failed to load data. Please try again.");
+      if (err.name === 'AbortError') {
+        setError("Request timed out. The server may be experiencing high load.");
+      } else {
+        setError("Failed to load data. Please check your connection and try again.");
+      }
     } finally {
       setLoading(false);
     }

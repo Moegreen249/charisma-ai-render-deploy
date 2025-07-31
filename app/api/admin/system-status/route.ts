@@ -200,7 +200,47 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cachedStatus);
     }
 
-    // Perform health checks in parallel
+    // Perform health checks in parallel with timeout
+    const healthCheckPromises = [
+      RedisService.healthCheck(),
+      checkDatabase(),
+      checkOpenAI(),
+      checkGoogleAI(),
+      checkAnthropic(),
+      checkJobProcessor(),
+    ];
+
+    // Add timeout wrapper
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Health check timeout')), 10000); // 10 second timeout
+    });
+
+    let healthResults;
+    try {
+      healthResults = await Promise.race([
+        Promise.all(healthCheckPromises),
+        timeoutPromise
+      ]);
+    } catch (error) {
+      console.error('Health check timeout or error:', error);
+      // Return fallback status if health checks timeout
+      return NextResponse.json({
+        error: "Health check timeout",
+        fallback: {
+          redis: { status: "error", error: "timeout" },
+          database: { status: "error", error: "timeout" },
+          aiProviders: {
+            openai: { status: "error", error: "timeout" },
+            google: { status: "error", error: "timeout" },
+            anthropic: { status: "error", error: "timeout" },
+          },
+          jobProcessor: { status: "error", error: "timeout" },
+          health: { overall: "critical" },
+          lastUpdated: new Date().toISOString(),
+        },
+      }, { status: 503 });
+    }
+
     const [
       redisHealth,
       databaseHealth,
@@ -208,14 +248,7 @@ export async function GET(request: NextRequest) {
       googleHealth,
       anthropicHealth,
       jobProcessorHealth,
-    ] = await Promise.all([
-      RedisService.healthCheck(),
-      checkDatabase(),
-      checkOpenAI(),
-      checkGoogleAI(),
-      checkAnthropic(),
-      checkJobProcessor(),
-    ]);
+    ] = healthResults;
 
     // Get additional system metrics
     const systemMetrics = {

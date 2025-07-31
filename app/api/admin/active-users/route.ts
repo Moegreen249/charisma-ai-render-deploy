@@ -21,47 +21,56 @@ export async function GET(request: NextRequest) {
 
     const activeThreshold = new Date(Date.now() - timeWindow * 60 * 1000);
 
-    // Get users with recent activity
-    const activeUsers = await prisma.user.findMany({
+    // Get users with recent activity (optimized query)
+    const recentActivities = await prisma.userActivity.findMany({
       where: {
-        activities: {
-          some: {
-            timestamp: {
-              gte: activeThreshold,
-            },
-          },
+        timestamp: {
+          gte: activeThreshold,
         },
       },
-      include: {
-        activities: {
-          where: {
-            timestamp: {
-              gte: activeThreshold,
-            },
-          },
-          orderBy: {
-            timestamp: "desc",
-          },
-          take: 1,
-        },
-        _count: {
-          select: {
-            activities: {
-              where: {
-                timestamp: {
-                  gte: activeThreshold,
-                },
-              },
-            },
-          },
-        },
+      select: {
+        userId: true,
+        timestamp: true,
+        page: true,
+      },
+      orderBy: {
+        timestamp: "desc",
       },
     });
 
+    // Group activities by user and get latest activity per user
+    const userActivityMap = new Map();
+    const userActionCounts = new Map();
+
+    recentActivities.forEach(activity => {
+      if (!userActivityMap.has(activity.userId) || 
+          activity.timestamp > userActivityMap.get(activity.userId).timestamp) {
+        userActivityMap.set(activity.userId, activity);
+      }
+      
+      const count = userActionCounts.get(activity.userId) || 0;
+      userActionCounts.set(activity.userId, count + 1);
+    });
+
+    // Get user details for active users
+    const activeUserIds = Array.from(userActivityMap.keys());
+    const activeUsers = activeUserIds.length > 0 ? await prisma.user.findMany({
+      where: {
+        id: {
+          in: activeUserIds,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    }) : [];
+
     // Transform the data for the frontend
     const users = activeUsers.map((user) => {
-      const lastActivity = user.activities[0];
-      const sessionStart = new Date(Date.now() - timeWindow * 60 * 1000);
+      const lastActivity = userActivityMap.get(user.id);
+      const actionCount = userActionCounts.get(user.id) || 0;
 
       return {
         id: user.id,
@@ -70,7 +79,7 @@ export async function GET(request: NextRequest) {
         lastActive: lastActivity?.timestamp || new Date(),
         currentPage: lastActivity?.page || "/",
         sessionDuration: lastActivity ? Date.now() - new Date(lastActivity.timestamp).getTime() : 0,
-        actions: user._count.activities,
+        actions: actionCount,
         status: "online" as const,
       };
     });

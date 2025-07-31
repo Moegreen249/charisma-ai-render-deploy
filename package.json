@@ -29,6 +29,8 @@
     "db:generate": "npx prisma generate",
     "db:studio": "npx prisma studio",
     "migrate:prod": "tsx scripts/run-migrations.ts",
+    "db:diagnose": "tsx scripts/database-diagnostics.ts",
+    "db:maintenance": "tsx scripts/database-maintenance.ts",
     "postinstall": "npx prisma generate || echo 'Prisma generate skipped in production'"
   },
   "dependencies": {

@@ -31,11 +31,28 @@ export async function GET(request: NextRequest) {
       where.userId = userId;
     }
 
-    // Fetch background jobs with user information
+    // Fetch background jobs with user information (optimized)
     const [jobs, totalCount] = await Promise.all([
       prisma.backgroundJob.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          userId: true,
+          type: true,
+          status: true,
+          progress: true,
+          currentStep: true,
+          totalSteps: true,
+          templateId: true,
+          modelId: true,
+          provider: true,
+          fileName: true,
+          error: true,
+          startedAt: true,
+          completedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          retryCount: true,
           user: {
             select: {
               id: true,
