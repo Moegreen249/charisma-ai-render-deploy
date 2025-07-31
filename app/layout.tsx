@@ -5,6 +5,8 @@ import "./rtl-globals.css";
 import "@xyflow/react/dist/style.css";
 import Providers from "@/components/Providers";
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { prisma } from "@/lib/prisma";
 
 // Configure fonts
@@ -99,6 +101,8 @@ export default async function RootLayout({
             {children}
           </Providers>
         </AnalyticsProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
