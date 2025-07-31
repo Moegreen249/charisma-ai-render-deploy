@@ -1,8 +1,11 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { EnhancedLanguageProvider } from "@/components/EnhancedLanguageProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { PageErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
+import { setupGlobalErrorHandling } from "@/lib/error-management";
 // import {
 //   NotificationProvider,
 //   useRealTimeNotifications,
@@ -10,6 +13,14 @@ import { EnhancedLanguageProvider } from "@/components/EnhancedLanguageProvider"
 
 interface ProvidersProps {
   children: ReactNode;
+}
+
+// Setup global error handling
+function ErrorHandlingSetup() {
+  useEffect(() => {
+    setupGlobalErrorHandling();
+  }, []);
+  return null;
 }
 
 // function NotificationSetup() {
@@ -20,7 +31,14 @@ interface ProvidersProps {
 export default function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
-      <EnhancedLanguageProvider>{children}</EnhancedLanguageProvider>
+      <PageErrorBoundary componentName="App">
+        <ThemeProvider>
+          <EnhancedLanguageProvider>
+            <ErrorHandlingSetup />
+            {children}
+          </EnhancedLanguageProvider>
+        </ThemeProvider>
+      </PageErrorBoundary>
     </SessionProvider>
   );
 }
