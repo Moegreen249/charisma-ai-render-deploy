@@ -64,8 +64,9 @@ export async function getSettings(): Promise<Settings> {
     const response = await fetch('/api/user/settings');
     if (response.ok) {
       const dbSettings = await response.json();
-      settingsCache = { ...defaultSettings, ...dbSettings };
-      return settingsCache;
+      const settings = { ...defaultSettings, ...dbSettings };
+      settingsCache = settings;
+      return settings;
     }
   } catch (error) {
     console.error("Failed to load settings from database:", error);
