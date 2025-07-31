@@ -330,7 +330,7 @@ export default function SettingsPage() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-white py-16"
+        className="text-white"
       >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">

@@ -247,13 +247,22 @@ export default function AdminAnalytics() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6 relative overflow-hidden">
+      {/* Neural background particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-2 h-2 bg-blue-400/20 rounded-full animate-pulse"></div>
+        <div className="absolute top-40 right-16 w-1 h-1 bg-purple-400/25 rounded-full animate-ping"></div>
+        <div className="absolute top-2/3 left-8 w-1.5 h-1.5 bg-cyan-400/20 rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
+        <div className="absolute bottom-32 right-20 w-1 h-1 bg-green-400/25 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         {/* Header */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-white flex items-center">
-                <BarChart className="mr-3 h-8 w-8" />
+                <BarChart className="mr-3 h-8 w-8 text-purple-400" />
                 Platform Analytics
               </h1>
               <p className="text-white/70 mt-1">
@@ -264,7 +273,7 @@ export default function AdminAnalytics() {
               <select
                 value={selectedTimeRange}
                 onChange={(e) => setSelectedTimeRange(e.target.value)}
-                className="px-3 py-2 border rounded-md bg-white/10 border-white/20 text-white backdrop-blur-md"
+                className="px-4 py-2 border rounded-lg bg-white/10 border-white/20 text-white backdrop-blur-md hover:bg-white/20 transition-all duration-300"
               >
                 <option value="1d" className="bg-gray-800 text-white">Last 24 hours</option>
                 <option value="7d" className="bg-gray-800 text-white">Last 7 days</option>
@@ -276,9 +285,9 @@ export default function AdminAnalytics() {
                 onClick={() => setAutoRefresh(!autoRefresh)}
                 className={`${
                   autoRefresh
-                    ? "bg-green-500/20 border-green-500/30 text-green-300"
+                    ? "bg-green-500/20 border-green-500/30 text-green-300 hover:bg-green-500/30"
                     : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                }`}
+                } transition-all duration-300`}
               >
                 <RefreshCw
                   className={`h-4 w-4 mr-2 ${autoRefresh ? "animate-spin" : ""}`}
@@ -288,91 +297,123 @@ export default function AdminAnalytics() {
               <Button 
                 onClick={loadAnalytics} 
                 disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
             </div>
+          </div>
         </div>
 
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-purple-300" />
+              <CardTitle className="text-sm font-medium text-white/90">Total Users</CardTitle>
+              <div className="p-2 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+                <Users className="h-4 w-4 text-purple-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
                 {stats.users.total.toLocaleString()}
               </div>
-              <p className="text-xs text-white/60">
+              <p className="text-xs text-white/60 mt-1">
                 +{stats.users.new.thisMonth} this month
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-green-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">Active Users</CardTitle>
-              <Activity className="h-4 w-4 text-green-300" />
+              <CardTitle className="text-sm font-medium text-white/90">Active Users</CardTitle>
+              <div className="p-2 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+                <Activity className="h-4 w-4 text-green-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
                 {stats.users.active.daily.toLocaleString()}
               </div>
-              <p className="text-xs text-white/60">
+              <p className="text-xs text-white/60 mt-1">
                 Daily active users
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">Success Rate</CardTitle>
-              <CheckCircle className="h-4 w-4 text-blue-300" />
+              <CardTitle className="text-sm font-medium text-white/90">Success Rate</CardTitle>
+              <div className="p-2 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                <CheckCircle className="h-4 w-4 text-blue-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
                 {formatPercentage(stats.analyses.successRate)}
               </div>
-              <p className="text-xs text-white/60">
+              <p className="text-xs text-white/60 mt-1">
                 Analysis success rate
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">System Health</CardTitle>
-              <Server className="h-4 w-4 text-cyan-300" />
+              <CardTitle className="text-sm font-medium text-white/90">System Health</CardTitle>
+              <div className="p-2 rounded-full bg-cyan-500/20 group-hover:bg-cyan-500/30 transition-colors">
+                <Server className="h-4 w-4 text-cyan-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
                 {formatPercentage(stats.performance.uptime)}
               </div>
-              <p className="text-xs text-white/60">Uptime this month</p>
+              <p className="text-xs text-white/60 mt-1">Uptime this month</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Dashboard Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="errors">Errors</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-white/10 border-white/20">
+            <TabsTrigger 
+              value="overview"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70 hover:text-white transition-colors"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="users"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70 hover:text-white transition-colors"
+            >
+              Users
+            </TabsTrigger>
+            <TabsTrigger 
+              value="errors"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70 hover:text-white transition-colors"
+            >
+              Errors
+            </TabsTrigger>
+            <TabsTrigger 
+              value="performance"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70 hover:text-white transition-colors"
+            >
+              Performance
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Analysis Trends */}
-              <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-white">Analysis Activity</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-purple-400" />
+                    Analysis Activity
+                  </CardTitle>
                   <CardDescription className="text-white/70">
                     Daily analysis requests over time
                   </CardDescription>
@@ -407,9 +448,12 @@ export default function AdminAnalytics() {
               </Card>
 
               {/* Error Distribution */}
-              <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-white">Error Categories</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-red-400" />
+                    Error Categories
+                  </CardTitle>
                   <CardDescription className="text-white/70">Distribution of error types</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -443,9 +487,12 @@ export default function AdminAnalytics() {
             </div>
 
             {/* Performance Metrics */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-white">Performance Overview</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-blue-400" />
+                  Performance Overview
+                </CardTitle>
                 <CardDescription className="text-white/70">
                   Real-time system performance metrics
                 </CardDescription>
