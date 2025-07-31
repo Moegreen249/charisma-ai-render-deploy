@@ -181,7 +181,7 @@ export default function BlogEditorPage() {
         ...post,
         status,
         slug: post.slug || generateSlug(post.title),
-        tags: Array.isArray(post.tags) ? post.tags : (typeof post.tags === 'string' ? post.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : []),
+        tags: Array.isArray(post.tags) ? post.tags : [],
       };
 
       const url = isEdit ? `/api/admin/blog/posts/${postId}` : '/api/admin/blog/posts';
