@@ -31,17 +31,39 @@ export async function GET(request: NextRequest) {
     }
 
     // Get current story settings
-    const settings = await prisma.storySettings.findFirst({
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        updater: {
-          select: { name: true, email: true }
+    let settings;
+    try {
+      settings = await prisma.storySettings.findFirst({
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          updater: {
+            select: { name: true, email: true }
+          }
         }
-      }
-    });
+      });
+    } catch (error) {
+      console.error("Error fetching story settings from database:", error);
+      settings = null;
+    }
 
     // Get story usage statistics
-    const stats = await getStoryStats();
+    let stats;
+    try {
+      stats = await getStoryStats();
+    } catch (error) {
+      console.error("Error fetching story stats:", error);
+      stats = {
+        totalStories: 0,
+        completedStories: 0,
+        failedStories: 0,
+        generatingStories: 0,
+        successRate: 0,
+        totalUsers: 0,
+        proUsers: 0,
+        activeTrialUsers: 0,
+        freeTrialUsers: 0
+      };
+    }
 
     return NextResponse.json({
       success: true,
@@ -124,22 +146,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create or update settings
-    const settings = await prisma.storySettings.create({
-      data: {
-        isEnabled,
-        freeTrialDays: freeTrialDays || 7,
-        maxFreeStories: maxFreeStories || 3,
-        systemPrompt,
-        promptVersion: promptVersion || 'v1.0',
-        allowedProviders: allowedProviders || ['openai', 'anthropic', 'google'],
-        defaultProvider: defaultProvider || 'openai',
-        defaultModel: defaultModel || 'gpt-4',
-        timeoutSeconds: timeoutSeconds || 120,
-        isProFeature: isProFeature !== undefined ? isProFeature : true,
-        updatedBy: user.id,
+    // Create or update settings (upsert logic)
+    let settings;
+    try {
+      // Try to get existing settings first
+      const existing = await prisma.storySettings.findFirst({
+        orderBy: { updatedAt: 'desc' }
+      });
+
+      if (existing) {
+        // Update existing settings
+        settings = await prisma.storySettings.update({
+          where: { id: existing.id },
+          data: {
+            isEnabled,
+            freeTrialDays: freeTrialDays || 7,
+            maxFreeStories: maxFreeStories || 3,
+            systemPrompt,
+            promptVersion: promptVersion || 'v1.0',
+            allowedProviders: allowedProviders || ['google', 'openai', 'anthropic'],
+            defaultProvider: defaultProvider || 'google',
+            defaultModel: defaultModel || 'gemini-1.5-flash',
+            timeoutSeconds: timeoutSeconds || 120,
+            isProFeature: isProFeature !== undefined ? isProFeature : true,
+            updatedBy: user.id,
+          }
+        });
+      } else {
+        // Create new settings
+        settings = await prisma.storySettings.create({
+          data: {
+            isEnabled,
+            freeTrialDays: freeTrialDays || 7,
+            maxFreeStories: maxFreeStories || 3,
+            systemPrompt,
+            promptVersion: promptVersion || 'v1.0',
+            allowedProviders: allowedProviders || ['google', 'openai', 'anthropic'],
+            defaultProvider: defaultProvider || 'google',
+            defaultModel: defaultModel || 'gemini-1.5-flash',
+            timeoutSeconds: timeoutSeconds || 120,
+            isProFeature: isProFeature !== undefined ? isProFeature : true,
+            updatedBy: user.id,
+          }
+        });
       }
-    });
+    } catch (dbError) {
+      console.error("Database error in story settings:", dbError);
+      throw new Error("Failed to save story settings to database");
+    }
 
     return NextResponse.json({
       success: true,
@@ -239,9 +293,9 @@ function getDefaultStorySettings() {
     maxFreeStories: 3,
     systemPrompt: "Transform this analysis into an engaging story with a clear timeline. Create chapters that flow naturally and make complex information easy to understand without overwhelming the reader.",
     promptVersion: 'v1.0',
-    allowedProviders: ['openai', 'anthropic', 'google'],
-    defaultProvider: 'openai',
-    defaultModel: 'gpt-4',
+    allowedProviders: ['google', 'openai', 'anthropic'],
+    defaultProvider: 'google',
+    defaultModel: 'gemini-1.5-flash',
     timeoutSeconds: 120,
     isProFeature: true,
     createdAt: new Date(),

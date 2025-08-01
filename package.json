@@ -12,6 +12,7 @@
     "setup": "node setup.js",
     "setup-admin": "tsx scripts/setup-admin.ts",
     "seed:modules": "tsx scripts/seedModules.ts",
+    "init:story": "node scripts/init-story-settings.js",
     "migrate:landing": "tsx scripts/migrate-landing-features.ts",
     "verify-env": "tsx scripts/verify-env.ts",
     "verify-setup": "tsx scripts/verify-setup.ts",
