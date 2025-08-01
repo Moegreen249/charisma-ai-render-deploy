@@ -38,6 +38,9 @@ model User {
   blogPosts      BlogPost[]
   profile        UserProfile?
   customThemes   CustomTheme[] @relation("ThemeCreator")
+  stories        Story[]
+  storySettings  StorySettings[]
+  storyUsage     UserStoryUsage?
 }
 
 model Account {
@@ -89,6 +92,7 @@ model Analysis {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story          Story?
 
   @@index([userId])
   @@index([templateId])
@@ -497,4 +501,74 @@ model CustomTheme {
   @@index([createdBy])
   @@index([isActive])
   @@index([isPublic])
+}
+
+// Story Feature Models - AI-powered narrative generation from analysis results
+model Story {
+  id              String      @id @default(uuid())
+  analysisId      String      @unique
+  userId          String
+  title           String
+  content         Json        // Story content with timeline structure
+  generatedAt     DateTime    @default(now())
+  promptVersion   String      // Track which prompt template was used
+  aiProvider      String
+  modelId         String
+  processingTime  Int?        // Time taken to generate story in ms
+  status          StoryStatus @default(PENDING)
+  errorMessage    String?     // Store error details if generation fails
+  
+  analysis        Analysis    @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([status])
+  @@index([generatedAt])
+  @@index([aiProvider])
+}
+
+model StorySettings {
+  id                String   @id @default(uuid())
+  isEnabled         Boolean  @default(false)
+  freeTrialDays     Int      @default(7)
+  maxFreeStories    Int      @default(3)
+  systemPrompt      String   @default("Transform this analysis into an engaging story with a clear timeline. Create chapters that flow naturally and make complex information easy to understand without overwhelming the reader.") @db.Text
+  promptVersion     String   @default("v1.0")
+  allowedProviders  String[] @default(["openai", "anthropic", "google"])
+  defaultProvider   String   @default("openai")
+  defaultModel      String   @default("gpt-4")
+  timeoutSeconds    Int      @default(120)
+  isProFeature      Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  updatedBy         String
+  
+  updater           User     @relation(fields: [updatedBy], references: [id])
+  
+  @@index([isEnabled])
+  @@index([updatedAt])
+}
+
+model UserStoryUsage {
+  id              String   @id @default(uuid())
+  userId          String
+  storiesGenerated Int     @default(0)
+  freeTrialStart  DateTime?
+  isProUser       Boolean  @default(false)
+  lastStoryAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId])
+  @@index([userId])
+  @@index([isProUser])
+}
+
+enum StoryStatus {
+  PENDING
+  GENERATING
+  COMPLETED
+  FAILED
 }

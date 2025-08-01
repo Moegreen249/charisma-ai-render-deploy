@@ -41,6 +41,9 @@ import {
   FileText,
   Zap,
   Calendar,
+  BookOpen,
+  Crown,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { deleteAnalysis } from "@/app/actions/history";
@@ -67,6 +70,7 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
   const [history, setHistory] = useState<Analysis[]>(initialHistory);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [storyLoading, setStoryLoading] = useState<string | null>(null);
 
   const filteredHistory = history.filter((analysis) =>
     analysis.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,6 +93,47 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
       console.error("Error deleting analysis:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateStory = async (analysisId: string) => {
+    setStoryLoading(analysisId);
+    try {
+      const response = await fetch('/api/story/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ analysisId }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Navigate to story view or show success message
+        if (result.story.status === 'COMPLETED') {
+          router.push(`/story/${result.story.id}`);
+        } else {
+          // Story is generating, could show a toast or poll for completion
+          console.log('Story generation started:', result.message);
+          // For now, just navigate to the story page which will show loading state
+          router.push(`/story/${result.story.id}`);
+        }
+      } else {
+        console.error("Failed to generate story:", result.error);
+        // Handle different error types
+        if (result.requiresPro) {
+          // Show upgrade prompt
+          alert(`${result.error}\n\nWould you like to upgrade to Pro?`);
+        } else {
+          alert(result.error);
+        }
+      }
+    } catch (error) {
+      console.error("Error generating story:", error);
+      alert("Failed to generate story. Please try again.");
+    } finally {
+      setStoryLoading(null);
     }
   };
 
@@ -213,13 +258,26 @@ export default function HistoryList({ initialHistory }: HistoryListProps) {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-gray-800 border-white/20 text-white">
+                        <DropdownMenuContent align="end" className={cn("bg-gray-800 border-white/20 text-white", themeConfig.colors.glass.background, themeConfig.colors.glass.border)}>
                           <DropdownMenuItem 
                             onClick={() => router.push(`/history/${analysis.id}`)} 
-                            className="text-white hover:bg-white/10 focus:bg-white/10"
+                            className={cn("text-white hover:bg-white/10 focus:bg-white/10", themeConfig.animation.transition)}
                           >
                             <Eye className="h-4 w-4 mr-2" />
                             View Analysis
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleGenerateStory(analysis.id)}
+                            className={cn("text-purple-400 hover:bg-purple-500/10 focus:bg-purple-500/10 focus:text-purple-400", themeConfig.animation.transition)}
+                            disabled={storyLoading === analysis.id}
+                          >
+                            {storyLoading === analysis.id ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <BookOpen className="h-4 w-4 mr-2" />
+                            )}
+                            {storyLoading === analysis.id ? 'Generating...' : 'Generate Story'}
+                            <Crown className="h-3 w-3 ml-1 text-yellow-400" />
                           </DropdownMenuItem>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

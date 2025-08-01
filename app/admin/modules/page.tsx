@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth-config";
 import { redirect } from "next/navigation";
 import { getModules } from "@/app/actions/module";
 import ModuleManagementTable from "@/components/admin/ModuleManagementTable";
+import StorySettingsPanel from "@/components/admin/StorySettingsPanel";
 
 export default async function AdminModulesPage() {
   const session = await getServerSession(authOptions);
@@ -79,6 +80,9 @@ export default async function AdminModulesPage() {
             </div>
           </div>
         </div>
+
+        {/* Story Settings Panel */}
+        <StorySettingsPanel />
 
         {/* Module Management Table */}
         <ModuleManagementTable initialModules={initialModules || []} />

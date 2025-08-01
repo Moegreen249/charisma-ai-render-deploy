@@ -44,8 +44,26 @@ import {
   UserX,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useErrorStore, type ErrorDetails } from '@/lib/error-management';
+// import { useErrorStore, type ErrorDetails } from '@/lib/error-management';
 import { themeClasses } from '@/components/providers/ThemeProvider';
+
+interface ErrorDetails {
+  id: string;
+  type: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  message: string;
+  description?: string;
+  createdAt: string;
+  isResolved: boolean;
+  resolvedAt?: string;
+  resolvedBy?: string;
+  stackTrace?: string;
+  endpoint?: string;
+  userId?: string;
+  timestamp?: string;
+  resolved?: boolean;
+  metadata?: any;
+}
 
 const ERROR_TYPE_ICONS = {
   API: Server,
@@ -75,17 +93,9 @@ export default function AdminErrorsPage() {
   const [selectedError, setSelectedError] = useState<ErrorDetails | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  const {
-    errors,
-    stats,
-    isLoading,
-    fetchErrors,
-    resolveError,
-    clearErrors,
-    getErrorsByType,
-    getErrorsBySeverity,
-    getRecentErrors,
-  } = useErrorStore();
+  const [errors, setErrors] = useState<ErrorDetails[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check authentication
   useEffect(() => {
@@ -109,25 +119,31 @@ export default function AdminErrorsPage() {
   }, [autoRefresh]);
 
   const loadErrorData = useCallback(async () => {
-    setLoading(true);
+    setIsLoading(true);
     try {
-      await fetchErrors();
+      const response = await fetch('/api/admin/errors');
+      if (response.ok) {
+        const data = await response.json();
+        setErrors(data.errors || []);
+        setStats(data.stats || null);
+      }
     } catch (error) {
       console.error('Failed to load errors:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }, [fetchErrors]);
+  }, []);
 
   const handleResolveError = async (errorId: string) => {
     try {
-      await resolveError(errorId, session?.user?.id);
-      // Also update on backend
-      await fetch(`/api/admin/errors/${errorId}/resolve`, {
+      const response = await fetch(`/api/admin/errors/${errorId}/resolve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resolvedBy: session?.user?.id }),
       });
+      if (response.ok) {
+        await loadErrorData();
+      }
     } catch (error) {
       console.error('Failed to resolve error:', error);
     }
@@ -148,6 +164,21 @@ export default function AdminErrorsPage() {
     }
   };
 
+  const clearErrors = async () => {
+    try {
+      const response = await fetch('/api/admin/errors/bulk-resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clearAll: true }),
+      });
+      if (response.ok) {
+        await loadErrorData();
+      }
+    } catch (error) {
+      console.error('Failed to clear errors:', error);
+    }
+  };
+
   const filteredErrors = errors.filter((error) => {
     const matchesSearch = !searchTerm || 
       error.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -160,7 +191,7 @@ export default function AdminErrorsPage() {
     const hoursMap = { '1h': 1, '24h': 24, '7d': 168, '30d': 720 };
     const hours = hoursMap[selectedTimeRange as keyof typeof hoursMap] || 168;
     const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
-    const matchesTimeRange = error.timestamp > cutoff;
+    const matchesTimeRange = error.timestamp ? new Date(error.timestamp) > cutoff : true;
 
     return matchesSearch && matchesType && matchesSeverity && matchesTimeRange;
   });
@@ -461,7 +492,7 @@ export default function AdminErrorsPage() {
                                   )}
                                   <div className={`text-xs ${themeClasses.text.muted} space-y-1`}>
                                     <p>
-                                      {new Date(error.timestamp).toLocaleString()}
+                                      {error.timestamp ? new Date(error.timestamp).toLocaleString() : 'Unknown time'}
                                       {error.metadata?.component && ` • ${error.metadata.component}`}
                                       {error.endpoint && ` • ${error.endpoint}`}
                                     </p>

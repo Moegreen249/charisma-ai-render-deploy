@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
       category,
       errorIds,
       olderThan,
-      resolution
+      resolution,
+      clearAll
     } = body;
 
     // Build where clause for bulk resolution
@@ -31,22 +32,25 @@ export async function POST(request: NextRequest) {
       isResolved: false,
     };
 
-    if (severity) {
-      where.severity = severity;
-    }
+    // If clearAll is true, resolve all unresolved errors
+    if (!clearAll) {
+      if (severity) {
+        where.severity = severity;
+      }
 
-    if (category) {
-      where.category = category;
-    }
+      if (category) {
+        where.category = category;
+      }
 
-    if (errorIds && Array.isArray(errorIds)) {
-      where.id = { in: errorIds };
-    }
+      if (errorIds && Array.isArray(errorIds)) {
+        where.id = { in: errorIds };
+      }
 
-    if (olderThan) {
-      where.createdAt = {
-        lt: new Date(Date.now() - olderThan * 24 * 60 * 60 * 1000), // olderThan in days
-      };
+      if (olderThan) {
+        where.createdAt = {
+          lt: new Date(Date.now() - olderThan * 24 * 60 * 60 * 1000), // olderThan in days
+        };
+      }
     }
 
     // Get errors to be resolved for logging
