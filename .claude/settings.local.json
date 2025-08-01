@@ -16,7 +16,8 @@
       "Bash(vercel:*)",
       "Bash(git push:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(rg:*)"
     ],
     "deny": []
   }

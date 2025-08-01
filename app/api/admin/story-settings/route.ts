@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authConfig } from "@/lib/auth-config";
+import { authOptions } from "@/lib/auth-config";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = 'nodejs';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and admin role
-    const session = await getServerSession(authConfig);
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -73,8 +73,30 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error("Error fetching story settings:", error);
+    
+    // Provide more detailed error information
+    let errorMessage = "Failed to fetch story settings";
+    if (error instanceof Error) {
+      errorMessage = `Database error: ${error.message}`;
+      
+      // Handle specific Prisma error codes
+      if ('code' in error) {
+        switch (error.code) {
+          case 'P1001':
+            errorMessage = "Cannot reach database server";
+            break;
+          default:
+            errorMessage = `Database error (${error.code}): ${error.message}`;
+        }
+      }
+    }
+    
     return NextResponse.json(
-      { error: "Failed to fetch story settings" },
+      { 
+        error: errorMessage,
+        details: error instanceof Error ? error.message : String(error),
+        code: 'code' in error ? error.code : undefined
+      },
       { status: 500 }
     );
   }
@@ -83,7 +105,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and admin role
-    const session = await getServerSession(authConfig);
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -203,8 +225,39 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("Error updating story settings:", error);
+    
+    // Provide more detailed error information
+    let errorMessage = "Failed to update story settings";
+    if (error instanceof Error) {
+      errorMessage = `Database error: ${error.message}`;
+      
+      // Handle specific Prisma error codes
+      if ('code' in error) {
+        switch (error.code) {
+          case 'P2002':
+            errorMessage = "Unique constraint violation in story settings";
+            break;
+          case 'P2003':
+            errorMessage = "Foreign key constraint failed - admin user not found";
+            break;
+          case 'P2025':
+            errorMessage = "Record not found for update operation";
+            break;
+          case 'P1001':
+            errorMessage = "Cannot reach database server";
+            break;
+          default:
+            errorMessage = `Database error (${error.code}): ${error.message}`;
+        }
+      }
+    }
+    
     return NextResponse.json(
-      { error: "Failed to update story settings" },
+      { 
+        error: errorMessage,
+        details: error instanceof Error ? error.message : String(error),
+        code: 'code' in error ? error.code : undefined
+      },
       { status: 500 }
     );
   }
