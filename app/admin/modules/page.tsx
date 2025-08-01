@@ -18,7 +18,7 @@ export default async function AdminModulesPage() {
 
   const result = await getModules();
   const initialModules = result.success ? result.data : [];
-  const error = result.success ? null : result.error;
+  const error = result.success ? null : (result as any).error;
 
   if (error) {
     return (

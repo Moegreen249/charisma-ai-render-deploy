@@ -17,7 +17,8 @@
       "Bash(git push:*)",
       "Bash(npx tsc:*)",
       "Bash(npx prisma:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(npm audit:*)"
     ],
     "deny": []
   }

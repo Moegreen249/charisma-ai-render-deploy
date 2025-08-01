@@ -1,4 +1,4 @@
-import type { AnalysisTemplate } from "@/src/types";
+import type { AnalysisTemplate } from "@/types";
 import { prisma } from "@/lib/prisma";
 import {
   ENHANCED_COMMUNICATION_TEMPLATE,

@@ -37,11 +37,7 @@ import {
   LineVisualization,
   BarVisualization,
 } from "@/components/visualization";
-import type {
-  Insight,
-  InsightType,
-  InsightMetadata,
-} from "@/src/types/analysis";
+import type { Insight } from "@/types";
 import { useEnhancedLanguage } from "@/components/EnhancedLanguageProvider";
 import { getComprehensiveTranslations } from "@/lib/comprehensive-translations";
 import { themeConfig } from "@/lib/theme-config";

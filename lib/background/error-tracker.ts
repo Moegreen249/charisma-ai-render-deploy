@@ -1,6 +1,6 @@
 // Comprehensive error tracking and logging system for CharismaAI
 import { prisma } from "@/lib/prisma";
-import type { ErrorSeverity, ErrorCategory } from "@/src/generated/prisma";
+import type { ErrorSeverity, ErrorCategory } from "@prisma/client";
 
 export interface ErrorLogData {
   category: ErrorCategory;

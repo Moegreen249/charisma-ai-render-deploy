@@ -49,7 +49,7 @@ import {
   Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { AnalysisResult, Insight } from "@/src/types";
+import type { AnalysisResult, Insight } from "@/types";
 import { getTemplateById } from "@/app/actions/templates";
 import { useEnhancedLanguage } from "@/components/EnhancedLanguageProvider";
 import FlexibleInsightRenderer from "@/components/FlexibleInsightRenderer";

@@ -2,16 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-config";
 import { analyzeChat } from "@/app/actions/analyze";
+import { applyRateLimit, RATE_LIMITS, validateFileUpload, createErrorResponse, createSuccessResponse } from "@/lib/security";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = applyRateLimit(request, RATE_LIMITS.ANALYSIS);
+    if (!rateLimitResult.success) {
+      return createErrorResponse(
+        "Too many analysis requests. Please wait before trying again.",
+        429
+      );
+    }
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
+      logger.warn('Analyze API: Unauthorized access attempt', {
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+      });
+      return createErrorResponse("Authentication required", 401);
     }
 
     // Get form data
@@ -19,14 +30,38 @@ export async function POST(request: NextRequest) {
     const file = formData.get("chatFile") as File;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return createErrorResponse("No file provided", 400);
     }
+
+    // Validate file upload
+    const fileValidation = validateFileUpload(file);
+    if (!fileValidation.valid) {
+      logger.warn('Analyze API: Invalid file upload', {
+        userId: session.user.id,
+        fileName: file.name,
+        fileSize: file.size,
+        error: fileValidation.error
+      });
+      return createErrorResponse(fileValidation.error || "Invalid file", 400);
+    }
+
+    logger.audit('analysis_started', {
+      userId: session.user.id,
+      fileName: file.name,
+      fileSize: file.size
+    });
 
     // Call the analyze action directly with the original FormData
     const result = await analyzeChat(formData);
 
     if (!result.success) {
       let errorMessage = result.error || "Analysis failed";
+
+      // Log the error for debugging
+      logger.error('Analysis failed', new Error(errorMessage), {
+        userId: session.user.id,
+        fileName: file.name
+      });
 
       // Provide more helpful error messages
       if (
@@ -55,12 +90,21 @@ export async function POST(request: NextRequest) {
           "API quota exceeded. Please check your AI provider billing or try again later.";
       }
 
-      return NextResponse.json({ error: errorMessage }, { status: 400 });
+      return createErrorResponse(errorMessage, 400);
     }
 
-    return NextResponse.json(result.data);
+    logger.audit('analysis_completed', {
+      userId: session.user.id,
+      fileName: file.name,
+      analysisId: result.data?.id
+    });
+
+    return createSuccessResponse(result.data);
   } catch (error) {
-    console.error("Analysis API error:", error);
+    logger.error("Analysis API: Unexpected error", error, {
+      userId: session?.user?.id,
+      fileName: file?.name
+    });
 
     let errorMessage =
       "Analysis failed. Please check your settings and try again.";
@@ -76,11 +120,10 @@ export async function POST(request: NextRequest) {
         error.message.includes("network") ||
         error.message.includes("fetch")
       ) {
-        errorMessage =
-          "Network error. Please check your internet connection and try again.";
+        errorMessage = "Network error. Please check your connection and try again.";
       }
     }
 
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return createErrorResponse(errorMessage, 500);
   }
 }

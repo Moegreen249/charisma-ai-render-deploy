@@ -8,8 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run dev        # Start development server with Turbopack
 npm run build      # Build for production
-npm run start      # Start production server
+npm run start      # Start production server (with migrations)
 npm run lint       # Run ESLint
+npm run typecheck  # Run TypeScript type checking
 npm run setup      # Initial setup
 npm run setup-admin # Create admin user
 npm run seed:modules # Seed analysis modules/templates
@@ -21,31 +22,45 @@ npx prisma generate  # Generate Prisma client
 npx prisma migrate dev # Run migrations in development
 npx prisma migrate deploy # Run migrations in production
 npx prisma studio    # Open Prisma Studio GUI
+npm run db:reset     # Reset database only
+npm run db:reset-seed # Reset database and seed with demo data
+npm run db:diagnose  # Run database diagnostics
+npm run db:maintenance # Run database maintenance tasks
 ```
 
-### Verification Commands
+### Quality & Verification Commands
 ```bash
 npm run verify-env    # Verify environment variables
 npm run verify-setup  # Verify setup completion
 npm run list-users    # List all users
+npm run quality       # Run comprehensive code quality checks
+npm run quality:quick # Run quick quality checks
+npm run quality:fix   # Auto-fix linting and formatting issues
+npm run test:quality  # Run typecheck, lint, and format checks
+npm run format        # Format code with Prettier
+npm run format:check  # Check code formatting
 ```
 
 ### Testing
 ```bash
-# Check for test script in package.json or common patterns
-npm test            # If available
-npm run test        # Alternative
+# No test framework currently configured
+# Quality checks serve as primary validation
+npm run test:quality  # Run all quality checks
 ```
 
 ## Architecture Overview
 
 ### Technology Stack
-- **Framework**: Next.js 15 with App Router
+- **Framework**: Next.js 15 with App Router and Turbopack
 - **UI**: React 19 with TypeScript
 - **Styling**: Tailwind CSS + Radix UI components
+- **State Management**: Zustand for client state, React hooks
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js
-- **AI Providers**: Google Gemini, OpenAI, Anthropic Claude
+- **Authentication**: NextAuth.js with Prisma adapter
+- **AI Providers**: Google Gemini/GenAI, OpenAI, Anthropic Claude, Google Vertex AI
+- **Analytics**: Vercel Analytics and Speed Insights
+- **Email**: Resend for transactional emails
+- **Animations**: Framer Motion
 
 ### Key Architectural Patterns
 
@@ -63,7 +78,8 @@ npm run test        # Alternative
 3. **Authentication & Authorization**
    - NextAuth.js configuration in `app/api/auth/[...nextauth]/route.ts`
    - Role-based access control (USER/ADMIN)
-   - Protected routes with middleware
+   - Middleware protection for admin routes (`/admin/*`, `/api/admin/*`)
+   - Prisma adapter for session persistence
 
 4. **Database Architecture**
    - Comprehensive Prisma schema with models for:
@@ -109,5 +125,31 @@ npm run test        # Alternative
 ### Deployment Configuration
 - Render.com deployment with `render.yaml`
 - Environment-specific settings
-- Automated database migrations
+- Automated database migrations on production start
 - Health check endpoints at `/api/health`
+
+## Important Workflow Patterns
+
+### Development Workflow
+1. Always run `npm run typecheck` and `npm run lint` before committing
+2. Use `npm run quality:fix` to auto-resolve formatting issues
+3. Database changes require running `npx prisma migrate dev` locally
+4. Test admin functionality with `npm run setup-admin` after database resets
+
+### AI Provider Integration
+- New providers must implement the `AIProviderConfig` interface
+- Models are configured in `lib/ai-providers.ts` with availability flags
+- Streaming responses handled via `/api/story/generate` endpoint
+- Provider selection is dynamic based on available API keys
+
+### Database Migrations
+- Development: Use `npx prisma migrate dev` with descriptive names
+- Production: Migrations run automatically on `npm start`
+- Reset workflows: Use `npm run db:reset-seed` for clean development state
+- Diagnostics: Run `npm run db:diagnose` for connection/schema issues
+
+### Admin System Access
+- Admin routes protected by middleware at `middleware.ts`
+- Admin user creation via `npm run setup-admin` script
+- Role validation happens at both middleware and API levels
+- Admin API endpoints follow `/api/admin/*` pattern

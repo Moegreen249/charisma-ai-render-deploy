@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 import { z } from 'zod';
 
 const profileSchema = z.object({
@@ -30,20 +31,18 @@ const profileSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Profile API: Starting GET request');
-    
     const session = await getServerSession(authOptions);
-    console.log('Profile API: Session check:', session ? 'Session found' : 'No session');
+    logger.debug('Profile API: GET request', { hasSession: !!session });
 
     if (!session || !session.user?.id) {
-      console.log('Profile API: Unauthorized - no session or user ID');
+      logger.warn('Profile API: Unauthorized access attempt');
       return NextResponse.json(
         { error: 'Unauthorized - Please sign in' },
         { status: 401 }
       );
     }
 
-    console.log('Profile API: Looking for profile for user:', session.user.id);
+    logger.debug('Profile API: Fetching profile', { userId: session.user.id });
 
     let profile = await prisma.userProfile.findUnique({
       where: { userId: session.user.id },
@@ -60,10 +59,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log('Profile API: Profile found:', profile ? 'Yes' : 'No');
-
     if (!profile) {
-      console.log('Profile API: Creating default profile for user:', session.user.id);
+      logger.info('Profile API: Creating default profile', { userId: session.user.id });
       
       // Create default profile
       profile = await prisma.userProfile.create({
@@ -91,14 +88,13 @@ export async function GET(request: NextRequest) {
         },
       });
       
-      console.log('Profile API: Default profile created');
+      logger.audit('profile_created', { userId: session.user.id });
     }
 
-    console.log('Profile API: Returning profile data');
     return NextResponse.json(profile);
 
   } catch (error) {
-    console.error('Profile API Error:', error);
+    logger.error('Profile API: Failed to fetch profile', error, { userId: session?.user?.id });
     
     // More detailed error logging
     if (error instanceof Error) {

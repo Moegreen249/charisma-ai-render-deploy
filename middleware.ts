@@ -6,8 +6,6 @@ export default withAuth(
     const token = req.nextauth.token;
     const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
 
-    console.log("Middleware token:", token); // Add logging
-
     // If accessing admin routes, check if user is admin
     if (isAdminRoute) {
       if (!token) {
@@ -15,7 +13,6 @@ export default withAuth(
       }
 
       if (token.role !== "ADMIN") {
-        console.log("Access denied - User role:", token.role); // Add logging
         return NextResponse.redirect(new URL("/", req.url));
       }
     }
@@ -25,7 +22,6 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token }) => {
-        console.log("Auth callback token:", token); // Add logging
         return !!token;
       },
     },

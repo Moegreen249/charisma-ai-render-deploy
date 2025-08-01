@@ -16,7 +16,10 @@ export function TestNotificationButton() {
       message: "Your conversation analysis is ready to view.",
       action: {
         label: "View Results",
-        onClick: () => console.log("Navigate to results"),
+        onClick: () => {
+          // Navigate to results - could redirect to /history
+          window.location.href = "/history";
+        },
       },
     },
     {
