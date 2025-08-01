@@ -15,10 +15,10 @@ export interface AnalysisTemplate {
 }
 
 export interface Insight {
-  type: "text" | "list" | "score" | "timeline" | "metric" | "chart" | "table" | "category";
-  title: string;
+  type?: "text" | "list" | "score" | "timeline" | "metric" | "chart" | "table" | "category";
+  title?: string;
   content?: any;
-  metadata: {
+  metadata?: {
     category?: string;
     priority?: number;
     confidence?: number;
@@ -31,34 +31,34 @@ export interface Insight {
 
 export interface AnalysisResult {
   id?: string;
-  detectedLanguage: string;
-  overallSummary: string;
-  insights: Insight[];
+  detectedLanguage?: string;
+  overallSummary?: string;
+  insights?: Insight[];
   personality?: {
-    traits: string[];
-    summary: string;
+    traits?: string[];
+    summary?: string;
   };
   emotionalArc?: Array<{
-    timestamp: string;
-    emotion: string;
-    intensity: number;
+    timestamp?: string;
+    emotion?: string;
+    intensity?: number;
     context?: string;
     description?: string;
   }>;
   communicationPatterns?: Array<{
-    pattern: string;
-    examples: string[];
-    impact: string;
+    pattern?: string;
+    examples?: string[];
+    impact?: string;
   }> | {
-    responseTime: {
-      average: number;
-      pattern: string;
+    responseTime?: {
+      average?: number;
+      pattern?: string;
     };
-    messageLength: {
-      average: number;
-      distribution: string;
+    messageLength?: {
+      average?: number;
+      distribution?: string;
     };
-    initiationPattern: string;
+    initiationPattern?: string;
   };
   templateData?: Record<string, any>;
   metadata?: Record<string, any>;
