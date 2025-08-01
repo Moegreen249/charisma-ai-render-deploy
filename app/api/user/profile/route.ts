@@ -30,8 +30,10 @@ const profileSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  let session: any = null;
+  
   try {
-    const session = await getServerSession(authOptions);
+    session = await getServerSession(authOptions);
     logger.debug('Profile API: GET request', { hasSession: !!session });
 
     if (!session || !session.user?.id) {

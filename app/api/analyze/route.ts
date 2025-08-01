@@ -6,6 +6,9 @@ import { applyRateLimit, RATE_LIMITS, validateFileUpload, createErrorResponse, c
 import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
+  let session: any = null;
+  let file: File | null = null;
+  
   try {
     // Apply rate limiting
     const rateLimitResult = applyRateLimit(request, RATE_LIMITS.ANALYSIS);
@@ -17,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check authentication
-    const session = await getServerSession(authOptions);
+    session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       logger.warn('Analyze API: Unauthorized access attempt', {
         ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
@@ -27,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // Get form data
     const formData = await request.formData();
-    const file = formData.get("chatFile") as File;
+    file = formData.get("chatFile") as File;
 
     if (!file) {
       return createErrorResponse("No file provided", 400);
