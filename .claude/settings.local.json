@@ -18,7 +18,8 @@
       "Bash(npx tsc:*)",
       "Bash(npx prisma:*)",
       "Bash(rg:*)",
-      "Bash(npm audit:*)"
+      "Bash(npm audit:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

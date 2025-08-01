@@ -99,7 +99,7 @@ async function generateStoryWithAI(
   // For now, using Google Gemini as default
   // TODO: Add support for other providers based on settings
   
-  const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+  const apiKey = process.env.GOOGLE_GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     throw new Error("Google AI API key not configured");
   }
