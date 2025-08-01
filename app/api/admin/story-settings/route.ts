@@ -80,13 +80,14 @@ export async function GET(request: NextRequest) {
       errorMessage = `Database error: ${error.message}`;
       
       // Handle specific Prisma error codes
-      if ('code' in error) {
-        switch (error.code) {
+      if (error && typeof error === 'object' && 'code' in error) {
+        const errorCode = (error as any).code;
+        switch (errorCode) {
           case 'P1001':
             errorMessage = "Cannot reach database server";
             break;
           default:
-            errorMessage = `Database error (${error.code}): ${error.message}`;
+            errorMessage = `Database error (${errorCode}): ${error.message}`;
         }
       }
     }
@@ -95,7 +96,7 @@ export async function GET(request: NextRequest) {
       { 
         error: errorMessage,
         details: error instanceof Error ? error.message : String(error),
-        code: 'code' in error ? error.code : undefined
+        code: (error && typeof error === 'object' && 'code' in error) ? (error as any).code : undefined
       },
       { status: 500 }
     );
@@ -232,8 +233,9 @@ export async function POST(request: NextRequest) {
       errorMessage = `Database error: ${error.message}`;
       
       // Handle specific Prisma error codes
-      if ('code' in error) {
-        switch (error.code) {
+      if (error && typeof error === 'object' && 'code' in error) {
+        const errorCode = (error as any).code;
+        switch (errorCode) {
           case 'P2002':
             errorMessage = "Unique constraint violation in story settings";
             break;
@@ -247,7 +249,7 @@ export async function POST(request: NextRequest) {
             errorMessage = "Cannot reach database server";
             break;
           default:
-            errorMessage = `Database error (${error.code}): ${error.message}`;
+            errorMessage = `Database error (${errorCode}): ${error.message}`;
         }
       }
     }
@@ -256,7 +258,7 @@ export async function POST(request: NextRequest) {
       { 
         error: errorMessage,
         details: error instanceof Error ? error.message : String(error),
-        code: 'code' in error ? error.code : undefined
+        code: (error && typeof error === 'object' && 'code' in error) ? (error as any).code : undefined
       },
       { status: 500 }
     );
