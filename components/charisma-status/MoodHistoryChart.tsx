@@ -119,7 +119,7 @@ export function MoodHistoryChart({ history }: MoodHistoryChartProps) {
                 y={averageMood} 
                 stroke="#6B7280" 
                 strokeDasharray="3 3" 
-                label={{ value: "Avg", position: "topRight", fill: "#9CA3AF", fontSize: 12 }}
+                label={{ value: "Avg", position: "insideTopRight", fill: "#9CA3AF", fontSize: 12 }}
               />
               <Line
                 type="monotone"

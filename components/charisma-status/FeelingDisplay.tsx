@@ -4,7 +4,7 @@ import { CharismaFeeling } from '@/lib/ai-self-reflection';
 
 interface FeelingDisplayProps {
   feeling: CharismaFeeling | null;
-  lastUpdated?: string;
+  lastUpdated?: string | null;
 }
 
 export function FeelingDisplay({ feeling, lastUpdated }: FeelingDisplayProps) {

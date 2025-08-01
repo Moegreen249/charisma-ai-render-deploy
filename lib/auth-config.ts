@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
 import type { NextAuthOptions } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
+export const authConfig: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
   // Use secure cookies in production
   cookies: {
@@ -121,3 +121,5 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+export const authOptions = authConfig;

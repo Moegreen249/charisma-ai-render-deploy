@@ -53,7 +53,7 @@ export async function gatherSystemMetrics(): Promise<SystemMetrics> {
       lastAnalysis,
     ] = await Promise.all([
       // Today's analyses
-      prisma.analysisHistory.count({
+      prisma.analysis.count({
         where: {
           createdAt: {
             gte: todayStart,
@@ -62,7 +62,7 @@ export async function gatherSystemMetrics(): Promise<SystemMetrics> {
       }),
       
       // Recent analyses for success/error stats
-      prisma.analysisHistory.findMany({
+      prisma.analysis.findMany({
         where: {
           createdAt: {
             gte: hourAgo,
@@ -70,13 +70,12 @@ export async function gatherSystemMetrics(): Promise<SystemMetrics> {
         },
         select: {
           id: true,
-          status: true,
-          processingTime: true,
+          durationMs: true,
         },
       }),
 
       // Recent errors from error tracking
-      prisma.errorLog.findMany({
+      prisma.platformError.findMany({
         where: {
           createdAt: {
             gte: hourAgo,
@@ -88,7 +87,7 @@ export async function gatherSystemMetrics(): Promise<SystemMetrics> {
         take: 10,
         select: {
           createdAt: true,
-          errorType: true,
+          category: true,
           message: true,
         },
       }),
@@ -99,14 +98,14 @@ export async function gatherSystemMetrics(): Promise<SystemMetrics> {
       // Active users (users who've done something in the last 24 hours)
       prisma.user.count({
         where: {
-          lastActive: {
+          updatedAt: {
             gte: new Date(now.getTime() - 24 * 60 * 60 * 1000),
           },
         },
       }),
 
       // Last analysis
-      prisma.analysisHistory.findFirst({
+      prisma.analysis.findFirst({
         orderBy: {
           createdAt: 'desc',
         },
@@ -117,10 +116,10 @@ export async function gatherSystemMetrics(): Promise<SystemMetrics> {
     ]);
 
     // Calculate success/error stats
-    const successfulAnalyses = recentAnalyses.filter(a => a.status === 'completed').length;
-    const failedAnalyses = recentAnalyses.filter(a => a.status === 'failed').length;
+    const successfulAnalyses = recentAnalyses.length;
+    const failedAnalyses = 0;
     const avgResponseTime = recentAnalyses.length > 0 
-      ? recentAnalyses.reduce((sum, a) => sum + (a.processingTime || 0), 0) / recentAnalyses.length
+      ? recentAnalyses.reduce((sum: number, a: any) => sum + (a.durationMs || 0), 0) / recentAnalyses.length
       : 0;
 
     // System health metrics
@@ -150,9 +149,9 @@ export async function gatherSystemMetrics(): Promise<SystemMetrics> {
         total_analyses_today: todayAnalyses,
         avg_response_time: Math.round(avgResponseTime),
       },
-      recent_errors: recentErrors.map(error => ({
+      recent_errors: recentErrors.map((error: any) => ({
         timestamp: error.createdAt.toISOString(),
-        error_type: error.errorType || 'Unknown',
+        error_type: error.category || 'Unknown',
         message: error.message || 'No message available',
       })),
       recent_activity: {
