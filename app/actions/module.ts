@@ -65,12 +65,12 @@ export async function createModule(
 
   try {
     const rawData = {
-      name: formData.get("name") as string,
-      description: formData.get("description") as string,
-      instructionPrompt: formData.get("instructionPrompt") as string,
-      expectedJsonHint: formData.get("expectedJsonHint") as string,
-      category: formData.get("category") as string,
-      icon: formData.get("icon") as string,
+      name: formData.get("name") as string || "",
+      description: formData.get("description") as string || "",
+      instructionPrompt: formData.get("instructionPrompt") as string || "",
+      expectedJsonHint: formData.get("expectedJsonHint") as string || "",
+      category: formData.get("category") as string || "",
+      icon: formData.get("icon") as string || "",
       isActive: formData.get("isActive") === "true",
       isBuiltIn: false, // Always false for admin-created modules
     };
@@ -78,7 +78,16 @@ export async function createModule(
     const validatedData = moduleCreateSchema.parse(rawData);
 
     const module = await prisma.analysisModule.create({
-      data: validatedData,
+      data: {
+        name: validatedData.name,
+        description: validatedData.description,
+        instructionPrompt: validatedData.instructionPrompt,
+        expectedJsonHint: validatedData.expectedJsonHint,
+        category: validatedData.category,
+        icon: validatedData.icon,
+        isActive: validatedData.isActive,
+        isBuiltIn: validatedData.isBuiltIn,
+      },
     });
 
     revalidatePath("/admin/modules");

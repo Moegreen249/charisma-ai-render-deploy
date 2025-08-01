@@ -108,7 +108,16 @@ export async function POST(request: NextRequest) {
 
     const post = await prisma.blogPost.create({
       data: {
-        ...validatedData,
+        title: validatedData.title,
+        slug: validatedData.slug,
+        excerpt: validatedData.excerpt,
+        content: validatedData.content,
+        coverImage: validatedData.coverImage,
+        status: validatedData.status,
+        featured: validatedData.featured,
+        tags: validatedData.tags,
+        seoTitle: validatedData.seoTitle,
+        seoDescription: validatedData.seoDescription,
         authorId: session.user.id,
         publishedAt: validatedData.status === 'PUBLISHED' ? new Date() : null,
         categoryId: validatedData.categoryId || null,

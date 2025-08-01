@@ -587,8 +587,6 @@ function mapUserTemplateToAnalysisTemplate(
     isBuiltIn: false,
     systemPrompt: userTemplate.systemPrompt || "",
     analysisPrompt: userTemplate.analysisPrompt || "",
-    createdAt: userTemplate.createdAt,
-    updatedAt: userTemplate.updatedAt,
   };
 }
 

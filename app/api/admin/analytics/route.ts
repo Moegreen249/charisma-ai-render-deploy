@@ -153,8 +153,8 @@ export async function GET(request: NextRequest) {
     );
 
     // Calculate success rate based on completed background jobs vs failed ones
-    const totalJobsInPeriod = Object.values(jobStatusCounts).reduce(
-      (sum, count) => sum + count,
+    const totalJobsInPeriod: number = (Object.values(jobStatusCounts) as number[]).reduce(
+      (sum: number, count: number) => sum + count,
       0,
     );
     const successfulJobs = jobStatusCounts.COMPLETED || 0;
@@ -223,8 +223,8 @@ export async function GET(request: NextRequest) {
         avgDuration: averageAnalysisDuration._avg.durationMs || 0,
       },
       backgroundJobs: {
-        total: Object.values(jobStatusCounts).reduce(
-          (sum, count) => sum + count,
+        total: (Object.values(jobStatusCounts) as number[]).reduce(
+          (sum: number, count: number) => sum + count,
           0,
         ),
         pending: jobStatusCounts.PENDING || 0,

@@ -34,18 +34,65 @@ import {
   Globe,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import type { AnalysisResult } from "@/src/types";
+import type { AnalysisResult } from "@/types";
 import { getAnalysisTemplate } from "@/lib/analysis-templates";
-import type {
-  EmotionNode,
-  TopicNode,
-  CentralNode,
-  PersonalityDetailNode,
-  EmotionDetailNode,
-  TopicDetailNode,
-  PatternDetailNode,
-  ConversationNode,
-} from "@/src/types";
+// Type definitions for visualization nodes
+interface EmotionNode {
+  id: string;
+  type: 'emotion';
+  emotion: string;
+  intensity: number;
+  timestamp: string;
+}
+
+interface TopicNode {
+  id: string;
+  type: 'topic';
+  topic: string;
+  mentions: number;
+}
+
+interface CentralNode {
+  id: string;
+  type: 'central';
+  label: string;
+}
+
+interface PersonalityDetailNode {
+  id: string;
+  type: 'personality';
+  trait: string;
+  strength: number;
+}
+
+interface EmotionDetailNode {
+  id: string;
+  type: 'emotion-detail';
+  emotion: string;
+  intensity: number;
+  context: string;
+}
+
+interface TopicDetailNode {
+  id: string;
+  type: 'topic-detail';
+  topic: string;
+  details: string;
+}
+
+interface PatternDetailNode {
+  id: string;
+  type: 'pattern';
+  pattern: string;
+  frequency: number;
+}
+
+interface ConversationNode {
+  id: string;
+  type: 'conversation';
+  message: string;
+  timestamp: string;
+}
 
 // Dynamic Component Registry for different template visualizations
 const VisualizationModes = {
@@ -379,18 +426,19 @@ const BusinessAnalysisPanel = ({
           Meeting Efficiency
         </h4>
         <div className="space-y-1">
-          {analysisData.communicationPatterns
-            ?.filter(
-              (p) =>
-                p.pattern.toLowerCase().includes("efficiency") ||
-                p.pattern.toLowerCase().includes("decision"),
-            )
-            .slice(0, 2)
-            .map((pattern, i) => (
-              <div key={i} className="text-sm text-gray-600 dark:text-gray-400">
-                {pattern.pattern}
-              </div>
-            )) || (
+          {Array.isArray(analysisData.communicationPatterns) &&
+            analysisData.communicationPatterns
+              ?.filter(
+                (p) =>
+                  p.pattern?.toLowerCase().includes("efficiency") ||
+                  p.pattern?.toLowerCase().includes("decision"),
+              )
+              .slice(0, 2)
+              .map((pattern, i) => (
+                <div key={i} className="text-sm text-gray-600 dark:text-gray-400">
+                  {pattern.pattern}
+                </div>
+              )) || (
             <span className="text-sm text-gray-500">No patterns available</span>
           )}
         </div>
@@ -481,27 +529,27 @@ const ClinicalAnalysisPanel = ({
           Coping Mechanisms
         </h4>
         <div className="space-y-1">
-          {analysisData.communicationPatterns
-            ?.filter(
-              (p) =>
-                p.pattern.toLowerCase().includes("coping") ||
-                p.pattern.toLowerCase().includes("reflection") ||
-                p.pattern.toLowerCase().includes("processing"),
-            )
-            .slice(0, 3)
-            .map((pattern, i) => (
-              <div key={i} className="text-sm">
-                <div className="font-medium text-green-600 dark:text-green-400">
-                  {pattern.pattern}
+          {Array.isArray(analysisData.communicationPatterns) &&
+            analysisData.communicationPatterns
+              ?.filter(
+                (p) =>
+                  p.pattern?.toLowerCase().includes("coping") ||
+                  p.pattern?.toLowerCase().includes("reflection") ||
+                  p.pattern?.toLowerCase().includes("processing"),
+              )
+              .slice(0, 3)
+              .map((pattern, i) => (
+                <div key={i} className="text-sm">
+                  <div className="font-medium text-green-600 dark:text-green-400">
+                    {pattern.pattern}
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    {pattern.impact}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">
-                  {pattern.impact}
-                </div>
-              </div>
-            )) || (
+              )) || (
             <span className="text-sm text-gray-500">
-              No coping patterns available
-            </span>
+              No coping patterns available</span>
           )}
         </div>
       </div>
@@ -579,26 +627,27 @@ const ConflictAnalysisPanel = ({
           Resolution Strategies
         </h4>
         <div className="space-y-2">
-          {analysisData.communicationPatterns
-            ?.filter(
-              (p) =>
-                p.pattern.toLowerCase().includes("resolution") ||
-                p.pattern.toLowerCase().includes("compromise") ||
-                p.pattern.toLowerCase().includes("mediation"),
-            )
-            .map((pattern, i) => (
-              <div
-                key={i}
-                className="p-2 bg-green-50 dark:bg-green-900/20 rounded"
-              >
-                <div className="font-medium text-sm text-green-600 dark:text-green-400">
-                  {pattern.pattern}
+          {Array.isArray(analysisData.communicationPatterns) &&
+            analysisData.communicationPatterns
+              ?.filter(
+                (p) =>
+                  p.pattern?.toLowerCase().includes("resolution") ||
+                  p.pattern?.toLowerCase().includes("compromise") ||
+                  p.pattern?.toLowerCase().includes("mediation"),
+              )
+              .map((pattern, i) => (
+                <div
+                  key={i}
+                  className="p-2 bg-green-50 dark:bg-green-900/20 rounded"
+                >
+                  <div className="font-medium text-sm text-green-600 dark:text-green-400">
+                    {pattern.pattern}
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    {pattern.impact}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">
-                  {pattern.impact}
-                </div>
-              </div>
-            )) || (
+              )) || (
             <span className="text-sm text-gray-500">
               No resolution strategies found
             </span>
@@ -796,7 +845,8 @@ export default function ConversationCanvas({
     });
 
     // Pattern nodes - positioned to the right in a column with better spacing
-    analysisData.communicationPatterns?.forEach((pattern, index) => {
+    if (Array.isArray(analysisData.communicationPatterns)) {
+      analysisData.communicationPatterns.forEach((pattern, index) => {
       const patternNode: Node = {
         id: `pattern-${index}`,
         type: "pattern",
@@ -834,6 +884,7 @@ export default function ConversationCanvas({
         style: { stroke: "#8b5cf6", strokeWidth: 3 },
       });
     });
+    }
 
     return { initialNodes: nodes, initialEdges: edges };
   }, [analysisData, expandedNodes]);
@@ -1323,39 +1374,40 @@ export default function ConversationCanvas({
                   <CardContent>
                     <ScrollArea className="h-[300px] pr-2">
                       <div className="space-y-4">
-                        {analysisData.communicationPatterns?.map(
-                          (pattern, index) => (
-                            <motion.div
-                              key={index}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border-l-4 border-purple-500"
-                            >
-                              <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-3">
-                                {pattern.pattern}
-                              </h4>
-                              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                                {pattern.impact}
-                              </p>
-                              <div className="space-y-3">
-                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                                  Examples:
+                        {Array.isArray(analysisData.communicationPatterns) &&
+                          analysisData.communicationPatterns?.map(
+                            (pattern, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border-l-4 border-purple-500"
+                              >
+                                <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-3">
+                                  {pattern.pattern}
+                                </h4>
+                                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                                  {pattern.impact}
                                 </p>
-                                {pattern.examples
-                                  .slice(0, 2)
-                                  .map((example, eIndex) => (
-                                    <div
-                                      key={eIndex}
-                                      className="bg-white dark:bg-gray-800 px-3 py-2 rounded text-xs text-muted-foreground italic border-l-2 border-purple-300 dark:border-purple-600"
-                                    >
-                                      "{example}"
-                                    </div>
-                                  ))}
-                              </div>
-                            </motion.div>
-                          ),
-                        )}
+                                <div className="space-y-3">
+                                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                    Examples:
+                                  </p>
+                                  {pattern.examples
+                                    ?.slice(0, 2)
+                                    .map((example, eIndex) => (
+                                      <div
+                                        key={eIndex}
+                                        className="bg-white dark:bg-gray-800 px-3 py-2 rounded text-xs text-muted-foreground italic border-l-2 border-purple-300 dark:border-purple-600"
+                                      >
+                                        "{example}"
+                                      </div>
+                                    ))}
+                                </div>
+                              </motion.div>
+                            ),
+                          )}
                       </div>
                     </ScrollArea>
                   </CardContent>

@@ -44,7 +44,7 @@ export default function DeleteModuleDialog({
       if (result.success) {
         onSuccess();
       } else {
-        setError(result.error);
+        setError('error' in result ? result.error : 'Failed to delete module');
       }
     } catch (error) {
       setError("An unexpected error occurred");

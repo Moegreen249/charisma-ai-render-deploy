@@ -1,5 +1,6 @@
 // Comprehensive error tracking and logging system for CharismaAI
 import { prisma } from "@/lib/prisma";
+// Import the actual Prisma-generated enums
 import type { ErrorSeverity, ErrorCategory } from "@prisma/client";
 
 export interface ErrorLogData {

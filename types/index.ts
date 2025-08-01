@@ -26,6 +26,11 @@ export interface Insight {
     tags?: string[];
     color?: string;
     icon?: string;
+    unit?: string;
+    chartTypeHint?: string;
+    xDataKey?: string;
+    yDataKey?: string;
+    mainColor?: string;
   };
 }
 
@@ -59,6 +64,13 @@ export interface AnalysisResult {
       distribution?: string;
     };
     initiationPattern?: string;
+  };
+  metrics?: {
+    totalMessages?: number;
+    averageLength?: number;
+    sentimentScore?: number;
+    engagementLevel?: string;
+    [key: string]: any;
   };
   templateData?: Record<string, any>;
   metadata?: Record<string, any>;
