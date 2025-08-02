@@ -4,13 +4,10 @@ import { authConfig } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
 import { SubscriptionStatus, SubscriptionTier } from '@prisma/client';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(
+  request: NextRequest, 
+  { params }: { params: { id: string } }
+) {
   try {
     // Check if user is authenticated and is admin
     const session = await getServerSession(authConfig);
@@ -128,7 +125,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(
+  request: NextRequest, 
+  { params }: { params: { id: string } }
+) {
   try {
     // Check if user is authenticated and is admin
     const session = await getServerSession(authConfig);
