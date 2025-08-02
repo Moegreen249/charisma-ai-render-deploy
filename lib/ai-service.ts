@@ -121,7 +121,7 @@ class AIService {
 
       settings.forEach(setting => {
         if (setting.category === 'ai_providers') {
-          providers[setting.key] = setting.value as AIProviderConfig;
+          providers[setting.key] = setting.value as unknown as AIProviderConfig;
         } else if (setting.category === 'ai_features') {
           // Apply database overrides to default feature configurations
           const defaultFeature = features[setting.key];
@@ -136,7 +136,7 @@ class AIService {
             };
           } else {
             // If it's a new feature not in defaults, add it
-            features[setting.key] = setting.value as AIFeatureConfig;
+            features[setting.key] = setting.value as unknown as AIFeatureConfig;
           }
         } else if (setting.category === 'ai_config' && setting.key === 'global') {
           global = { ...global, ...setting.value };
