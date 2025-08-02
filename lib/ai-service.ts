@@ -461,7 +461,7 @@ class AIService {
   private getDefaultModel(providerId: string): string {
     switch (providerId) {
       case 'google-gemini':
-        return 'gemini-pro';
+        return 'gemini-2.5-flash';
       case 'openai':
         return 'gpt-4o-mini';
       case 'anthropic':

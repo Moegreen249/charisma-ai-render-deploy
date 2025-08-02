@@ -11,6 +11,7 @@
     "lint": "next lint",
     "setup": "node setup.js",
     "setup-admin": "tsx scripts/setup-admin.ts",
+    "update-admin-password": "tsx scripts/update-admin-password.ts",
     "seed:modules": "tsx scripts/seedModules.ts",
     "init:story": "node scripts/init-story-settings.js",
     "migrate:landing": "tsx scripts/migrate-landing-features.ts",

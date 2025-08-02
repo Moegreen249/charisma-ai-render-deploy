@@ -80,7 +80,7 @@ export function RichTextEditor({
   const [aiResults, setAiResults] = useState<{[key: string]: string}>({});
   const [aiProviders, setAiProviders] = useState<any>({});
   const [selectedProvider, setSelectedProvider] = useState('google-gemini');
-  const [selectedModel, setSelectedModel] = useState('gemini-pro');
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const [currentFormat, setCurrentFormat] = useState({

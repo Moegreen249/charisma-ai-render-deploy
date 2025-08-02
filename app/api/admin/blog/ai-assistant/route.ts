@@ -7,7 +7,7 @@ import { makeAIRequest } from '@/lib/ai-service';
 const AI_PROVIDERS = {
   'google-gemini': {
     name: 'Google Gemini',
-    models: ['gemini-pro', 'gemini-2.0-flash', 'gemini-1.5-pro'],
+    models: ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'],
     available: !!process.env.GOOGLE_GEMINI_API_KEY
   },
   'openai': {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { action, text, selectedText, provider = 'google-gemini', model = 'gemini-pro' } = await request.json();
+    const { action, text, selectedText, provider = 'google-gemini', model = 'gemini-2.5-flash' } = await request.json();
 
     if (!action || !text) {
       return NextResponse.json(

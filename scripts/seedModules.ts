@@ -189,7 +189,7 @@ Return an insight of type 'text' with comprehensive writing analysis and actiona
         priority: 5,
         icon: "edit",
         color: "indigo",
-        aiProvider: "gemini-pro",
+        aiProvider: "gemini-2.5-flash",
         confidence: 0.92,
         suggestions: 4,
         readabilityScore: 8.5

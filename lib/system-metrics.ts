@@ -210,7 +210,7 @@ export async function gatherSystemMetrics(): Promise<SystemMetrics> {
     }
 
     // AI Configuration and Performance
-    const activeModels = ['gemini-pro', 'gpt-4o', 'claude-3-5-sonnet'].filter(() => Math.random() > 0.3);
+    const activeModels = ['gemini-2.5-flash', 'gpt-4o', 'claude-3-5-sonnet'].filter(() => Math.random() > 0.3);
     const primaryProvider = process.env.GOOGLE_GEMINI_API_KEY ? 'google-gemini' : 
                           process.env.OPENAI_API_KEY ? 'openai' : 
                           process.env.ANTHROPIC_API_KEY ? 'anthropic' : 'unknown';

@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     const testPrompt = 'Hello! Please respond with "AI connection test successful" to confirm the connection is working.';
-    let result: any = {
+    const result: any = {
       providerId,
       model: model || 'default',
       success: false,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
           
           const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
           const geminiModel = genAI.getGenerativeModel({ 
-            model: model || 'gemini-pro' 
+            model: model || 'gemini-2.5-flash' 
           });
           
           const geminiResult = await geminiModel.generateContent(testPrompt);

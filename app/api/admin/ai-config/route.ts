@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       {
         id: 'google-gemini',
         name: 'Google Gemini',
-        models: ['gemini-pro', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+        models: ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'],
         apiKeySet: !!process.env.GOOGLE_GEMINI_API_KEY,
         isEnabled: true,
         priority: 1,

@@ -26,6 +26,7 @@ import {
   UserPlus,
   Palette,
   Bot,
+  CreditCard,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ const adminNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
   { icon: Users, label: 'Users', href: '/admin/users' },
   { icon: UserPlus, label: 'Invitations', href: '/admin/invitation-management' },
+  { icon: CreditCard, label: 'Subscriptions', href: '/admin/subscriptions' },
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
   { icon: FileText, label: 'Blog', href: '/admin/blog' },
   { icon: Brain, label: 'Modules', href: '/admin/modules' },
