@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface DataNode {
   id: string;
@@ -22,9 +22,9 @@ interface DataFlow {
   intensity: number;
 }
 
-const EnhancedDataBackground: React.FC = () => {
+const EnhancedDataBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   
   // Data nodes representing different processing points
