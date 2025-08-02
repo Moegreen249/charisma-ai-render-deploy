@@ -72,7 +72,7 @@ export function ThemeProvider({ children, defaultTheme = 'charisma-dark' }: Them
       setTheme(newTheme);
       // Find theme in presets and apply it
       const themeStore = useThemeStore.getState();
-      const foundTheme = [...themeStore.customThemes].find(t => t.name === newTheme);
+      const foundTheme = (themeStore.customThemes || []).find(t => t.name === newTheme);
       if (foundTheme) {
         setCurrentTheme(foundTheme);
       }

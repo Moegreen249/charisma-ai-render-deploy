@@ -1,4 +1,4 @@
-import { PrismaClient } from '../src/generated/prisma';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -149,6 +149,56 @@ const initialModules = [
     icon: "🎯",
     isActive: true,
     isBuiltIn: true,
+  },
+  {
+    name: "AI Writing Assistant",
+    description: "AI-powered writing enhancement and content optimization analysis.",
+    instructionPrompt: `Analyze the writing quality, tone, clarity, and effectiveness of the conversation content. Provide detailed feedback on:
+
+1. Writing Quality Assessment:
+   - Grammar and syntax accuracy
+   - Vocabulary sophistication and appropriateness
+   - Sentence structure variety and flow
+   - Overall readability score
+
+2. Tone and Style Analysis:
+   - Professional vs casual tone consistency
+   - Emotional undertones and their effectiveness
+   - Voice authenticity and engagement level
+   - Brand voice alignment (if applicable)
+
+3. Content Optimization Suggestions:
+   - Areas for improved clarity and conciseness
+   - Redundancy elimination opportunities
+   - Structural improvements for better flow
+   - Engagement enhancement recommendations
+
+4. Communication Effectiveness:
+   - Message clarity and impact
+   - Persuasiveness and call-to-action strength
+   - Audience appropriateness
+   - Goal achievement potential
+
+Return an insight of type 'text' with comprehensive writing analysis and actionable improvement suggestions.`,
+    expectedJsonHint: JSON.stringify({
+      type: "text",
+      title: "AI Writing Assistant Analysis",
+      content: "**Writing Quality Score: 8.5/10**\n\n**Strengths:**\n- Clear, professional tone throughout\n- Excellent sentence structure variety\n- Strong vocabulary choices that enhance meaning\n- Good use of transitions between ideas\n\n**Areas for Improvement:**\n- Some sentences could be more concise (lines 3-4)\n- Consider stronger action verbs in key statements\n- Opportunity to enhance emotional connection with audience\n\n**Specific Suggestions:**\n1. Replace 'very important' with 'critical' or 'essential' for impact\n2. Break up the longest paragraph for better readability\n3. Add a compelling call-to-action at the conclusion\n4. Consider using more active voice in passive constructions\n\n**Overall Assessment:**\nWell-structured communication with professional tone. Minor refinements would significantly enhance impact and engagement.",
+      metadata: {
+        category: "writing",
+        priority: 5,
+        icon: "edit",
+        color: "indigo",
+        aiProvider: "gemini-pro",
+        confidence: 0.92,
+        suggestions: 4,
+        readabilityScore: 8.5
+      }
+    }, null, 2),
+    category: "writing",
+    icon: "✍️",
+    isActive: true,
+    isBuiltIn: true,
   }
 ];
 
@@ -156,27 +206,40 @@ async function seedModules() {
   try {
     console.log('🌱 Starting module seeding...');
 
-    // Check if modules already exist
+    // Check if modules already exist and only create missing ones
     const existingModules = await prisma.analysisModule.findMany();
+    const existingModuleNames = new Set(existingModules.map(m => m.name));
     
-    if (existingModules.length > 0) {
-      console.log(`⚠️  Found ${existingModules.length} existing modules. Skipping seed.`);
-      return;
-    }
+    let createdCount = 0;
+    let skippedCount = 0;
 
     // Create modules
     for (const moduleData of initialModules) {
+      if (existingModuleNames.has(moduleData.name)) {
+        console.log(`⏭️  Skipped existing module: ${moduleData.name}`);
+        skippedCount++;
+        continue;
+      }
+
       const module = await prisma.analysisModule.create({
         data: moduleData,
       });
       console.log(`✅ Created module: ${module.name}`);
+      createdCount++;
     }
 
     console.log('🎉 Module seeding completed successfully!');
-    console.log(`📊 Created ${initialModules.length} modules:`);
-    initialModules.forEach((module, index) => {
-      console.log(`   ${index + 1}. ${module.name} (${module.category})`);
-    });
+    console.log(`📊 Results: ${createdCount} created, ${skippedCount} skipped`);
+    
+    if (createdCount > 0) {
+      console.log('📝 Newly created modules:');
+      let index = 1;
+      for (const moduleData of initialModules) {
+        if (!existingModuleNames.has(moduleData.name)) {
+          console.log(`   ${index++}. ${moduleData.name} (${moduleData.category})`);
+        }
+      }
+    }
 
   } catch (error) {
     console.error('❌ Error seeding modules:', error);

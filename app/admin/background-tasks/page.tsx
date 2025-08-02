@@ -45,6 +45,11 @@ import {
   Server,
   Database,
   Zap,
+  BookOpen,
+  Sparkles,
+  Brain,
+  FileText,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -111,6 +116,8 @@ export default function BackgroundTasksAdmin() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [selectedJob, setSelectedJob] = useState<BackgroundJob | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [storyStats, setStoryStats] = useState<any>(null);
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   // Check authentication and role
   useEffect(() => {
@@ -148,6 +155,7 @@ export default function BackgroundTasksAdmin() {
         fetch("/api/admin/background-tasks", { signal: timeoutController.signal }),
         fetch("/api/admin/active-users", { signal: timeoutController.signal }),
         fetch("/api/admin/system-status", { signal: timeoutController.signal }),
+        fetch("/api/admin/story-settings", { signal: timeoutController.signal }),
       ];
 
       const responses = await Promise.all(
@@ -161,7 +169,7 @@ export default function BackgroundTasksAdmin() {
 
       clearTimeout(timeoutId);
 
-      const [jobsResponse, usersResponse, statusResponse] = responses;
+      const [jobsResponse, usersResponse, statusResponse, storyResponse] = responses;
 
       // Handle jobs data
       if (jobsResponse?.ok) {
@@ -203,6 +211,20 @@ export default function BackgroundTasksAdmin() {
       } else {
         console.warn("Status request failed or null");
         setSystemStatus(null);
+      }
+
+      // Handle story stats data
+      if (storyResponse?.ok) {
+        try {
+          const storyData = await storyResponse.json();
+          setStoryStats(storyData.stats);
+        } catch (parseError) {
+          console.error("Failed to parse story data:", parseError);
+          setStoryStats(null);
+        }
+      } else {
+        console.warn("Story request failed or null");
+        setStoryStats(null);
       }
 
       setError(null);
@@ -322,6 +344,43 @@ Check your API keys, provider settings, and file format.
     }
   };
 
+  const getJobTypeInfo = (type: string) => {
+    switch (type) {
+      case "ANALYSIS":
+        return {
+          label: "Analysis",
+          icon: BarChart3,
+          color: "text-blue-400",
+          bgColor: "bg-blue-500/20",
+          borderColor: "border-blue-500/30"
+        };
+      case "STORY_GENERATION":
+        return {
+          label: "Story",
+          icon: BookOpen,
+          color: "text-purple-400",
+          bgColor: "bg-purple-500/20",
+          borderColor: "border-purple-500/30"
+        };
+      case "EMAIL":
+        return {
+          label: "Email",
+          icon: Bell,
+          color: "text-green-400",
+          bgColor: "bg-green-500/20",
+          borderColor: "border-green-500/30"
+        };
+      default:
+        return {
+          label: type || "Unknown",
+          icon: Activity,
+          color: "text-gray-400",
+          bgColor: "bg-gray-500/20",
+          borderColor: "border-gray-500/30"
+        };
+    }
+  };
+
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
       job.fileName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -330,8 +389,9 @@ Check your API keys, provider settings, and file format.
       job.id.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === "all" || job.status === statusFilter;
+    const matchesType = typeFilter === "all" || job.type === typeFilter;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesType;
   });
 
   if (status === "loading" || loading) {
@@ -494,6 +554,64 @@ Check your API keys, provider settings, and file format.
             </Card>
           )}
 
+          {/* Story Generation Statistics */}
+          {storyStats && (
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/[0.15] hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <BookOpen className="h-5 w-5" />
+                  Story Generation Statistics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  <div className="text-center">
+                    <Sparkles className="h-6 w-6 mx-auto mb-2 text-purple-400" />
+                    <p className="text-sm font-medium text-white">Total Stories</p>
+                    <p className="text-lg font-bold text-purple-400">
+                      {storyStats.totalStories || 0}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-400" />
+                    <p className="text-sm font-medium text-white">Completed</p>
+                    <p className="text-lg font-bold text-green-400">
+                      {storyStats.completedStories || 0}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <XCircle className="h-6 w-6 mx-auto mb-2 text-red-400" />
+                    <p className="text-sm font-medium text-white">Failed</p>
+                    <p className="text-lg font-bold text-red-400">
+                      {storyStats.failedStories || 0}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <Loader2 className="h-6 w-6 mx-auto mb-2 text-blue-400" />
+                    <p className="text-sm font-medium text-white">Generating</p>
+                    <p className="text-lg font-bold text-blue-400">
+                      {storyStats.generatingStories || 0}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <BarChart3 className="h-6 w-6 mx-auto mb-2 text-yellow-400" />
+                    <p className="text-sm font-medium text-white">Success Rate</p>
+                    <p className="text-lg font-bold text-yellow-400">
+                      {storyStats.successRate || 0}%
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <Users className="h-6 w-6 mx-auto mb-2 text-cyan-400" />
+                    <p className="text-sm font-medium text-white">Pro Users</p>
+                    <p className="text-lg font-bold text-cyan-400">
+                      {storyStats.proUsers || 0}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Tabs defaultValue="tasks" className="space-y-6">
             <TabsList className="grid w-full grid-cols-3 bg-white/10 backdrop-blur-sm border border-white/20">
               <TabsTrigger value="tasks" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Background Tasks</TabsTrigger>
@@ -520,6 +638,33 @@ Check your API keys, provider settings, and file format.
                       />
                     </div>
                   </div>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
+                      <FileText className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Filter by type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="ANALYSIS">
+                        <div className="flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4" />
+                          Analysis
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="STORY_GENERATION">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4" />
+                          Story Generation
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="EMAIL">
+                        <div className="flex items-center gap-2">
+                          <Bell className="h-4 w-4" />
+                          Email
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
                       <Filter className="h-4 w-4 mr-2" />
@@ -563,12 +708,37 @@ Check your API keys, provider settings, and file format.
                               className={`w-2 h-2 rounded-full ${getStatusColor(job.status)}`}
                             />
                             <div>
-                              <p className="font-medium text-white">
-                                {job.fileName || "Unknown File"}
-                              </p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-white">
+                                  {job.fileName || "Unknown File"}
+                                </p>
+                                {(() => {
+                                  const typeInfo = getJobTypeInfo(job.type);
+                                  const TypeIcon = typeInfo.icon;
+                                  return (
+                                    <Badge 
+                                      variant="outline" 
+                                      className={cn(
+                                        "flex items-center gap-1 text-xs",
+                                        typeInfo.bgColor,
+                                        typeInfo.borderColor,
+                                        typeInfo.color
+                                      )}
+                                    >
+                                      <TypeIcon className="h-3 w-3" />
+                                      {typeInfo.label}
+                                    </Badge>
+                                  );
+                                })()}
+                              </div>
                               <p className="text-sm text-white/60">
                                 {job.user.name || job.user.email} •{" "}
                                 {job.id.slice(0, 8)}
+                                {job.provider && job.modelId && (
+                                  <span className="ml-2">
+                                    • {job.provider}/{job.modelId}
+                                  </span>
+                                )}
                               </p>
                             </div>
                           </div>
@@ -617,6 +787,17 @@ Check your API keys, provider settings, and file format.
                               <Eye className="h-3 w-3 mr-1" />
                               View
                             </Button>
+                            {job.type === "STORY_GENERATION" && job.status === "COMPLETED" && job.result?.storyId && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => window.open(`/story/${job.result.storyId}`, '_blank')}
+                                className="bg-purple-600/20 border-purple-500/30 text-purple-300 hover:bg-purple-600/30 touch-manipulation hover:scale-105 transition-all duration-300"
+                              >
+                                <BookOpen className="h-3 w-3 mr-1" />
+                                View Story
+                              </Button>
+                            )}
                             {job.status === "PROCESSING" && (
                               <Button
                                 size="sm"
@@ -846,6 +1027,113 @@ Check your API keys, provider settings, and file format.
                     </div>
                   </div>
                 </div>
+
+                {/* Story Generation Metrics */}
+                {storyStats && (
+                  <div className="mt-6 pt-6 border-t border-white/10">
+                    <h3 className="font-medium text-white mb-4 flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      Story Generation Metrics
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-white text-sm">Generation Status</h4>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Active Generation:</span>
+                            <span className="text-blue-400">
+                              {jobs.filter((j) => j.type === "STORY_GENERATION" && j.status === "PROCESSING").length}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Stories Today:</span>
+                            <span className="text-green-400">
+                              {
+                                jobs.filter(
+                                  (j) =>
+                                    j.type === "STORY_GENERATION" &&
+                                    j.status === "COMPLETED" &&
+                                    new Date(j.completedAt || j.createdAt).toDateString() === new Date().toDateString(),
+                                ).length
+                              }
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Failed Today:</span>
+                            <span className="text-red-400">
+                              {
+                                jobs.filter(
+                                  (j) =>
+                                    j.type === "STORY_GENERATION" &&
+                                    j.status === "FAILED" &&
+                                    new Date(j.updatedAt).toDateString() === new Date().toDateString(),
+                                ).length
+                              }
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-white text-sm">Generation Performance</h4>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Avg Duration:</span>
+                            <span className="text-white">
+                              {jobs.filter((j) => j.type === "STORY_GENERATION" && j.completedAt && j.startedAt).length > 0
+                                ? Math.round(
+                                    jobs
+                                      .filter((j) => j.type === "STORY_GENERATION" && j.completedAt && j.startedAt)
+                                      .reduce(
+                                        (acc, j) =>
+                                          acc +
+                                          (new Date(j.completedAt!).getTime() -
+                                            new Date(j.startedAt!).getTime()),
+                                        0,
+                                      ) /
+                                      jobs.filter(
+                                        (j) => j.type === "STORY_GENERATION" && j.completedAt && j.startedAt,
+                                      ).length /
+                                      1000,
+                                  ) + "s"
+                                : "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Success Rate:</span>
+                            <span className="text-white">
+                              {storyStats.successRate || 0}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Queue Length:</span>
+                            <span className="text-yellow-400">
+                              {jobs.filter((j) => j.type === "STORY_GENERATION" && j.status === "PENDING").length}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-white text-sm">User Analytics</h4>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Pro Users:</span>
+                            <span className="text-purple-400">{storyStats.proUsers || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Trial Users:</span>
+                            <span className="text-cyan-400">{storyStats.activeTrialUsers || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/70">Total Stories:</span>
+                            <span className="text-white">{storyStats.totalStories || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 </CardContent>
               </Card>
             </TabsContent>

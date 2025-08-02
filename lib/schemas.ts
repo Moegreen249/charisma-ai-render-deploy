@@ -74,10 +74,74 @@ export const moduleUpdateSchema = z.object({
   // isBuiltIn should not be updatable via this schema
 });
 
+// Subscription schemas
+export const SubscriptionTier = {
+  FREE: 'FREE',
+  PRO: 'PRO',
+  ENTERPRISE: 'ENTERPRISE',
+} as const;
+
+export type SubscriptionTier = typeof SubscriptionTier[keyof typeof SubscriptionTier];
+
+export const subscriptionUpgradeSchema = z.object({
+  tier: z.nativeEnum(SubscriptionTier),
+  stripeSubscriptionId: z.string().optional(),
+  billingEmail: z.string().email().optional()
+});
+
+export const subscriptionCancelSchema = z.object({
+  immediate: z.boolean().default(false),
+  reason: z.string().max(500).optional(),
+  feedback: z.string().max(1000).optional()
+});
+
+// Admin schemas
+export const adminConfigSchema = z.object({
+  category: z.enum(['ai_models', 'system', 'billing', 'features']),
+  key: z.string().min(1),
+  value: z.any(),
+  description: z.string().optional(),
+  isActive: z.boolean().default(true)
+});
+
+export const modelConfigSchema = z.object({
+  provider: z.string(),
+  models: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    enabled: z.boolean(),
+    costPerToken: z.number().min(0),
+    maxTokens: z.number().min(1),
+    timeout: z.number().min(1000),
+    parameters: z.record(z.any())
+  })),
+  enabled: z.boolean(),
+  timeout: z.number().min(1000)
+});
+
+export const userManagementSchema = z.object({
+  userId: z.string().uuid(),
+  action: z.enum(['update_role', 'update_subscription', 'suspend', 'activate', 'delete']),
+  data: z.record(z.any()).optional()
+});
+
+export const systemMetricsQuerySchema = z.object({
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  interval: z.enum(['hour', 'day', 'week']).default('day'),
+  category: z.string().optional()
+});
+
 export type UserCreateInput = z.infer<typeof userCreateSchema>;
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 export type UserPasswordUpdateInput = z.infer<typeof userPasswordUpdateSchema>;
 export type UserTemplateCreateInput = z.infer<typeof userTemplateCreateSchema>;
 export type UserTemplateUpdateInput = z.infer<typeof userTemplateUpdateSchema>;
 export type ModuleCreateInput = z.infer<typeof moduleCreateSchema>;
-export type ModuleUpdateInput = z.infer<typeof moduleUpdateSchema>; 
+export type ModuleUpdateInput = z.infer<typeof moduleUpdateSchema>;
+export type SubscriptionUpgradeInput = z.infer<typeof subscriptionUpgradeSchema>;
+export type SubscriptionCancelInput = z.infer<typeof subscriptionCancelSchema>;
+export type AdminConfigInput = z.infer<typeof adminConfigSchema>;
+export type ModelConfigInput = z.infer<typeof modelConfigSchema>;
+export type UserManagementInput = z.infer<typeof userManagementSchema>;
+export type SystemMetricsQueryInput = z.infer<typeof systemMetricsQuerySchema>; 

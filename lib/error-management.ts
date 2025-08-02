@@ -1,4 +1,5 @@
 // Comprehensive Error Management System for CharismaAI
+import React from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -332,5 +333,3 @@ export const setupGlobalErrorHandling = () => {
     }
   }, true);
 };
-
-import React from 'react';

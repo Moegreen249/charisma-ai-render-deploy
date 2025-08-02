@@ -47,7 +47,10 @@ import {
   Trash2,
   AlertTriangle,
   CheckCircle,
-  Save
+  Save,
+  CreditCard,
+  Crown,
+  Zap
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -63,6 +66,7 @@ import {
   type AIProvider,
 } from "@/lib/ai-providers";
 import { LanguageSwitcher } from "@/components/EnhancedLanguageProvider";
+import { SubscriptionCard } from "@/components/subscription/SubscriptionCard";
 
 import {
   getApiKey,
@@ -95,7 +99,7 @@ export default function SettingsPage() {
     "communication-analysis",
   );
   const [saved, setSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<"ai" | "templates" | "language" | "notifications" | "preferences">(
+  const [activeTab, setActiveTab] = useState<"ai" | "templates" | "language" | "notifications" | "preferences" | "subscription">(
     "ai",
   );
   const [templates, setTemplates] = useState<AnalysisTemplate[]>([]);
@@ -125,6 +129,10 @@ export default function SettingsPage() {
     compactMode: false
   });
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  
+  // Subscription state
+  const [subscription, setSubscription] = useState<any>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
   // Load settings on mount
   useEffect(() => {
@@ -164,6 +172,29 @@ export default function SettingsPage() {
 
     loadSettings();
   }, []);
+
+  // Load subscription data when user is authenticated
+  useEffect(() => {
+    const loadSubscription = async () => {
+      if (session?.user?.id) {
+        try {
+          setSubscriptionLoading(true);
+          const response = await fetch('/api/subscription');
+          const data = await response.json();
+          
+          if (data.success) {
+            setSubscription(data.subscription);
+          }
+        } catch (error) {
+          console.error('Failed to load subscription:', error);
+        } finally {
+          setSubscriptionLoading(false);
+        }
+      }
+    };
+
+    loadSubscription();
+  }, [session?.user?.id]);
 
   // Load templates when user is authenticated
   useEffect(() => {
@@ -323,6 +354,47 @@ export default function SettingsPage() {
     }
   };
 
+  // Subscription handlers
+  const handleUpgrade = async () => {
+    try {
+      window.open('/api/subscription/upgrade', '_blank');
+    } catch (error) {
+      console.error('Failed to redirect to upgrade:', error);
+    }
+  };
+
+  const handleManageBilling = async () => {
+    try {
+      const response = await fetch('/api/subscription/billing-portal', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      
+      if (data.success && data.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Failed to access billing portal:', error);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.')) {
+      try {
+        const response = await fetch('/api/subscription', {
+          method: 'DELETE',
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          setSubscription(data.subscription);
+        }
+      } catch (error) {
+        console.error('Failed to cancel subscription:', error);
+      }
+    }
+  };
+
   const currentProvider = getProviderConfig(selectedProvider as AIProvider);
 
   return (
@@ -392,7 +464,7 @@ export default function SettingsPage() {
 
           {/* Settings Categories - Smaller Blog Style Navigation */}
           <div className="mb-8">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 max-w-4xl mx-auto">
               <button
                 onClick={() => setActiveTab("ai")}
                 className={cn(
@@ -552,6 +624,40 @@ export default function SettingsPage() {
                   ></div>
                 </div>
               </button>
+
+              {session?.user && (
+                <button
+                  onClick={() => setActiveTab("subscription")}
+                  className={cn(
+                    "group relative overflow-hidden",
+                    "bg-white/10 backdrop-blur-lg rounded-lg p-4 border border-white/20",
+                    "hover:border-white/30 transition-all duration-300",
+                    "hover:scale-[1.02] hover:shadow-lg hover:shadow-amber-500/10",
+                    activeTab === "subscription" && "border-amber-500/50 bg-amber-500/10"
+                  )}
+                >
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center",
+                      "bg-gradient-to-r from-amber-600 to-yellow-600",
+                      "group-hover:scale-110 transition-transform duration-300"
+                    )}>
+                      <Crown className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-medium text-sm group-hover:text-amber-300 transition-colors">
+                        Subscription
+                      </h3>
+                      <p className="text-gray-400 text-xs mt-0.5">
+                        Plan & Billing
+                      </p>
+                    </div>
+                    <div
+                      className="w-2 h-2 rounded-full bg-amber-500"
+                    ></div>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
 
@@ -559,7 +665,7 @@ export default function SettingsPage() {
           <Tabs
             value={activeTab}
             onValueChange={(value) =>
-              setActiveTab(value as "ai" | "templates" | "language" | "notifications" | "preferences")
+              setActiveTab(value as "ai" | "templates" | "language" | "notifications" | "preferences" | "subscription")
             }
             className="space-y-8"
           >
@@ -1393,6 +1499,144 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Subscription Tab */}
+            <TabsContent value="subscription" className="space-y-6">
+              {subscriptionLoading ? (
+                <Card className={cn(
+                  themeConfig.colors.glass.background,
+                  themeConfig.colors.glass.border,
+                  themeConfig.colors.glass.shadow,
+                  "border"
+                )}>
+                  <CardContent className="py-12">
+                    <div className="text-center">
+                      <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-400" />
+                      <p className="text-white/70">Loading subscription details...</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : subscription ? (
+                <SubscriptionCard
+                  subscription={subscription}
+                  onUpgrade={handleUpgrade}
+                  onManageBilling={handleManageBilling}
+                  onCancelSubscription={handleCancelSubscription}
+                />
+              ) : (
+                <Card className={cn(
+                  themeConfig.colors.glass.background,
+                  themeConfig.colors.glass.border,
+                  themeConfig.colors.glass.shadow,
+                  "border"
+                )}>
+                  <CardHeader className="text-center">
+                    <div className="mx-auto w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mb-4">
+                      <Crown className="w-6 h-6 text-amber-400" />
+                    </div>
+                    <CardTitle className="text-white">Get Started with CharismaAI Pro</CardTitle>
+                    <CardDescription className="text-gray-300">
+                      Unlock unlimited story generation and advanced features
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Free Plan */}
+                      <Card className="bg-white/5 border-white/10">
+                        <CardHeader className="text-center pb-4">
+                          <CardTitle className="text-white text-lg">Free</CardTitle>
+                          <div className="text-2xl font-bold text-white">$0<span className="text-sm text-gray-400">/month</span></div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>3 stories per month</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>Basic analysis templates</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>100 API calls per month</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Pro Plan */}
+                      <Card className="bg-gradient-to-b from-purple-500/20 to-blue-500/20 border-purple-500/30 relative">
+                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                          <Badge className="bg-purple-600 text-white">Most Popular</Badge>
+                        </div>
+                        <CardHeader className="text-center pb-4">
+                          <CardTitle className="text-white text-lg">Pro</CardTitle>
+                          <div className="text-2xl font-bold text-white">$29<span className="text-sm text-gray-400">/month</span></div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>Unlimited stories</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>All analysis templates</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>10,000 API calls per month</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>Priority support</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Enterprise Plan */}
+                      <Card className="bg-white/5 border-white/10">
+                        <CardHeader className="text-center pb-4">
+                          <CardTitle className="text-white text-lg">Enterprise</CardTitle>
+                          <div className="text-2xl font-bold text-white">$99<span className="text-sm text-gray-400">/month</span></div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>Everything in Pro</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>Unlimited API calls</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>API access</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Check className="w-4 h-4 text-green-400" />
+                            <span>Custom integrations</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="text-center pt-4">
+                      <Button
+                        onClick={handleUpgrade}
+                        className={cn(
+                          "bg-gradient-to-r from-purple-600 to-blue-600",
+                          "hover:from-purple-700 hover:to-blue-700",
+                          "text-white font-medium px-8 py-3",
+                          "transform hover:scale-105 transition-all duration-300"
+                        )}
+                      >
+                        <Crown className="w-4 h-4 mr-2" />
+                        Upgrade to Pro
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </div>

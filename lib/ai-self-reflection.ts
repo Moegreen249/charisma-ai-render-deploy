@@ -1,4 +1,5 @@
 import { SystemMetrics, gatherSystemMetrics, saveSystemFeeling } from './system-metrics';
+import { makeAIRequest } from './ai-service';
 
 export interface CharismaFeeling {
   feeling_adjective: string;
@@ -47,32 +48,26 @@ export async function performSelfReflection(): Promise<CharismaFeeling | null> {
       JSON.stringify(metrics, null, 2)
     );
 
-    // Call the AI analysis endpoint
-    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/analyze`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        conversation: promptWithMetrics,
-        templateId: 'self-reflection', // We'll need to create this template
-        streamResponse: false,
-      }),
+    // Use centralized AI service
+    const aiResponse = await makeAIRequest({
+      feature: 'charisma-feelings',
+      prompt: promptWithMetrics,
+      maxTokens: 500,
+      temperature: 0.7,
     });
 
-    if (!response.ok) {
-      console.error('CharismaAI: Self-reflection API call failed:', response.status, response.statusText);
+    if (!aiResponse.success) {
+      console.error('CharismaAI: Self-reflection AI call failed:', aiResponse.error);
       return null;
     }
 
-    const analysisResult = await response.json();
-    console.log('CharismaAI: Raw analysis result:', analysisResult);
+    console.log('CharismaAI: AI response received from', aiResponse.provider, 'in', aiResponse.responseTime + 'ms');
 
     // Extract the JSON from the AI response
     let feelingData: CharismaFeeling;
     try {
       // The AI might return the JSON wrapped in markdown or other text
-      const jsonMatch = analysisResult.analysis?.match(/\{[\s\S]*\}/);
+      const jsonMatch = aiResponse.response?.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const rawFeelingData = JSON.parse(jsonMatch[0]);
         feelingData = {
@@ -82,13 +77,13 @@ export async function performSelfReflection(): Promise<CharismaFeeling | null> {
       } else {
         // Fallback: try to parse the entire response as JSON
         feelingData = {
-          ...JSON.parse(analysisResult.analysis),
+          ...JSON.parse(aiResponse.response || '{}'),
           timestamp: new Date().toISOString(),
         };
       }
     } catch (parseError) {
       console.error('CharismaAI: Failed to parse self-reflection response:', parseError);
-      console.error('CharismaAI: Raw response was:', analysisResult);
+      console.error('CharismaAI: Raw response was:', aiResponse.response);
       
       // Generate a fallback feeling based on metrics
       feelingData = generateFallbackFeeling(metrics);

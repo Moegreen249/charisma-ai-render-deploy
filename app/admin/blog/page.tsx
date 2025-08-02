@@ -113,7 +113,7 @@ export default function BlogManagementPage() {
         setLoading(true);
         
         // Fetch blog posts
-        const postsResponse = await fetch('/api/admin/blog/posts');
+        const postsResponse = await fetch('/api/admin/blog');
         if (postsResponse.ok) {
           const postsData = await postsResponse.json();
           setPosts(postsData.posts || []);
@@ -143,7 +143,7 @@ export default function BlogManagementPage() {
 
   const handleCreatePost = async () => {
     try {
-      const response = await fetch('/api/admin/blog/posts', {
+      const response = await fetch('/api/admin/blog', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

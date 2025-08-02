@@ -8,6 +8,11 @@ function Skeleton({
     <div
       className={cn(
         "animate-pulse rounded-md bg-white/10 motion-reduce:animate-none",
+        "relative overflow-hidden",
+        "before:absolute before:inset-0 before:-translate-x-full",
+        "before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r",
+        "before:from-transparent before:via-white/20 before:to-transparent",
+        "transition-all duration-300 ease-in-out",
         className
       )}
       {...props}
@@ -73,3 +78,17 @@ function SkeletonStats({ count = 4 }: { count?: number }) {
 }
 
 export { Skeleton, SkeletonCard, SkeletonTable, SkeletonStats }
+
+// Re-export story-specific skeletons for convenience
+export {
+  StoryGridSkeleton,
+  StoryMetadataSkeleton,
+  StoryTimelineSkeleton,
+  ChapterNavigationSkeleton,
+  StoryHeaderSkeleton,
+  StoryLoadingSkeleton,
+  StoryCardSkeleton,
+  StoryFilterSkeleton,
+  StoryEmptyStateSkeleton,
+  PaginationSkeleton
+} from "@/components/story/StorySkeletons"

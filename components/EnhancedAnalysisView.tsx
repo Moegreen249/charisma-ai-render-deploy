@@ -46,7 +46,9 @@ import {
   Calendar,
   Clock,
   Users,
-  Zap
+  Zap,
+  BookOpen,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { AnalysisResult, Insight } from "@/types";
@@ -55,6 +57,8 @@ import { useEnhancedLanguage } from "@/components/EnhancedLanguageProvider";
 import FlexibleInsightRenderer from "@/components/FlexibleInsightRenderer";
 import { themeConfig } from "@/lib/theme-config";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface EnhancedAnalysisViewProps {
   analysisData: AnalysisResult;
@@ -189,6 +193,8 @@ export default function EnhancedAnalysisView({
   setCoachOpen,
 }: EnhancedAnalysisViewProps) {
   const { translations: t, isRTL, direction } = useEnhancedLanguage();
+  const { data: session } = useSession();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -197,6 +203,11 @@ export default function EnhancedAnalysisView({
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [comparisonMode, setComparisonMode] = useState(false);
   const [chartType, setChartType] = useState<"pie" | "bar" | "line">("pie");
+  
+  // Story-related state
+  const [existingStory, setExistingStory] = useState<any>(null);
+  const [storyLoading, setStoryLoading] = useState(false);
+  const [storyGenerating, setStoryGenerating] = useState(false);
 
   useEffect(() => {
     const loadTemplate = async () => {
@@ -214,6 +225,70 @@ export default function EnhancedAnalysisView({
 
     loadTemplate();
   }, [templateId]);
+
+  // Check for existing story related to this analysis
+  useEffect(() => {
+    const checkForExistingStory = async () => {
+      if (!session?.user?.id || !analysisData.id) return;
+      
+      setStoryLoading(true);
+      try {
+        const response = await fetch(`/api/stories?analysisId=${analysisData.id}`);
+        const data = await response.json();
+        
+        if (data.success && data.stories && data.stories.length > 0) {
+          setExistingStory(data.stories[0]); // Take the first/most recent story
+        }
+      } catch (error) {
+        console.error('Failed to check for existing story:', error);
+      } finally {
+        setStoryLoading(false);
+      }
+    };
+
+    checkForExistingStory();
+  }, [session?.user?.id, analysisData.id]);
+
+  // Handle story generation
+  const handleGenerateStory = async () => {
+    if (!session?.user?.id || !analysisData.id) return;
+    
+    setStoryGenerating(true);
+    try {
+      const response = await fetch('/api/story/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          analysisId: analysisData.id,
+          analysisData: analysisData,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setExistingStory(data.story);
+        // Show success message or redirect
+      } else {
+        console.error('Story generation failed:', data.error);
+        // Show error message
+      }
+    } catch (error) {
+      console.error('Failed to generate story:', error);
+      // Show error message
+    } finally {
+      setStoryGenerating(false);
+    }
+  };
+
+  // Handle view story
+  const handleViewStory = () => {
+    if (existingStory?.id) {
+      router.push(`/story/${existingStory.id}`);
+    }
+  };
 
   // Process insights for better organization - NO DUPLICATION
   const organizedInsights = useMemo(() => {
@@ -335,6 +410,40 @@ export default function EnhancedAnalysisView({
                 <Grid className="h-4 w-4" />
               )}
             </Button>
+            
+            {/* Story Generation/View Button */}
+            {session?.user && (
+              <Button
+                onClick={existingStory ? handleViewStory : handleGenerateStory}
+                disabled={storyLoading || storyGenerating}
+                className={cn(
+                  "gap-2",
+                  existingStory 
+                    ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700",
+                  "text-white font-medium",
+                  "hover:opacity-90",
+                  themeConfig.animation.transition,
+                  themeConfig.animation.hover
+                )}
+              >
+                {storyLoading || storyGenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : existingStory ? (
+                  <BookOpen className="h-4 w-4" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                {storyLoading 
+                  ? "Checking..." 
+                  : storyGenerating 
+                    ? "Generating..." 
+                    : existingStory 
+                      ? "View Story" 
+                      : "Generate Story"}
+              </Button>
+            )}
+            
             <Button
               onClick={() => setCoachOpen && setCoachOpen(true)}
               className={cn(

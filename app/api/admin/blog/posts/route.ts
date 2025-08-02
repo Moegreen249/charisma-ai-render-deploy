@@ -42,13 +42,15 @@ export async function GET(request: NextRequest) {
       excerpt: post.excerpt,
       category: post.category?.name || 'Uncategorized',
       tags: post.tags || [],
-      status: post.status,
+      status: post.status.toLowerCase(),
       coverImage: post.coverImage,
       author: post.author,
       publishedAt: post.publishedAt?.toISOString(),
       createdAt: post.createdAt.toISOString(),
       updatedAt: post.updatedAt.toISOString(),
-      featured: post.featured
+      featured: post.featured,
+      views: 0,
+      likes: 0
     }));
 
     return NextResponse.json({ posts: formattedPosts });
@@ -110,10 +112,10 @@ export async function POST(request: NextRequest) {
         slug,
         content,
         excerpt: excerpt || content.substring(0, 200) + '...',
-        status: status || 'draft',
+        status: (status || 'draft').toUpperCase(),
         authorId: user.id,
         categoryId: categoryRecord?.id,
-        publishedAt: status === 'published' ? new Date() : null
+        publishedAt: (status || '').toLowerCase() === 'published' ? new Date() : null
       },
       include: {
         author: {
@@ -147,7 +149,7 @@ export async function POST(request: NextRequest) {
       excerpt: post.excerpt,
       category: post.category?.name || 'Uncategorized',
       tags: tags || [],
-      status: post.status,
+      status: post.status.toLowerCase(),
       coverImage: post.coverImage,
       author: post.author,
       publishedAt: post.publishedAt?.toISOString(),

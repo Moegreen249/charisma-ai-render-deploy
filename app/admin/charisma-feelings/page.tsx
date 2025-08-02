@@ -11,9 +11,9 @@ import {
   Settings, 
   Activity,
   Clock,
-  Brain,
   Zap
 } from 'lucide-react';
+import { BrainIcon } from '@/components/icons/Brain';
 
 interface SchedulerStatus {
   isRunning: boolean;
@@ -109,7 +109,7 @@ export default function CharismaFeelingsAdminPage() {
     <div className="p-8 space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <Brain className="w-8 h-8 text-purple-500" />
+          <BrainIcon className="w-8 h-8 text-purple-500" />
           CharismaAI Self-Reflection Control
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -181,7 +181,7 @@ export default function CharismaFeelingsAdminPage() {
               variant="secondary"
               className="flex items-center gap-2"
             >
-              <Brain className="w-4 h-4" />
+              <BrainIcon className="w-4 h-4" />
               {actionLoading === 'run_now' ? 'Reflecting...' : 'Trigger Reflection Now'}
             </Button>
           </div>

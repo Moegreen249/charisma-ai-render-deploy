@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { 
   Bold, 
   Italic, 
@@ -40,6 +42,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { reportError, reportNetworkError } from '@/lib/error-management';
 
 interface RichTextEditorProps {
   value: string;
@@ -73,6 +76,12 @@ export function RichTextEditor({
   const [wordCount, setWordCount] = useState(0);
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [selectedText, setSelectedText] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiResults, setAiResults] = useState<{[key: string]: string}>({});
+  const [aiProviders, setAiProviders] = useState<any>({});
+  const [selectedProvider, setSelectedProvider] = useState('google-gemini');
+  const [selectedModel, setSelectedModel] = useState('gemini-pro');
+  const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const [currentFormat, setCurrentFormat] = useState({
     bold: false,
@@ -87,6 +96,35 @@ export function RichTextEditor({
     const words = text.trim().split(/\s+/).filter(word => word.length > 0);
     setWordCount(words.length);
   }, [value]);
+
+  // Load AI providers on mount
+  useEffect(() => {
+    const loadAiProviders = async () => {
+      if (!features.aiAssistant) return;
+      
+      setIsLoadingProviders(true);
+      try {
+        const response = await fetch('/api/admin/blog/ai-assistant');
+        if (response.ok) {
+          const data = await response.json();
+          setAiProviders(data.providers);
+          setSelectedProvider(data.defaultProvider);
+          
+          // Set default model for selected provider
+          const defaultModel = data.providers[data.defaultProvider]?.models[0];
+          if (defaultModel) {
+            setSelectedModel(defaultModel);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load AI providers:', error);
+      } finally {
+        setIsLoadingProviders(false);
+      }
+    };
+
+    loadAiProviders();
+  }, [features.aiAssistant]);
 
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -148,12 +186,130 @@ function example() {
     }
   };
 
+  const handleAiSuggestion = async (action: string) => {
+    if (!value && !selectedText) {
+      alert('Please write some content or select text first.');
+      return;
+    }
+
+    setIsAiLoading(true);
+    try {
+      const response = await fetch('/api/admin/blog/ai-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action,
+          text: value,
+          selectedText: selectedText || undefined,
+          provider: selectedProvider,
+          model: selectedModel,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('AI Assistant API Error:', response.status, errorData);
+        
+        // Report network error to global error management
+        reportNetworkError(
+          errorData.error || `AI Assistant API returned ${response.status}`,
+          '/api/admin/blog/ai-assistant',
+          response.status >= 500 ? 'HIGH' : 'MEDIUM'
+        );
+        
+        throw new Error(errorData.error || `Failed to get AI suggestion (${response.status})`);
+      }
+
+      const result = await response.json();
+      
+      // Store the result for user to review
+      setAiResults(prev => ({
+        ...prev,
+        [action]: result.improvedText
+      }));
+
+      console.log(`AI suggestion generated with ${result.provider} (${result.model}):`, result.improvedText.slice(0, 100) + '...');
+
+    } catch (error) {
+      console.error('AI suggestion error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
+      // Report error to global error management system
+      if (errorMessage.includes('API key')) {
+        reportError('AI_PROVIDER', 'HIGH', 'AI service configuration missing', {
+          endpoint: '/api/admin/blog/ai-assistant',
+          description: 'AI provider API keys not configured',
+          metadata: { action, provider: selectedProvider, model: selectedModel },
+        });
+        alert('AI service not configured. Please contact your administrator to set up AI provider API keys.');
+      } else if (errorMessage.includes('Unauthorized') || errorMessage.includes('401')) {
+        reportError('AUTHENTICATION', 'MEDIUM', 'Unauthorized AI assistant access', {
+          endpoint: '/api/admin/blog/ai-assistant',
+          description: 'User not authenticated for AI features',
+          metadata: { action },
+        });
+        alert('Please log in as an admin to use AI features.');
+      } else if (errorMessage.includes('Forbidden') || errorMessage.includes('403')) {
+        reportError('AUTHENTICATION', 'MEDIUM', 'Insufficient privileges for AI assistant', {
+          endpoint: '/api/admin/blog/ai-assistant',
+          description: 'User lacks admin privileges for AI features',
+          metadata: { action },
+        });
+        alert('You need admin privileges to use AI features.');
+      } else {
+        reportError('AI_PROVIDER', 'MEDIUM', `AI suggestion failed: ${errorMessage}`, {
+          endpoint: '/api/admin/blog/ai-assistant',
+          description: 'Failed to process AI request',
+          requestData: { action, provider: selectedProvider, model: selectedModel },
+          metadata: { textLength: value.length, hasSelectedText: !!selectedText },
+        });
+        alert(`Failed to get AI suggestion: ${errorMessage}`);
+      }
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const applyAiSuggestion = (action: string) => {
+    const suggestion = aiResults[action];
+    if (!suggestion) return;
+
+    if (selectedText && editorRef.current) {
+      // Replace selected text
+      const content = editorRef.current.innerHTML;
+      const newContent = content.replace(selectedText, suggestion);
+      editorRef.current.innerHTML = newContent;
+      onChange(newContent);
+    } else {
+      // Replace entire content
+      if (editorRef.current) {
+        editorRef.current.innerHTML = suggestion;
+        onChange(suggestion);
+      }
+    }
+
+    // Clear the suggestion after applying
+    setAiResults(prev => {
+      const newResults = { ...prev };
+      delete newResults[action];
+      return newResults;
+    });
+    setSelectedText('');
+  };
+
   const aiSuggestions = [
-    { label: "Improve Grammar", action: "grammar" },
-    { label: "Make More Engaging", action: "engage" },
-    { label: "Simplify Language", action: "simplify" },
-    { label: "Add Examples", action: "examples" },
-    { label: "Create Outline", action: "outline" },
+    { label: "Improve Grammar", action: "grammar", icon: "📝" },
+    { label: "Make More Engaging", action: "engage", icon: "✨" },
+    { label: "Simplify Language", action: "simplify", icon: "🎯" },
+    { label: "Add Examples", action: "examples", icon: "💡" },
+    { label: "Create Outline", action: "outline", icon: "📋" },
+    { label: "Expand Content", action: "expand", icon: "📈" },
+    { label: "Make Shorter", action: "shorten", icon: "✂️" },
+    { label: "More Professional", action: "professional", icon: "👔" },
+    { label: "More Casual", action: "casual", icon: "😊" },
+    { label: "SEO Optimize", action: "seo", icon: "🔍" },
   ];
 
   const formatButtons = [
@@ -363,6 +519,11 @@ function example() {
                   >
                     <Wand2 className="w-4 h-4 mr-1" />
                     AI Assistant
+                    {selectedProvider && !isLoadingProviders && (
+                      <Badge className="ml-2 bg-purple-500/20 text-purple-200 border-purple-400/30 text-xs">
+                        {aiProviders[selectedProvider]?.name?.split(' ')[0] || selectedProvider}
+                      </Badge>
+                    )}
                   </Button>
                 </>
               )}
@@ -412,7 +573,7 @@ function example() {
             exit={{ height: 0, opacity: 0 }}
             className="border-b border-white/20 bg-purple-500/10 p-3"
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-purple-300" />
                 <span className="text-purple-300 font-medium">AI Writing Assistant</span>
@@ -422,6 +583,78 @@ function example() {
                   </Badge>
                 )}
               </div>
+              <div className="flex items-center gap-2">
+                {isLoadingProviders ? (
+                  <Badge className="bg-yellow-500/20 text-yellow-200 border-yellow-400/30 text-xs">
+                    Loading...
+                  </Badge>
+                ) : (
+                  <Badge className="bg-green-500/20 text-green-200 border-green-400/30 text-xs">
+                    {aiProviders[selectedProvider]?.name || 'Ready'}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            
+            {/* AI Provider and Model Selection */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <Label className="text-purple-200 text-xs">AI Provider</Label>
+                <Select 
+                  value={selectedProvider} 
+                  onValueChange={(value) => {
+                    setSelectedProvider(value);
+                    // Set first model of selected provider as default
+                    const firstModel = aiProviders[value]?.models[0];
+                    if (firstModel) {
+                      setSelectedModel(firstModel);
+                    }
+                  }}
+                  disabled={isLoadingProviders}
+                >
+                  <SelectTrigger className="bg-purple-500/20 border-purple-400/30 text-purple-200 text-xs h-8">
+                    <SelectValue placeholder="Select Provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(aiProviders).map(([key, provider]: [string, any]) => (
+                      <SelectItem 
+                        key={key} 
+                        value={key}
+                        disabled={!provider.available}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span>{provider.name}</span>
+                          {!provider.available && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              No API Key
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="text-purple-200 text-xs">Model</Label>
+                <Select 
+                  value={selectedModel} 
+                  onValueChange={setSelectedModel}
+                  disabled={isLoadingProviders || !selectedProvider}
+                >
+                  <SelectTrigger className="bg-purple-500/20 border-purple-400/30 text-purple-200 text-xs h-8">
+                    <SelectValue placeholder="Select Model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {aiProviders[selectedProvider]?.models?.map((model: string) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               {aiSuggestions.map((suggestion) => (
@@ -429,17 +662,70 @@ function example() {
                   key={suggestion.action}
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    // AI suggestion implementation would go here
-                    console.log(`AI action: ${suggestion.action}`, selectedText || 'full text');
-                  }}
+                  onClick={() => handleAiSuggestion(suggestion.action)}
+                  disabled={isAiLoading}
                   className="bg-purple-500/20 border-purple-400/30 text-purple-200 hover:bg-purple-500/30 text-xs"
                 >
-                  <Sparkles className="w-3 h-3 mr-1" />
+                  {isAiLoading ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Sparkles className="w-3 h-3 mr-1" />
+                    </motion.div>
+                  ) : (
+                    <span className="mr-1">{suggestion.icon}</span>
+                  )}
                   {suggestion.label}
                 </Button>
               ))}
             </div>
+            
+            {/* AI Results */}
+            {Object.keys(aiResults).length > 0 && (
+              <div className="mt-4 border-t border-purple-400/30 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-purple-300" />
+                  <span className="text-purple-300 font-medium">AI Suggestions</span>
+                </div>
+                <div className="space-y-3">
+                  {Object.entries(aiResults).map(([action, suggestion]) => (
+                    <div key={action} className="bg-white/5 rounded-lg p-3 border border-white/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-purple-200 text-sm font-medium">
+                          {aiSuggestions.find(s => s.action === action)?.label}
+                        </span>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => applyAiSuggestion(action)}
+                            className="bg-green-500/20 border-green-400/30 text-green-200 hover:bg-green-500/30 text-xs"
+                          >
+                            Apply
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setAiResults(prev => {
+                              const newResults = { ...prev };
+                              delete newResults[action];
+                              return newResults;
+                            })}
+                            className="bg-red-500/20 border-red-400/30 text-red-200 hover:bg-red-500/30 text-xs"
+                          >
+                            Dismiss
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="text-white/80 text-sm max-h-32 overflow-y-auto bg-black/20 rounded p-2">
+                        {suggestion}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 

@@ -209,6 +209,30 @@ test-*.txt
 *-test-*.txt
 sample-*.txt
 
+# Demo and test pages/components
+**/skeleton-demo/
+**/subscription-demo/
+**/*demo*.tsx
+**/*demo*.ts
+**/*test*.tsx
+**/*test*.ts
+**/*Test*.tsx
+**/*Test*.ts
+**/*spec*.tsx
+**/*spec*.ts
+**/TestNotificationButton.tsx
+**/__tests__/
+
+# Test and development scripts
+scripts/test-*.ts
+scripts/verify-*.ts
+scripts/create-test-*.ts
+scripts/seed-*-demo.ts
+
+# Development folders
+/.kiro/
+/Iconspack/
+
 # Keep important documentation and configuration
 !README.md
 !package.json

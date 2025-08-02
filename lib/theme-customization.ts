@@ -401,17 +401,34 @@ export const useThemeStore = create<ThemeStore>()(
       setCurrentTheme: (theme) => {
         set({ currentTheme: theme });
         applyThemeToDOM(theme);
+        
+        // Note: Server persistence is available but disabled for now to avoid errors
+        // The theme is properly persisted in localStorage and works across sessions
+        // Uncomment below to enable server persistence when needed:
+        /*
+        if (typeof window !== 'undefined') {
+          setTimeout(() => {
+            fetch('/api/admin/themes/current', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ themeId: theme.id }),
+            }).catch((error) => {
+              console.warn('Failed to persist theme to server:', error);
+            });
+          }, 100);
+        }
+        */
       },
 
       addCustomTheme: (theme) => {
         set((state) => ({
-          customThemes: [...state.customThemes, theme],
+          customThemes: [...(state.customThemes || []), theme],
         }));
       },
 
       updateCustomTheme: (themeId, updates) => {
         set((state) => ({
-          customThemes: state.customThemes.map((theme) =>
+          customThemes: (state.customThemes || []).map((theme) =>
             theme.id === themeId
               ? { ...theme, ...updates, updatedAt: new Date().toISOString() }
               : theme
@@ -425,7 +442,7 @@ export const useThemeStore = create<ThemeStore>()(
 
       deleteCustomTheme: (themeId) => {
         set((state) => ({
-          customThemes: state.customThemes.filter((theme) => theme.id !== themeId),
+          customThemes: (state.customThemes || []).filter((theme) => theme.id !== themeId),
           currentTheme:
             state.currentTheme.id === themeId ? themePresets[0] : state.currentTheme,
         }));
@@ -479,11 +496,19 @@ export const useThemeStore = create<ThemeStore>()(
   )
 );
 
-// Apply theme to DOM
+// Apply theme to DOM with comprehensive coverage
 export const applyThemeToDOM = (theme: CustomTheme) => {
+  if (typeof window === 'undefined') return; // SSR safety
+  
+  // Check if this theme is already applied to prevent infinite loops
+  const currentThemeId = localStorage.getItem('charisma-active-theme');
+  if (currentThemeId === theme.id) {
+    return; // Theme already applied
+  }
+  
   const root = document.documentElement;
   
-  // Apply CSS custom properties
+  // Apply CSS custom properties for colors
   root.style.setProperty('--color-primary', theme.colors.primary);
   root.style.setProperty('--color-secondary', theme.colors.secondary);
   root.style.setProperty('--color-accent', theme.colors.accent);
@@ -497,14 +522,84 @@ export const applyThemeToDOM = (theme: CustomTheme) => {
   root.style.setProperty('--color-error', theme.colors.error);
   root.style.setProperty('--color-info', theme.colors.info);
   
-  // Apply font family
-  root.style.setProperty('--font-family', theme.typography.fontFamily);
+  // Apply gradients as CSS custom properties
+  root.style.setProperty('--gradient-main', `linear-gradient(to bottom right, ${theme.gradients.main.replace('from-', '').replace('via-', '').replace('to-', '')})`);
+  root.style.setProperty('--gradient-card', `linear-gradient(to bottom right, ${theme.gradients.card.replace('from-', '').replace('to-', '')})`);
+  root.style.setProperty('--gradient-button', `linear-gradient(to right, ${theme.gradients.button.replace('from-', '').replace('to-', '')})`);
+  root.style.setProperty('--gradient-text', `linear-gradient(to right, ${theme.gradients.text.replace('from-', '').replace('to-', '')})`);
+  root.style.setProperty('--gradient-hero', `linear-gradient(to right, ${theme.gradients.hero.replace('from-', '').replace('via-', '').replace('to-', '')})`);
+  root.style.setProperty('--gradient-sidebar', `linear-gradient(to bottom, ${theme.gradients.sidebar.replace('from-', '').replace('to-', '')})`);
   
-  // Apply border radius
+  // Apply typography
+  root.style.setProperty('--font-family', theme.typography.fontFamily);
+  root.style.setProperty('--font-size-xs', theme.typography.fontSize.xs);
+  root.style.setProperty('--font-size-sm', theme.typography.fontSize.sm);
+  root.style.setProperty('--font-size-base', theme.typography.fontSize.base);
+  root.style.setProperty('--font-size-lg', theme.typography.fontSize.lg);
+  root.style.setProperty('--font-size-xl', theme.typography.fontSize.xl);
+  root.style.setProperty('--font-size-2xl', theme.typography.fontSize['2xl']);
+  root.style.setProperty('--font-size-3xl', theme.typography.fontSize['3xl']);
+  root.style.setProperty('--font-size-4xl', theme.typography.fontSize['4xl']);
+  
+  // Apply font weights
+  root.style.setProperty('--font-weight-light', theme.typography.fontWeight.light);
+  root.style.setProperty('--font-weight-normal', theme.typography.fontWeight.normal);
+  root.style.setProperty('--font-weight-medium', theme.typography.fontWeight.medium);
+  root.style.setProperty('--font-weight-semibold', theme.typography.fontWeight.semibold);
+  root.style.setProperty('--font-weight-bold', theme.typography.fontWeight.bold);
+  
+  // Apply line heights
+  root.style.setProperty('--line-height-tight', theme.typography.lineHeight.tight);
+  root.style.setProperty('--line-height-normal', theme.typography.lineHeight.normal);
+  root.style.setProperty('--line-height-relaxed', theme.typography.lineHeight.relaxed);
+  
+  // Apply spacing
+  root.style.setProperty('--spacing-xs', theme.spacing.xs);
+  root.style.setProperty('--spacing-sm', theme.spacing.sm);
+  root.style.setProperty('--spacing-md', theme.spacing.md);
+  root.style.setProperty('--spacing-lg', theme.spacing.lg);
+  root.style.setProperty('--spacing-xl', theme.spacing.xl);
+  root.style.setProperty('--spacing-2xl', theme.spacing['2xl']);
+  root.style.setProperty('--spacing-3xl', theme.spacing['3xl']);
+  
+  // Apply effects
+  root.style.setProperty('--radius-none', theme.effects.borderRadius.none);
   root.style.setProperty('--radius-sm', theme.effects.borderRadius.sm);
   root.style.setProperty('--radius-md', theme.effects.borderRadius.md);
   root.style.setProperty('--radius-lg', theme.effects.borderRadius.lg);
   root.style.setProperty('--radius-xl', theme.effects.borderRadius.xl);
+  root.style.setProperty('--radius-full', theme.effects.borderRadius.full);
+  
+  // Apply shadows
+  root.style.setProperty('--shadow-sm', theme.effects.shadow.sm);
+  root.style.setProperty('--shadow-md', theme.effects.shadow.md);
+  root.style.setProperty('--shadow-lg', theme.effects.shadow.lg);
+  root.style.setProperty('--shadow-xl', theme.effects.shadow.xl);
+  root.style.setProperty('--shadow-2xl', theme.effects.shadow['2xl']);
+  
+  // Apply blur effects
+  root.style.setProperty('--blur-sm', theme.effects.blur.sm);
+  root.style.setProperty('--blur-md', theme.effects.blur.md);
+  root.style.setProperty('--blur-lg', theme.effects.blur.lg);
+  root.style.setProperty('--blur-xl', theme.effects.blur.xl);
+  
+  // Apply opacity
+  root.style.setProperty('--opacity-low', theme.effects.opacity.low.toString());
+  root.style.setProperty('--opacity-medium', theme.effects.opacity.medium.toString());
+  root.style.setProperty('--opacity-high', theme.effects.opacity.high.toString());
+  
+  // Apply theme class to body for CSS selectors
+  document.body.className = document.body.className.replace(/theme-\w+/, '') + ` theme-${theme.id}`;
+  
+  // Store theme ID in localStorage for persistence
+  localStorage.setItem('charisma-active-theme', theme.id);
+  
+  // Trigger a custom event for other components to listen to
+  window.dispatchEvent(new CustomEvent('theme-changed', { 
+    detail: { theme, timestamp: Date.now() } 
+  }));
+  
+  console.log(`✨ Applied theme: ${theme.name} (${theme.id})`);
 };
 
 // Theme utilities
@@ -543,4 +638,74 @@ export const importTheme = (themeJSON: string): CustomTheme => {
     id: `imported-${Date.now()}`,
     updatedAt: new Date().toISOString(),
   };
+};
+
+// Initialize theme on app load
+export const initializeTheme = () => {
+  if (typeof window === 'undefined') return;
+  
+  const storedThemeId = localStorage.getItem('charisma-active-theme');
+  if (storedThemeId) {
+    const foundTheme = themePresets.find(theme => theme.id === storedThemeId);
+    if (foundTheme) {
+      // Only apply if not already applied
+      applyThemeToDOM(foundTheme);
+      return foundTheme;
+    }
+  }
+  
+  // Apply default theme only if no theme is currently applied
+  const currentThemeId = localStorage.getItem('charisma-active-theme');
+  if (!currentThemeId) {
+    const defaultTheme = themePresets[0];
+    applyThemeToDOM(defaultTheme);
+    return defaultTheme;
+  }
+  
+  return null;
+};
+
+// Restore theme from localStorage
+export const restoreTheme = (): CustomTheme | null => {
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    const storedThemeId = localStorage.getItem('charisma-active-theme');
+    if (storedThemeId) {
+      // Check presets first
+      const presetTheme = themePresets.find(theme => theme.id === storedThemeId);
+      if (presetTheme) {
+        return presetTheme;
+      }
+      
+      // Check custom themes from localStorage
+      const customThemesJson = localStorage.getItem('charisma-custom-themes');
+      if (customThemesJson) {
+        const customThemes = JSON.parse(customThemesJson);
+        const customTheme = customThemes.find((theme: CustomTheme) => theme.id === storedThemeId);
+        if (customTheme) {
+          return customTheme;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error restoring theme:', error);
+  }
+  
+  return null;
+};
+
+// Listen for theme changes across tabs
+export const setupThemeSync = () => {
+  if (typeof window === 'undefined') return;
+  
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'charisma-active-theme' && e.newValue) {
+      const newThemeId = e.newValue;
+      const foundTheme = themePresets.find(theme => theme.id === newThemeId);
+      if (foundTheme) {
+        applyThemeToDOM(foundTheme);
+      }
+    }
+  });
 };

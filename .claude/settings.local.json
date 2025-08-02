@@ -19,7 +19,13 @@
       "Bash(npx prisma:*)",
       "Bash(rg:*)",
       "Bash(npm audit:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npx tsx:*)",
+      "Bash(grep:*)",
+      "Bash(del check-db.js)",
+      "Bash(del scriptsget-db-counts.ts)",
+      "Bash(npm run seed:email-templates:*)",
+      "Bash(npm run:*)"
     ],
     "deny": []
   }

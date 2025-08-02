@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { themeConfig } from "@/lib/theme-config";
@@ -13,6 +14,7 @@ import {
   Minus,
   CheckCircle
 } from "lucide-react";
+import ChapterNavigation from "./ChapterNavigation";
 
 interface StoryChapter {
   id: string;
@@ -42,6 +44,45 @@ interface StoryTimelineProps {
 }
 
 export default function StoryTimeline({ storyContent }: StoryTimelineProps) {
+  const [activeChapterId, setActiveChapterId] = useState<string | undefined>(
+    storyContent.chapters.length > 0 ? storyContent.chapters[0].id : undefined
+  );
+
+  const handleChapterClick = (chapterId: string) => {
+    setActiveChapterId(chapterId);
+    const element = document.getElementById(`chapter-${chapterId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const chapterElements = storyContent.chapters.map(chapter => 
+        document.getElementById(`chapter-${chapter.id}`)
+      ).filter(Boolean);
+
+      let currentChapter = storyContent.chapters[0]?.id;
+      
+      for (const element of chapterElements) {
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+            const chapterId = element.id.replace('chapter-', '');
+            currentChapter = chapterId;
+            break;
+          }
+        }
+      }
+      
+      if (currentChapter !== activeChapterId) {
+        setActiveChapterId(currentChapter);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [storyContent.chapters, activeChapterId]);
   const getMoodIcon = (mood?: string) => {
     switch (mood) {
       case 'positive':
@@ -65,7 +106,9 @@ export default function StoryTimeline({ storyContent }: StoryTimelineProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+      {/* Main Story Content */}
+      <div className="flex-1 space-y-6 lg:space-y-8">
       {/* Story Overview */}
       <Card className={cn(
         themeConfig.colors.glass.background,
@@ -92,18 +135,18 @@ export default function StoryTimeline({ storyContent }: StoryTimelineProps) {
               <Clock className="h-4 w-4 text-blue-400" />
               <span className="text-sm font-medium text-white">Timeline</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
+              <div className="flex flex-col sm:block">
                 <span className="text-gray-400">Start: </span>
-                <span className="text-white">{storyContent.timeline.start}</span>
+                <span className="text-white font-medium">{storyContent.timeline.start}</span>
               </div>
-              <div>
+              <div className="flex flex-col sm:block">
                 <span className="text-gray-400">End: </span>
-                <span className="text-white">{storyContent.timeline.end}</span>
+                <span className="text-white font-medium">{storyContent.timeline.end}</span>
               </div>
-              <div>
+              <div className="flex flex-col sm:block">
                 <span className="text-gray-400">Duration: </span>
-                <span className="text-white">{storyContent.timeline.duration}</span>
+                <span className="text-white font-medium">{storyContent.timeline.duration}</span>
               </div>
             </div>
           </div>
@@ -112,17 +155,17 @@ export default function StoryTimeline({ storyContent }: StoryTimelineProps) {
 
       {/* Story Chapters Timeline */}
       <div className="relative">
-        {/* Timeline Line */}
-        <div className="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-purple-400 via-blue-400 to-green-400 opacity-30"></div>
+        {/* Timeline Line - responsive positioning */}
+        <div className="absolute left-4 sm:left-8 top-0 bottom-0 w-px bg-gradient-to-b from-purple-400 via-blue-400 to-green-400 opacity-30"></div>
         
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {storyContent.chapters.map((chapter, index) => (
-            <div key={chapter.id} className="relative">
-              {/* Timeline Node */}
-              <div className="absolute left-6 w-4 h-4 bg-purple-500 rounded-full border-2 border-white shadow-lg z-10"></div>
+            <div key={chapter.id} id={`chapter-${chapter.id}`} className="relative">
+              {/* Timeline Node - responsive positioning */}
+              <div className="absolute left-2.5 sm:left-6 w-3 h-3 sm:w-4 sm:h-4 bg-purple-500 rounded-full border-2 border-white shadow-lg z-10"></div>
               
-              {/* Chapter Content */}
-              <div className="ml-16">
+              {/* Chapter Content - responsive margin */}
+              <div className="ml-8 sm:ml-16">
                 <Card className={cn(
                   themeConfig.colors.glass.background,
                   themeConfig.colors.glass.border,
@@ -243,9 +286,9 @@ export default function StoryTimeline({ storyContent }: StoryTimelineProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
               {storyContent.keyInsights.map((insight, index) => (
-                <div key={index} className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <div key={index} className="p-3 sm:p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                       {index + 1}
@@ -260,6 +303,16 @@ export default function StoryTimeline({ storyContent }: StoryTimelineProps) {
           </CardContent>
         </Card>
       )}
+      </div>
+
+      {/* Chapter Navigation Sidebar - now responsive */}
+      <div className="w-full lg:w-80">
+        <ChapterNavigation
+          chapters={storyContent.chapters}
+          activeChapterId={activeChapterId}
+          onChapterClick={handleChapterClick}
+        />
+      </div>
     </div>
   );
 }

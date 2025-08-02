@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ChevronDown, User, LogOut, Settings, LayoutDashboard } from 'lucide-react';
+import { X, ChevronDown, User, LogOut, Settings, LayoutDashboard } from 'lucide-react';
+import { MenuIcon } from '@/components/icons/Menu';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +32,7 @@ const publicNavItems: NavItem[] = [
 
 const authenticatedNavItems: NavItem[] = [
   { label: 'Analyze', href: '/analyze' },
+  { label: 'Stories', href: '/stories' },
   { label: 'History', href: '/history' },
   { label: 'Blog', href: '/blog' },
 ];
@@ -307,7 +309,7 @@ export function UnifiedNavigation() {
               className="md:hidden p-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-colors touch-manipulation focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
             </button>
           </div>
         </nav>

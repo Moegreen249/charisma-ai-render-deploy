@@ -23,6 +23,9 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
     "test:quality": "npm run typecheck && npm run lint && npm run format:check",
     "db:reset": "tsx scripts/reset-db-only.ts",
     "db:reset-seed": "tsx scripts/reset-and-seed-db.ts",
@@ -93,6 +96,7 @@
     "@types/node": "^20.19.9",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/ui": "^3.2.4",
     "chalk": "^5.4.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
@@ -100,6 +104,7 @@
     "prisma": "^6.11.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   }
 }

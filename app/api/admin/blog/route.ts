@@ -61,8 +61,27 @@ export async function GET(request: NextRequest) {
       prisma.blogPost.count({ where }),
     ]);
 
+    const formattedPosts = posts.map(post => ({
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      content: post.content,
+      excerpt: post.excerpt,
+      category: post.category?.name || 'Uncategorized',
+      tags: post.tags || [],
+      status: post.status.toLowerCase(),
+      coverImage: post.coverImage,
+      author: post.author,
+      publishedAt: post.publishedAt?.toISOString(),
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString(),
+      featured: post.featured,
+      views: 0,
+      likes: 0
+    }));
+
     return NextResponse.json({
-      posts,
+      posts: formattedPosts,
       pagination: {
         page,
         limit,
@@ -113,13 +132,13 @@ export async function POST(request: NextRequest) {
         excerpt: validatedData.excerpt,
         content: validatedData.content,
         coverImage: validatedData.coverImage,
-        status: validatedData.status,
+        status: validatedData.status.toUpperCase() as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
         featured: validatedData.featured,
         tags: validatedData.tags,
         seoTitle: validatedData.seoTitle,
         seoDescription: validatedData.seoDescription,
         authorId: session.user.id,
-        publishedAt: validatedData.status === 'PUBLISHED' ? new Date() : null,
+        publishedAt: validatedData.status.toUpperCase() === 'PUBLISHED' ? new Date() : null,
         categoryId: validatedData.categoryId || null,
       },
       include: {

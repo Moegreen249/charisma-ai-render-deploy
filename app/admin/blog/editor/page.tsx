@@ -110,7 +110,12 @@ export default function BlogEditorPage() {
         setLoading(true);
         
         // Load categories
-        const categoriesResponse = await fetch('/api/admin/blog/categories');
+        const categoriesResponse = await fetch('/api/admin/blog/categories', {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
         if (categoriesResponse.ok) {
           const categoriesData = await categoriesResponse.json();
           setCategories(categoriesData.categories || []);
@@ -118,12 +123,27 @@ export default function BlogEditorPage() {
 
         // Load post if editing
         if (isEdit && postId) {
-          const postResponse = await fetch(`/api/admin/blog/posts/${postId}`);
+          console.log('Loading post with ID:', postId);
+          const postResponse = await fetch(`/api/admin/blog/posts/${postId}`, {
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
           if (postResponse.ok) {
             const postData = await postResponse.json();
+            console.log('Post data loaded:', postData);
             setPost({
               ...postData.post,
               tags: postData.post.tags || []
+            });
+          } else {
+            console.error('Failed to load post:', postResponse.status, postResponse.statusText);
+            const errorData = await postResponse.text();
+            console.error('Error response:', errorData);
+            setMessage({
+              type: 'error',
+              text: `Failed to load post: ${postResponse.status} ${postResponse.statusText}`
             });
           }
         }
@@ -184,7 +204,7 @@ export default function BlogEditorPage() {
         tags: Array.isArray(post.tags) ? post.tags : [],
       };
 
-      const url = isEdit ? `/api/admin/blog/posts/${postId}` : '/api/admin/blog/posts';
+      const url = isEdit ? `/api/admin/blog/posts/${postId}` : '/api/admin/blog';
       const method = isEdit ? 'PUT' : 'POST';
 
       const response = await fetch(url, {

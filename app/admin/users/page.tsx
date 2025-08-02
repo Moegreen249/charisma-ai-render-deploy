@@ -68,8 +68,9 @@ export default function AdminUsersPage() {
       const response = await fetch('/api/admin/users');
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.users);
-        setFilteredUsers(data.users);
+        const usersData = data.users || [];
+        setUsers(usersData);
+        setFilteredUsers(usersData);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -87,7 +88,7 @@ export default function AdminUsersPage() {
 
   // Filter and search functionality
   useEffect(() => {
-    let filtered = users;
+    let filtered = users || [];
 
     // Filter by tab
     if (activeTab === 'pending') {
@@ -140,9 +141,9 @@ export default function AdminUsersPage() {
     }
   };
 
-  const pendingUsers = users.filter(user => !user.isApproved && !user.rejectedAt);
-  const approvedUsers = users.filter(user => user.isApproved);
-  const rejectedUsers = users.filter(user => user.rejectedAt);
+  const pendingUsers = (users || []).filter(user => !user.isApproved && !user.rejectedAt);
+  const approvedUsers = (users || []).filter(user => user.isApproved);
+  const rejectedUsers = (users || []).filter(user => user.rejectedAt);
 
   if (status === "loading" || loading) {
     return (
@@ -247,7 +248,7 @@ export default function AdminUsersPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">{users.length}</div>
+              <div className="text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">{(users || []).length}</div>
               <p className="text-xs text-white/60 mt-1">Registered users</p>
             </CardContent>
           </Card>
@@ -307,7 +308,7 @@ export default function AdminUsersPage() {
                   value="all" 
                   className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
                 >
-                  All ({users.length})
+                  All ({(users || []).length})
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pending"
@@ -328,6 +329,105 @@ export default function AdminUsersPage() {
                   Rejected ({rejectedUsers.length})
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="all" className="space-y-4">
+                {filteredUsers.length === 0 ? (
+                  <Card className="bg-white/10 backdrop-blur-md border-white/20">
+                    <CardContent className="pt-6">
+                      <p className="text-center text-white/70">No users found</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <Card key={user.id} className="bg-white/10 backdrop-blur-md border-white/20">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="text-lg text-white">{user.name || 'No name'}</CardTitle>
+                            <CardDescription className="text-white/70">{user.email}</CardDescription>
+                          </div>
+                          <Badge 
+                            variant={user.isApproved ? "default" : user.rejectedAt ? "destructive" : "outline"} 
+                            className={
+                              user.isApproved 
+                                ? "bg-green-600 text-white" 
+                                : user.rejectedAt 
+                                ? "bg-red-600 text-white" 
+                                : "text-yellow-600 border-yellow-600"
+                            }
+                          >
+                            {user.isApproved ? (
+                              <>
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Approved
+                              </>
+                            ) : user.rejectedAt ? (
+                              <>
+                                <XCircle className="w-3 h-3 mr-1" />
+                                Rejected
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-3 h-3 mr-1" />
+                                Pending
+                              </>
+                            )}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-sm text-white/70">
+                          <p>Role: {user.role}</p>
+                          <p>Registered: {new Date(user.createdAt).toLocaleDateString()}</p>
+                          {user.approvedAt && (
+                            <p>Approved: {new Date(user.approvedAt).toLocaleDateString()}</p>
+                          )}
+                          {user.rejectedAt && (
+                            <p>Rejected: {new Date(user.rejectedAt).toLocaleDateString()}</p>
+                          )}
+                          {user.rejectionReason && (
+                            <p>Reason: {user.rejectionReason}</p>
+                          )}
+                        </div>
+                        {!user.isApproved && !user.rejectedAt && (
+                          <div className="flex space-x-2 mt-4">
+                            <Button
+                              size="sm"
+                              onClick={() => handleUserAction(user.id, 'approve')}
+                              disabled={actionLoading === user.id}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              {actionLoading === user.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Approve
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleUserAction(user.id, 'reject', 'Account rejected by admin')}
+                              disabled={actionLoading === user.id}
+                            >
+                              {actionLoading === user.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  Reject
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </TabsContent>
 
         <TabsContent value="pending" className="space-y-4">
           {pendingUsers.length === 0 ? (

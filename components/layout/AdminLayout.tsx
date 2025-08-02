@@ -22,6 +22,10 @@ import {
   Globe,
   Rocket,
   Heart,
+  AlertTriangle,
+  UserPlus,
+  Palette,
+  Bot,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -37,14 +41,18 @@ interface AdminLayoutProps {
 const adminNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
   { icon: Users, label: 'Users', href: '/admin/users' },
+  { icon: UserPlus, label: 'Invitations', href: '/admin/invitation-management' },
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
   { icon: FileText, label: 'Blog', href: '/admin/blog' },
   { icon: Brain, label: 'Modules', href: '/admin/modules' },
+  { icon: Bot, label: 'AI Config', href: '/admin/ai-config' },
   { icon: Heart, label: 'AI Feelings', href: '/admin/charisma-feelings' },
   { icon: Mail, label: 'Email Templates', href: '/admin/email-templates' },
   { icon: Calendar, label: 'Background Tasks', href: '/admin/background-tasks' },
+  { icon: AlertTriangle, label: 'Errors', href: '/admin/errors' },
   { icon: Rocket, label: 'Launch', href: '/admin/launch' },
   { icon: Globe, label: 'SEO', href: '/admin/seo' },
+  { icon: Palette, label: 'Theme Designer', href: '/admin/theme-designer' },
   { icon: Shield, label: 'System', href: '/admin/system' },
   { icon: Settings, label: 'Settings', href: '/admin/settings' },
 ];

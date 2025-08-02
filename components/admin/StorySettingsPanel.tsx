@@ -25,9 +25,15 @@ import {
   XCircle,
   Loader2,
   Save,
-  RefreshCw
+  RefreshCw,
+  Brain,
+  Zap,
+  Clock,
+  AlertCircle,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AI_PROVIDERS, getProviderConfig, type AIProvider, type AIModel } from "@/lib/ai-providers";
 
 interface StorySettings {
   id: string;
@@ -66,10 +72,25 @@ export default function StorySettingsPanel() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedPrompt, setExpandedPrompt] = useState(false);
+  const [availableModels, setAvailableModels] = useState<AIModel[]>([]);
+  const [selectedProviderConfig, setSelectedProviderConfig] = useState<any>(null);
 
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  // Load available models when provider changes
+  useEffect(() => {
+    if (settings?.defaultProvider) {
+      const providerConfig = getProviderConfig(settings.defaultProvider as AIProvider);
+      setSelectedProviderConfig(providerConfig);
+      
+      if (providerConfig) {
+        const models = providerConfig.models.filter(m => m.available);
+        setAvailableModels(models);
+      }
+    }
+  }, [settings?.defaultProvider]);
 
   const fetchSettings = async () => {
     try {
@@ -309,34 +330,180 @@ export default function StorySettingsPanel() {
             </div>
           </div>
 
-          {/* AI Provider Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-white font-medium">Default AI Provider</Label>
-              <Select
-                value={settings.defaultProvider}
-                onValueChange={(value) => updateSetting('defaultProvider', value)}
-              >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="openai">OpenAI</SelectItem>
-                  <SelectItem value="anthropic">Anthropic</SelectItem>
-                  <SelectItem value="google">Google</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-white font-medium">Default Model</Label>
-              <Input
-                value={settings.defaultModel}
-                onChange={(e) => updateSetting('defaultModel', e.target.value)}
-                className="bg-white/10 border-white/20 text-white mt-2"
-                placeholder="e.g., gpt-4"
-              />
-            </div>
-          </div>
+          {/* Enhanced AI Provider Settings */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                AI Provider Configuration
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Provider Selection */}
+              <div>
+                <Label className="text-white font-medium">Default AI Provider</Label>
+                <Select
+                  value={settings.defaultProvider}
+                  onValueChange={(value) => updateSetting('defaultProvider', value)}
+                >
+                  <SelectTrigger className="bg-white/10 border-white/20 text-white mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AI_PROVIDERS.map((provider) => (
+                      <SelectItem key={provider.id} value={provider.id}>
+                        <div className="flex items-center gap-2">
+                          <span>{provider.name}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {provider.models.filter(m => m.available).length} models
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedProviderConfig && (
+                  <div className="mt-2 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <div className="flex items-center gap-2 text-blue-300 text-sm">
+                      <Info className="h-4 w-4" />
+                      <span>API Key: {selectedProviderConfig.apiKeyName}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Model Selection */}
+              <div>
+                <Label className="text-white font-medium">Default Model</Label>
+                <Select
+                  value={settings.defaultModel}
+                  onValueChange={(value) => updateSetting('defaultModel', value)}
+                >
+                  <SelectTrigger className="bg-white/10 border-white/20 text-white mt-2">
+                    <SelectValue placeholder="Select a model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableModels.map((model) => (
+                      <SelectItem key={model.id} value={model.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-2">
+                            <span>{model.name}</span>
+                            <Badge 
+                              variant={model.tier === "free" ? "secondary" : model.tier === "both" ? "outline" : "destructive"} 
+                              className="text-xs"
+                            >
+                              {model.tier}
+                            </Badge>
+                          </div>
+                          {model.contextWindow && (
+                            <span className="text-xs text-gray-400 ml-2">
+                              {(model.contextWindow / 1000).toFixed(0)}k context
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {/* Model Details */}
+                {settings.defaultModel && availableModels.find(m => m.id === settings.defaultModel) && (
+                  <div className="mt-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                    {(() => {
+                      const selectedModel = availableModels.find(m => m.id === settings.defaultModel);
+                      return selectedModel ? (
+                        <div className="space-y-2">
+                          <p className="text-purple-300 text-sm font-medium">{selectedModel.name}</p>
+                          <p className="text-gray-400 text-xs">{selectedModel.description}</p>
+                          <div className="flex items-center gap-4 text-xs">
+                            {selectedModel.contextWindow && (
+                              <div className="flex items-center gap-1">
+                                <Zap className="h-3 w-3" />
+                                <span>Context: {(selectedModel.contextWindow / 1000).toFixed(0)}k tokens</span>
+                              </div>
+                            )}
+                            {selectedModel.rpm && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                <span>Rate: {selectedModel.rpm} RPM</span>
+                              </div>
+                            )}
+                            <Badge variant="outline" className={cn(
+                              "text-xs",
+                              selectedModel.tier === "free" && "border-green-500/30 text-green-300",
+                              selectedModel.tier === "paid" && "border-red-500/30 text-red-300",
+                              selectedModel.tier === "both" && "border-blue-500/30 text-blue-300"
+                            )}>
+                              {selectedModel.tier === "free" ? "Free" : selectedModel.tier === "paid" ? "Paid" : "Free + Paid"}
+                            </Badge>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
+                )}
+              </div>
+
+              {/* Allowed Providers */}
+              <div>
+                <Label className="text-white font-medium">Allowed Providers</Label>
+                <p className="text-sm text-gray-400 mb-3">Select which AI providers users can choose from</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {AI_PROVIDERS.map((provider) => (
+                    <div key={provider.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          checked={settings.allowedProviders?.includes(provider.id) || false}
+                          onCheckedChange={(checked) => {
+                            const currentProviders = settings.allowedProviders || [];
+                            const newProviders = checked 
+                              ? [...currentProviders, provider.id]
+                              : currentProviders.filter(p => p !== provider.id);
+                            updateSetting('allowedProviders', newProviders);
+                          }}
+                        />
+                        <div>
+                          <p className="text-white font-medium text-sm">{provider.name}</p>
+                          <p className="text-gray-400 text-xs">
+                            {provider.models.filter(m => m.available).length} available models
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {provider.models.filter(m => m.tier === "free").length} free
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Performance Settings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-white font-medium">Request Timeout (Seconds)</Label>
+                  <Input
+                    type="number"
+                    min="30"
+                    max="300"
+                    value={settings.timeoutSeconds}
+                    onChange={(e) => updateSetting('timeoutSeconds', parseInt(e.target.value))}
+                    className="bg-white/10 border-white/20 text-white mt-2"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Maximum time to wait for AI response</p>
+                </div>
+                <div>
+                  <Label className="text-white font-medium">Prompt Version</Label>
+                  <Input
+                    value={settings.promptVersion}
+                    onChange={(e) => updateSetting('promptVersion', e.target.value)}
+                    className="bg-white/10 border-white/20 text-white mt-2"
+                    placeholder="e.g., v2.1"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Version identifier for prompt tracking</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* System Prompt */}
           <div>
@@ -370,30 +537,36 @@ export default function StorySettingsPanel() {
             </div>
           </div>
 
-          {/* Additional Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-white font-medium">Timeout (Seconds)</Label>
-              <Input
-                type="number"
-                min="30"
-                max="300"
-                value={settings.timeoutSeconds}
-                onChange={(e) => updateSetting('timeoutSeconds', parseInt(e.target.value))}
-                className="bg-white/10 border-white/20 text-white mt-2"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-white font-medium">Pro Feature Only</Label>
-                <p className="text-xs text-white/70">Require pro subscription</p>
+          {/* Feature Access Settings */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Crown className="h-5 w-5 text-yellow-400" />
+                Feature Access Control
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-white font-medium">Pro Feature Only</Label>
+                  <p className="text-sm text-gray-400">Require pro subscription to generate stories</p>
+                </div>
+                <Switch
+                  checked={settings.isProFeature}
+                  onCheckedChange={(checked) => updateSetting('isProFeature', checked)}
+                />
               </div>
-              <Switch
-                checked={settings.isProFeature}
-                onCheckedChange={(checked) => updateSetting('isProFeature', checked)}
-              />
-            </div>
-          </div>
+              
+              {!settings.isProFeature && (
+                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                  <div className="flex items-center gap-2 text-amber-300 text-sm">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Story generation will be available to all users (Free + Pro)</span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Last Updated Info */}
           {settings.updater && (

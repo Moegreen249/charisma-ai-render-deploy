@@ -7,29 +7,6 @@ import { loadEnvConfig } from "@next/env";
 const projectDir = process.cwd();
 loadEnvConfig(projectDir);
 
-// Check required environment variables
-const requiredVars = [
-  "GOOGLE_APPLICATION_CREDENTIALS",
-  "GOOGLE_CLOUD_PROJECT_ID",
-  "GOOGLE_CLOUD_REGION",
-];
-
-let allPresent = true;
-requiredVars.forEach((varName) => {
-  const value = process.env[varName];
-  if (!value) {
-    console.error(`❌ Environment variable ${varName} is missing.`);
-    allPresent = false;
-  }
-});
-
-if (!allPresent) {
-  console.error(
-    "❌ Some required environment variables are missing. Please set them in your .env.local file.",
-  );
-  process.exit(1);
-}
-
 async function main() {
   const email = process.argv[2];
   const password = process.argv[3];
