@@ -19,7 +19,7 @@ const updateSubscriptionSchema = z.object({
 // GET - Get user subscription details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -31,7 +31,7 @@ export async function GET(
       );
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Get user with subscription and usage data
     const user = await prisma.user.findUnique({
@@ -107,7 +107,7 @@ export async function GET(
 // PUT - Update user subscription
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -119,7 +119,7 @@ export async function PUT(
       );
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
     const body = await request.json();
 
     // Validate input data
@@ -237,7 +237,7 @@ export async function PUT(
 // DELETE - Cancel user subscription
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -249,7 +249,7 @@ export async function DELETE(
       );
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
     const { searchParams } = new URL(request.url);
     const immediate = searchParams.get('immediate') === 'true';
 

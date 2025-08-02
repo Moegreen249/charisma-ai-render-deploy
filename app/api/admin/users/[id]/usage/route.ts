@@ -7,7 +7,7 @@ import { subscriptionService } from '@/lib/subscription-service';
 // GET - Get detailed usage metrics for a user
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,7 +19,7 @@ export async function GET(
       );
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
     const { searchParams } = new URL(request.url);
     const timeframe = searchParams.get('timeframe') || 'current'; // current, last_month, last_3_months, all_time
 
@@ -27,7 +27,7 @@ export async function GET(
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        userSubscription: true,
+        subscription: true,
         stories: {
           select: {
             id: true,
@@ -77,8 +77,8 @@ export async function GET(
         startDate = user.createdAt;
         break;
       default: // current
-        if (user.userSubscription) {
-          startDate = user.userSubscription.currentPeriodStart;
+        if (user.subscription) {
+          startDate = user.subscription.currentPeriodStart;
         } else {
           startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
         }
@@ -86,10 +86,10 @@ export async function GET(
 
     // Get usage metrics from subscription service
     let currentUsage = null;
-    if (user.userSubscription) {
+    if (user.subscription) {
       try {
         // Use the usage data from the subscription
-        currentUsage = user.userSubscription.usage || null;
+        currentUsage = user.subscription.usage || null;
       } catch (error) {
         console.warn('Failed to get current usage:', error);
       }
@@ -145,7 +145,7 @@ export async function GET(
         storiesByDay: groupByDay(historicalStories.map(s => ({ createdAt: s.generatedAt }))),
         analysesByDay: groupByDay(historicalAnalyses),
       },
-      limits: user.userSubscription ? getSubscriptionLimits(user.userSubscription.tier) : null,
+      limits: user.subscription ? getSubscriptionLimits(user.subscription.tier) : null,
     };
 
     return NextResponse.json({
@@ -155,7 +155,7 @@ export async function GET(
         email: user.email,
         createdAt: user.createdAt,
       },
-      subscription: user.userSubscription,
+      subscription: user.subscription,
       usage: usageStats,
       recentActivity: {
         stories: user.stories.slice(0, 5),
@@ -234,7 +234,7 @@ function getSubscriptionLimits(tier: string) {
 // POST - Reset usage metrics (admin only)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -246,16 +246,16 @@ export async function POST(
       );
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
     const body = await request.json();
     const { resetType } = body; // 'current_period', 'all'
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { userSubscription: true }
+      include: { subscription: true }
     });
 
-    if (!user || !user.userSubscription) {
+    if (!user || !user.subscription) {
       return NextResponse.json(
         { error: 'User or subscription not found' },
         { status: 404 }
@@ -271,11 +271,11 @@ export async function POST(
         apiCallsUsed: 0,
         filesProcessed: 0,
         periodStart: new Date(),
-        periodEnd: user.userSubscription.currentPeriodEnd,
+        periodEnd: user.subscription.currentPeriodEnd,
       };
     } else {
       // Reset current period
-      const currentUsage = user.userSubscription.usage as any;
+      const currentUsage = user.subscription.usage as any;
       resetUsage = {
         ...currentUsage,
         storiesGenerated: 0,

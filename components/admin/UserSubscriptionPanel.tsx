@@ -474,7 +474,7 @@ export function UserSubscriptionPanel({
                       <Label className="text-white">Subscription Tier</Label>
                       <Select
                         value={editForm.tier}
-                        onValueChange={(value) => setEditForm({ ...editForm, tier: value as SubscriptionTier })}
+                        onValueChange={(value) => setEditForm({ ...editForm, tier: value as any })}
                       >
                         <SelectTrigger className="bg-white/10 border-white/20 text-white">
                           <SelectValue />
@@ -491,7 +491,7 @@ export function UserSubscriptionPanel({
                       <Label className="text-white">Status</Label>
                       <Select
                         value={editForm.status}
-                        onValueChange={(value) => setEditForm({ ...editForm, status: value as SubscriptionStatus })}
+                        onValueChange={(value) => setEditForm({ ...editForm, status: value as any })}
                       >
                         <SelectTrigger className="bg-white/10 border-white/20 text-white">
                           <SelectValue />
