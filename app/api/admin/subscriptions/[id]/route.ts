@@ -6,7 +6,7 @@ import { SubscriptionStatus, SubscriptionTier } from '@prisma/client';
 
 export async function PATCH(
   request: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check if user is authenticated and is admin
@@ -20,7 +20,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { action, newTier } = body;
 
@@ -127,7 +127,7 @@ export async function PATCH(
 
 export async function GET(
   request: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check if user is authenticated and is admin
@@ -141,7 +141,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Find the subscription
     const subscription = await prisma.userSubscription.findUnique({
