@@ -9,6 +9,7 @@ import WaitingListForm from "@/components/waiting-list-form";
 import { UnifiedLayout } from "@/components/layout/UnifiedLayout";
 
 import Logo from "@/components/ui/logo";
+import EnhancedDataBackground from "@/components/ui/EnhancedDataBackground";
 import {
   Brain,
   MessageSquare,
@@ -155,21 +156,8 @@ export default function HomePage() {
   return (
     <UnifiedLayout variant="default" showFooter={true}>
       <div className="text-white overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-12">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-        
-        {/* Neural particles */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-cyan-400/30 rounded-full animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-purple-400/25 rounded-full animate-ping"></div>
-          <div className="absolute top-2/3 left-1/5 w-1.5 h-1.5 bg-blue-400/20 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-          <div className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-pink-400/25 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
-          <div className="absolute top-1/2 right-1/6 w-2 h-2 bg-indigo-400/15 rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
-        </div>
-      </div>
+      {/* Enhanced Background with Data Flow Animation */}
+      <EnhancedDataBackground />
 
       {/* Hero Section */}
       <section className="relative z-10 px-6 py-20 text-center">

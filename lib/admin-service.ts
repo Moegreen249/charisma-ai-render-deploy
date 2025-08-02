@@ -340,15 +340,15 @@ export class AIModelConfigService {
       // Override with stored configurations
       configs.forEach(config => {
         if (config.key === 'providers') {
-          defaultConfig.providers = config.value as ModelProvider[];
+          defaultConfig.providers = config.value as unknown as ModelProvider[];
         } else if (config.key === 'defaultProvider') {
           defaultConfig.defaultProvider = config.value as string;
         } else if (config.key === 'defaultModel') {
           defaultConfig.defaultModel = config.value as string;
         } else if (config.key === 'rateLimits') {
-          defaultConfig.rateLimits = config.value as RateLimitConfig;
+          defaultConfig.rateLimits = config.value as unknown as RateLimitConfig;
         } else if (config.key === 'fallbackOptions') {
-          defaultConfig.fallbackOptions = config.value as FallbackConfig;
+          defaultConfig.fallbackOptions = config.value as unknown as FallbackConfig;
         }
       });
 
@@ -429,14 +429,14 @@ export class AIModelConfigService {
       const updatedConfig = await prisma.adminSettings.upsert({
         where: { category_key: { category: 'ai_models', key: 'providers' } },
         update: {
-          value: config.providers,
+          value: config.providers as any,
           updatedBy,
           updatedAt: new Date()
         },
         create: {
           category: 'ai_models',
           key: 'providers',
-          value: config.providers,
+          value: config.providers as any,
           updatedBy,
           isActive: true
         }
