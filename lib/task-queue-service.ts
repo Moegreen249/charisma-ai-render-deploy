@@ -150,7 +150,7 @@ export class TaskQueueService {
       }
 
       // Can only cancel queued or running tasks
-      if (![TaskStatus.QUEUED, TaskStatus.RUNNING].includes(task.status)) {
+      if (task.status !== TaskStatus.QUEUED && task.status !== TaskStatus.RUNNING) {
         return false;
       }
 
@@ -190,7 +190,7 @@ export class TaskQueueService {
       }
 
       // Can only retry failed or canceled tasks
-      if (![TaskStatus.FAILED, TaskStatus.CANCELED].includes(task.status)) {
+      if (task.status !== TaskStatus.FAILED && task.status !== TaskStatus.CANCELED) {
         return false;
       }
 

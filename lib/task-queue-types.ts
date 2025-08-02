@@ -144,8 +144,8 @@ export function getTaskDisplayInfo(task: any): TaskDisplayInfo {
     progress: task.progress,
     estimatedTime: task.estimatedTime,
     actualTime: task.actualTime,
-    canCancel: [TaskStatus.QUEUED, TaskStatus.RUNNING].includes(task.status),
-    canRetry: [TaskStatus.FAILED, TaskStatus.CANCELED].includes(task.status) && task.retryCount < task.maxRetries,
+    canCancel: task.status === TaskStatus.QUEUED || task.status === TaskStatus.RUNNING,
+    canRetry: (task.status === TaskStatus.FAILED || task.status === TaskStatus.CANCELED) && task.retryCount < task.maxRetries,
     error: task.error,
     result: task.result,
     createdAt: task.createdAt,
@@ -180,9 +180,9 @@ export function getTaskPriorityColor(priority: TaskPriority): string {
 }
 
 export function isTaskActive(status: TaskStatus): boolean {
-  return [TaskStatus.QUEUED, TaskStatus.RUNNING].includes(status);
+  return status === TaskStatus.QUEUED || status === TaskStatus.RUNNING;
 }
 
 export function isTaskCompleted(status: TaskStatus): boolean {
-  return [TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELED].includes(status);
+  return status === TaskStatus.COMPLETED || status === TaskStatus.FAILED || status === TaskStatus.CANCELED;
 }

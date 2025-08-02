@@ -134,7 +134,7 @@ export class SubscriptionService {
   /**
    * Get user's current subscription with usage metrics
    */
-  async getUserSubscription(userId: string): Promise<(UserSubscription & { usage: UsageMetrics }) | null> {
+  async getUserSubscription(userId: string): Promise<(UserSubscription & { usage: UsageMetrics; user: User }) | null> {
     const subscription = await prisma.userSubscription.findUnique({
       where: { userId },
       include: { user: true }
@@ -149,7 +149,7 @@ export class SubscriptionService {
     return {
       ...subscription,
       usage
-    } as UserSubscription & { usage: UsageMetrics };
+    } as UserSubscription & { usage: UsageMetrics; user: User };
   }
 
   /**
