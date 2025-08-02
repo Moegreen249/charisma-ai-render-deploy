@@ -111,7 +111,7 @@ export async function PUT(request: NextRequest) {
     const validatedData = settingsSchema.parse(body);
 
     // Get current settings
-    let profile = await prisma.userProfile.findUnique({
+    const profile = await prisma.userProfile.findUnique({
       where: { userId: session.user.id },
       select: { settings: true },
     });
