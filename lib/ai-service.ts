@@ -139,7 +139,7 @@ class AIService {
             features[setting.key] = setting.value as unknown as AIFeatureConfig;
           }
         } else if (setting.category === 'ai_config' && setting.key === 'global') {
-          global = { ...global, ...setting.value };
+          global = { ...global, ...(setting.value as any) };
         }
       });
 
