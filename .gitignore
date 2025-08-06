@@ -8,6 +8,22 @@
 
 # Testing
 /coverage
+__tests__/
+*.test.js
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.ts
+*.spec.tsx
+test/
+tests/
+*.test.*
+*.spec.*
+jest.config.*
+cypress/
+e2e/
+playwright-report/
+test-results/
 
 # Next.js
 /.next/
