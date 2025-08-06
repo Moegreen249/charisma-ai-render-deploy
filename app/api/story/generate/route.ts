@@ -133,6 +133,13 @@ async function postHandler(request: NextRequest): Promise<NextResponse> {
   });
 
   // Enqueue story generation as background job
+  console.log('Creating story generation job for:', {
+    userId: session.user.id,
+    storyId: story.id,
+    analysisId: analysis.id,
+    priority: 'NORMAL'
+  });
+  
   const jobId = await jobProcessor.createStoryGenerationJob({
     userId: session.user.id,
     storyId: story.id,
@@ -140,6 +147,8 @@ async function postHandler(request: NextRequest): Promise<NextResponse> {
     analysisResult: analysis.analysisResult,
     priority: 'NORMAL'
   });
+  
+  console.log('Story generation job created with ID:', jobId);
 
   // Update story status to GENERATING once job is queued
   await prisma.story.update({
