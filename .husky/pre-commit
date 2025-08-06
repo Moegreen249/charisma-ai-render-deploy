@@ -1,0 +1,31 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run code quality checks before commit
+echo "🔍 Running pre-commit quality checks..."
+
+# Check only staged files
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|jsx|ts|tsx)$')
+
+if [ -z "$FILES" ]; then
+  echo "No JavaScript/TypeScript files to check"
+  exit 0
+fi
+
+# Run ESLint on staged files
+echo "Running ESLint..."
+npx eslint $FILES --fix
+
+# Add fixed files back to staging
+git add $FILES
+
+# Run TypeScript check
+echo "Running TypeScript check..."
+npm run typecheck
+
+# Run Prettier
+echo "Running Prettier..."
+npx prettier --write $FILES
+git add $FILES
+
+echo "✅ Pre-commit checks passed!"

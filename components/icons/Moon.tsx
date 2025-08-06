@@ -1,0 +1,9 @@
+import { SVGProps } from 'react';
+
+export function MoonIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>
+      <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M20 14.12A7.78 7.78 0 0 1 9.88 4a7.782 7.782 0 0 0 2.9 15A7.78 7.78 0 0 0 20 14.12z"/>
+    </svg>
+  );
+}

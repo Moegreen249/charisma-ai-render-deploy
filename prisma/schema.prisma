@@ -1,0 +1,683 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String            @id @default(uuid())
+  name                  String?
+  email                 String?           @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  role                  Role              @default(USER)
+  requirePasswordChange Boolean           @default(false)
+  isApproved            Boolean           @default(false)
+  approvedBy            String?
+  approvedAt            DateTime?
+  rejectedAt            DateTime?
+  rejectionReason       String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  accounts              Account[]
+  analyses              Analysis[]
+  backgroundJobs        BackgroundJob[]
+  platformErrors        PlatformError[]
+  sessions              Session[]
+  activities            UserActivity[]
+  templates             UserTemplate[]
+  welcome               UserWelcome?
+  notifications         Notification[]
+  invitationsSent       Invitation[]      @relation("invitedBy")
+  invitationsReceived   Invitation[]      @relation("invited")
+  blogPosts             BlogPost[]
+  profile               UserProfile?
+  customThemes          CustomTheme[]     @relation("ThemeCreator")
+  stories               Story[]
+  storySettings         StorySettings[]
+  storyUsage            UserStoryUsage?
+  subscription          UserSubscription?
+  adminSettings         AdminSettings[]
+  taskQueue             TaskQueue[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Analysis {
+  id             String   @id @default(uuid())
+  userId         String
+  templateId     String
+  modelId        String
+  provider       String
+  fileName       String
+  analysisDate   DateTime @default(now())
+  durationMs     Int?
+  analysisResult Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story          Story?
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([analysisDate])
+}
+
+model UserTemplate {
+  id             String   @id @default(uuid())
+  userId         String
+  name           String
+  description    String?
+  category       String   @default("custom")
+  icon           String   @default("✨")
+  systemPrompt   String
+  analysisPrompt String
+  isBuiltIn      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([category])
+}
+
+model AnalysisModule {
+  id                String   @id @default(uuid())
+  name              String   @unique(map: "module_unique_name")
+  description       String?
+  instructionPrompt String
+  expectedJsonHint  String
+  category          String   @default("general")
+  icon              String   @default("✨")
+  isActive          Boolean  @default(true)
+  isBuiltIn         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model BackgroundJob {
+  id          String    @id @default(uuid())
+  userId      String
+  type        String    @default("ANALYSIS")
+  status      JobStatus @default(PENDING)
+  templateId  String?
+  modelId     String?
+  provider    String?
+  fileName    String?
+  fileContent String?
+  progress    Int       @default(0)
+  currentStep String?
+  totalSteps  Int       @default(1)
+  result      Json?
+  error       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  retryCount  Int       @default(0)
+  apiKey      String?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model PlatformError {
+  id              String        @id @default(uuid())
+  category        ErrorCategory
+  severity        ErrorSeverity @default(MEDIUM)
+  code            String?
+  message         String
+  userId          String?
+  endpoint        String?
+  userAgent       String?
+  sessionId       String?
+  stackTrace      String?
+  requestData     Json?
+  responseData    Json?
+  aiProvider      String?
+  modelId         String?
+  isResolved      Boolean       @default(false)
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolution      String?
+  occurrenceCount Int           @default(1)
+  firstOccurred   DateTime      @default(now())
+  lastOccurred    DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User?         @relation(fields: [userId], references: [id])
+
+  @@index([category])
+  @@index([severity])
+  @@index([userId])
+  @@index([aiProvider])
+  @@index([isResolved])
+  @@index([createdAt])
+  @@index([lastOccurred])
+}
+
+model PlatformMetric {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  value       Float
+  unit        String?
+  period      String
+  periodStart DateTime
+  periodEnd   DateTime
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@unique([name, period, periodStart])
+  @@index([name])
+  @@index([category])
+  @@index([period])
+  @@index([periodStart])
+}
+
+model UserActivity {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  category  String
+  page      String?
+  metadata  Json?
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([category])
+  @@index([timestamp])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ErrorSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ErrorCategory {
+  AI_PROVIDER
+  DATABASE
+  AUTHENTICATION
+  FILE_PROCESSING
+  JSON_PARSING
+  VALIDATION
+  NETWORK
+  SYSTEM
+  USER_INPUT
+}
+
+model WaitingList {
+  id         String    @id @default(uuid())
+  email      String    @unique
+  name       String?
+  company    String?
+  useCase    String?
+  source     String?
+  isNotified Boolean   @default(false)
+  position   Int?
+  inviteCode String?   @unique
+  invitedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([email])
+  @@index([position])
+  @@index([createdAt])
+}
+
+model LaunchCountdown {
+  id                String   @id @default(uuid())
+  targetDate        DateTime
+  title             String   @default("CharismaAI is Coming Soon")
+  subtitle          String?  @default("Get ready for AI-powered communication insights")
+  isActive          Boolean  @default(true)
+  showDays          Boolean  @default(true)
+  showHours         Boolean  @default(true)
+  showMinutes       Boolean  @default(true)
+  showSeconds       Boolean  @default(true)
+  completedTitle    String?  @default("CharismaAI is Now Live!")
+  completedSubtitle String?  @default("Start analyzing your conversations today")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([targetDate])
+}
+
+model UserWelcome {
+  id             String    @id @default(uuid())
+  userId         String    @unique
+  hasSeenWelcome Boolean   @default(false)
+  welcomeShownAt DateTime?
+  onboardingStep Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Notification {
+  id         String    @id @default(uuid())
+  userId     String
+  type       String
+  title      String
+  message    String
+  metadata   Json?
+  read       Boolean   @default(false)
+  readAt     DateTime?
+  persistent Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Invitation {
+  id              String           @id @default(uuid())
+  userId          String
+  email           String
+  name            String
+  role            Role
+  personalMessage String?
+  templateId      String
+  status          InvitationStatus @default(PENDING)
+  invitedBy       String
+  invitedByUser   User             @relation("invitedBy", fields: [invitedBy], references: [id])
+  invitedUser     User             @relation("invited", fields: [userId], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([invitedBy])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+model EmailTemplate {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  subject     String
+  content     String   @db.Text
+  htmlContent String?  @db.Text
+  category    String   @default("general")
+  isBuiltIn   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  variables   Json? // Supported template variables
+  styling     Json? // Color scheme, fonts, layout preferences
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@index([isBuiltIn])
+}
+
+model SeoSettings {
+  id                String   @id @default(uuid())
+  siteName          String   @default("CharismaAI")
+  siteDescription   String   @default("AI-powered communication analysis platform")
+  siteKeywords      String   @default("AI, communication, analysis, conversation, insights")
+  siteUrl           String   @default("https://charismaai.vercel.app")
+  ogImage           String?
+  twitterHandle     String?
+  googleAnalyticsId String?
+  vercelAnalytics   Boolean  @default(true)
+  robotsTxt         String   @default("User-agent: *\nAllow: /")
+  sitemapEnabled    Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SystemSettings {
+  id                     Int      @id @default(1)
+  siteName               String   @default("CharismaAI")
+  siteDescription        String   @default("AI-Powered Conversation Analytics")
+  maintenanceMode        Boolean  @default(false)
+  registrationEnabled    Boolean  @default(true)
+  emailNotifications     Boolean  @default(true)
+  analyticsEnabled       Boolean  @default(true)
+  maxFileSize            String   @default("10")
+  sessionTimeout         String   @default("24")
+  reflectionInterval     Int      @default(5) // Self-reflection interval in minutes
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model BlogPost {
+  id             String        @id @default(uuid())
+  title          String
+  slug           String        @unique
+  excerpt        String?
+  content        String        @db.Text
+  coverImage     String?
+  status         PostStatus    @default(DRAFT)
+  featured       Boolean       @default(false)
+  authorId       String
+  author         User          @relation(fields: [authorId], references: [id])
+  categoryId     String?
+  category       BlogCategory? @relation(fields: [categoryId], references: [id])
+  tags           String[]
+  seoTitle       String?
+  seoDescription String?
+  publishedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status])
+  @@index([featured])
+  @@index([publishedAt])
+  @@index([authorId])
+  @@index([categoryId])
+}
+
+model BlogCategory {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  color       String     @default("#6366f1")
+  posts       BlogPost[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([slug])
+}
+
+model UserProfile {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?   @db.Text
+  avatar      String?
+  website     String?
+  location    String?
+  dateOfBirth DateTime?
+  phone       String?
+  company     String?
+  jobTitle    String?
+  skills      String[]
+  socialLinks Json? // Twitter, LinkedIn, GitHub, etc.
+  preferences Json? // Theme, notifications, etc.
+  settings    Json? // AI settings, API keys, templates, etc.
+  isPublic    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model CustomTheme {
+  id        String   @id @default(uuid())
+  name      String
+  config    String   @db.Text // JSON string of theme configuration
+  createdBy String
+  creator   User     @relation(fields: [createdBy], references: [id], name: "ThemeCreator")
+  isActive  Boolean  @default(false)
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdBy])
+  @@index([isActive])
+  @@index([isPublic])
+}
+
+// Story Feature Models - AI-powered narrative generation from analysis results
+model Story {
+  id             String      @id @default(uuid())
+  analysisId     String      @unique
+  userId         String
+  title          String
+  content        Json // Story content with timeline structure
+  generatedAt    DateTime    @default(now())
+  promptVersion  String // Track which prompt template was used
+  aiProvider     String
+  modelId        String
+  processingTime Int? // Time taken to generate story in ms
+  status         StoryStatus @default(PENDING)
+  errorMessage   String? // Store error details if generation fails
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([generatedAt])
+  @@index([aiProvider])
+}
+
+model StorySettings {
+  id               String   @id @default(uuid())
+  isEnabled        Boolean  @default(false)
+  freeTrialDays    Int      @default(7)
+  maxFreeStories   Int      @default(3)
+  systemPrompt     String   @default("Transform this analysis into an engaging story with a clear timeline. Create chapters that flow naturally and make complex information easy to understand without overwhelming the reader.") @db.Text
+  promptVersion    String   @default("v1.0")
+  allowedProviders String[] @default(["openai", "anthropic", "google"])
+  defaultProvider  String   @default("openai")
+  defaultModel     String   @default("gpt-4")
+  timeoutSeconds   Int      @default(120)
+  isProFeature     Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  updatedBy        String
+
+  updater User @relation(fields: [updatedBy], references: [id])
+
+  @@index([isEnabled])
+  @@index([updatedAt])
+}
+
+model UserStoryUsage {
+  id               String    @id @default(uuid())
+  userId           String
+  storiesGenerated Int       @default(0)
+  freeTrialStart   DateTime?
+  isProUser        Boolean   @default(false)
+  lastStoryAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@index([userId])
+  @@index([isProUser])
+}
+
+enum StoryStatus {
+  PENDING
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+// Subscription and Admin Models
+model UserSubscription {
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  tier                 SubscriptionTier   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  billingEmail         String?
+  paymentMethod        Json?
+  usage                Json? // Track usage metrics
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tier])
+  @@index([status])
+}
+
+model AdminSettings {
+  id          String   @id @default(uuid())
+  category    String // "ai_models", "system", "billing"
+  key         String
+  value       Json
+  description String?
+  isActive    Boolean  @default(true)
+  updatedBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  updater User @relation(fields: [updatedBy], references: [id])
+
+  @@unique([category, key])
+  @@index([category])
+  @@index([isActive])
+}
+
+model TaskQueue {
+  id            String       @id @default(uuid())
+  userId        String
+  type          TaskType     @default(STORY_GENERATION)
+  priority      TaskPriority @default(NORMAL)
+  status        TaskStatus   @default(QUEUED)
+  payload       Json
+  result        Json?
+  error         String?
+  progress      Int          @default(0)
+  estimatedTime Int? // seconds
+  actualTime    Int? // seconds
+  retryCount    Int          @default(0)
+  maxRetries    Int          @default(3)
+  queuedAt      DateTime     @default(now())
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([type])
+  @@index([queuedAt])
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  INCOMPLETE
+}
+
+enum TaskType {
+  STORY_GENERATION
+  ANALYSIS
+  EXPORT
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELED
+}

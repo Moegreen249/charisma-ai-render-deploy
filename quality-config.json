@@ -1,0 +1,40 @@
+{
+  "thresholds": {
+    "eslint": {
+      "errors": 0,
+      "warnings": 100
+    },
+    "typescript": {
+      "errors": 0
+    },
+    "prettier": {
+      "unformatted": 0
+    },
+    "complexity": {
+      "max": 10
+    },
+    "duplicates": {
+      "threshold": 5
+    }
+  },
+  "rules": {
+    "enforceNaming": true,
+    "requireTests": false,
+    "requireDocs": false,
+    "maxFileSize": 500,
+    "maxLineLength": 120
+  },
+  "exclude": [
+    "node_modules",
+    ".next",
+    "build",
+    "dist",
+    "coverage",
+    "src/generated",
+    "prisma/migrations"
+  ],
+  "reports": {
+    "format": ["json", "html", "console"],
+    "outputDir": "quality-reports"
+  }
+}
