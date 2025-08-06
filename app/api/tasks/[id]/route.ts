@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth-config";
-import { taskQueueService } from "@/lib/task-queue-service";
+import { jobProcessor } from "@/lib/background/job-processor";
+import { prisma } from "@/lib/prisma";
 import { withEnhancedErrorHandler } from "@/lib/enhanced-error-handler";
 
 export const runtime = 'nodejs';
@@ -30,49 +31,49 @@ async function getTaskHandler(
   }
 
   try {
-    // Get task details
-    const task = await taskQueueService.getTask(taskId, session.user.id);
+    // Get job details using background job processor
+    const job = await jobProcessor.getJobStatus(taskId, session.user.id);
 
-    if (!task) {
+    if (!job) {
       return NextResponse.json(
         { error: "Task not found" },
         { status: 404 }
       );
     }
 
-    // Get queue position if task is queued
-    let queuePosition = null;
-    if (task.status === 'QUEUED') {
-      queuePosition = await taskQueueService.getQueuePosition(taskId);
-    }
-
     // Calculate retry information
     const retryInfo = {
-      currentAttempt: task.retryCount + 1,
-      maxAttempts: task.maxRetries + 1,
-      canRetry: (task.status === 'FAILED' || task.status === 'CANCELED') && task.retryCount < task.maxRetries,
-      isRetrying: task.status === 'QUEUED' && task.retryCount > 0,
-      nextRetryAt: task.status === 'QUEUED' && task.retryCount > 0 ? task.queuedAt : null,
+      currentAttempt: (job.retryCount || 0) + 1,
+      maxAttempts: (job.maxRetries || 3) + 1,
+      canRetry: (job.status === 'FAILED' || job.status === 'CANCELLED') && (job.retryCount || 0) < (job.maxRetries || 3),
+      isRetrying: job.status === 'PENDING' && (job.retryCount || 0) > 0,
+      nextRetryAt: job.status === 'PENDING' && (job.retryCount || 0) > 0 ? job.createdAt : null,
     };
 
-    // Format response
+    // Format response to match expected task format
     const response = {
-      id: task.id,
-      type: task.type,
-      status: task.status,
-      priority: task.priority,
-      progress: task.progress,
-      estimatedTime: task.estimatedTime,
-      actualTime: task.actualTime,
-      error: task.error,
-      result: task.result,
-      createdAt: task.createdAt,
-      queuedAt: task.queuedAt,
-      startedAt: task.startedAt,
-      completedAt: task.completedAt,
-      queuePosition,
+      id: job.id,
+      type: job.type,
+      status: job.status,
+      priority: job.priority || 'NORMAL',
+      progress: job.progress,
+      estimatedTime: job.estimatedTime,
+      actualTime: job.actualTime,
+      error: job.error,
+      result: job.result,
+      createdAt: job.createdAt,
+      queuedAt: job.createdAt, // Background jobs use createdAt as queue time
+      startedAt: job.startedAt,
+      completedAt: job.completedAt,
+      currentStep: job.currentStep,
+      totalSteps: job.totalSteps,
+      fileName: job.fileName,
+      storyId: job.storyId,
+      analysisId: job.analysisId,
+      queuePosition: null, // Background jobs don't have queue positions
       retryInfo,
-      payload: task.payload,
+      isComplete: job.isComplete,
+      estimatedTimeRemaining: job.estimatedTimeRemaining,
     };
 
     return NextResponse.json({
@@ -112,14 +113,44 @@ async function retryTaskHandler(
   }
 
   try {
-    const success = await taskQueueService.retryTask(taskId, session.user.id);
-
-    if (!success) {
+    // For background jobs, we need to manually reset the job to retry
+    // First check if the job exists and can be retried
+    const job = await jobProcessor.getJobStatus(taskId, session.user.id);
+    
+    if (!job) {
       return NextResponse.json(
-        { error: "Task cannot be retried" },
+        { error: "Task not found" },
+        { status: 404 }
+      );
+    }
+
+    if (job.status !== 'FAILED' && job.status !== 'CANCELLED') {
+      return NextResponse.json(
+        { error: "Task cannot be retried - only failed or cancelled tasks can be retried" },
         { status: 400 }
       );
     }
+
+    if ((job.retryCount || 0) >= (job.maxRetries || 3)) {
+      return NextResponse.json(
+        { error: "Task has exceeded maximum retry attempts" },
+        { status: 400 }
+      );
+    }
+
+    // Reset the job to PENDING status for retry
+    await prisma.backgroundJob.update({
+      where: { id: taskId },
+      data: {
+        status: 'PENDING',
+        progress: 0,
+        currentStep: `Retrying... (attempt ${(job.retryCount || 0) + 2}/${(job.maxRetries || 3) + 1})`,
+        error: null,
+        startedAt: null,
+        completedAt: null,
+        retryCount: (job.retryCount || 0) + 1,
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -158,7 +189,8 @@ async function cancelTaskHandler(
   }
 
   try {
-    const success = await taskQueueService.cancelTask(taskId, session.user.id);
+    // Use the background job processor's cancel method
+    const success = await jobProcessor.cancelJob(taskId, session.user.id);
 
     if (!success) {
       return NextResponse.json(

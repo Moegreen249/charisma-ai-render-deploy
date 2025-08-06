@@ -9,12 +9,17 @@ import { trackUserActivity } from "./analytics";
 
 export interface BackgroundJobData {
   userId: string;
-  templateId: string;
-  modelId: string;
-  provider: string;
-  fileName: string;
-  fileContent: string;
-  apiKey: string;
+  templateId?: string;
+  modelId?: string;
+  provider?: string;
+  fileName?: string;
+  fileContent?: string;
+  apiKey?: string;
+  // Story generation specific fields
+  storyId?: string;
+  analysisId?: string;
+  analysisResult?: any;
+  priority?: string;
 }
 
 export class BackgroundJobProcessor {
@@ -52,6 +57,7 @@ export class BackgroundJobProcessor {
           fileName: data.fileName,
           fileContent: data.fileContent,
           apiKey: data.apiKey,
+          priority: data.priority || "NORMAL",
           totalSteps: 4, // Analysis steps: parsing, AI processing, validation, saving
           currentStep: "Queued for processing",
         },
@@ -79,6 +85,52 @@ export class BackgroundJobProcessor {
         userId: data.userId,
         stackTrace: error instanceof Error ? error.stack : undefined,
         requestData: { ...data, fileContent: "[REDACTED]" },
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new background story generation job
+   */
+  async createStoryGenerationJob(data: BackgroundJobData): Promise<string> {
+    try {
+      const job = await prisma.backgroundJob.create({
+        data: {
+          userId: data.userId,
+          type: "STORY_GENERATION",
+          status: "PENDING",
+          storyId: data.storyId,
+          analysisId: data.analysisId,
+          priority: data.priority || "NORMAL",
+          totalSteps: 3, // Story generation steps: setup, AI generation, saving
+          currentStep: "Queued for story generation",
+          estimatedTime: 120, // 2 minutes estimated
+        },
+      });
+
+      // Track user activity
+      await trackUserActivity({
+        userId: data.userId,
+        action: "story_generation_job_created",
+        category: "story",
+        metadata: {
+          jobId: job.id,
+          storyId: data.storyId,
+          analysisId: data.analysisId,
+        },
+      });
+
+      console.log(`Created story generation job ${job.id} for user ${data.userId}`);
+      return job.id;
+    } catch (error) {
+      await logPlatformError({
+        category: "SYSTEM",
+        severity: "HIGH",
+        message: "Failed to create story generation job",
+        userId: data.userId,
+        stackTrace: error instanceof Error ? error.stack : undefined,
+        requestData: { storyId: data.storyId, analysisId: data.analysisId },
       });
       throw error;
     }
@@ -263,182 +315,277 @@ export class BackgroundJobProcessor {
     this.processingJobs.add(jobId);
 
     try {
+      // Get job details first to determine type
+      const job = await prisma.backgroundJob.findUnique({
+        where: { id: jobId },
+      });
+
+      if (!job) {
+        throw new Error("Job not found");
+      }
+
       // Update job status
       await prisma.backgroundJob.update({
         where: { id: jobId },
         data: {
           status: "PROCESSING",
           startedAt: new Date(),
-          currentStep: "Starting analysis",
+          currentStep: job.type === "STORY_GENERATION" ? "Starting story generation" : "Starting analysis",
           progress: 0,
         },
       });
 
-      // Get job details
-      const job = await prisma.backgroundJob.findUnique({
-        where: { id: jobId },
+      // Route to appropriate processor based on job type
+      if (job.type === "STORY_GENERATION") {
+        await this.processStoryGenerationJob(job);
+      } else if (job.type === "ANALYSIS") {
+        await this.processAnalysisJob(job);
+      } else {
+        throw new Error(`Unknown job type: ${job.type}`);
+      }
+    } catch (error) {
+      await this.handleJobError(jobId, error);
+    } finally {
+      // Remove from processing set
+      this.processingJobs.delete(jobId);
+    }
+  }
+
+  /**
+   * Process a story generation job
+   */
+  private async processStoryGenerationJob(job: any) {
+    const jobId = job.id;
+
+    try {
+      // Step 1: Get analysis data
+      await this.updateJobProgress(jobId, 33, "Loading analysis data");
+
+      const analysis = await prisma.analysis.findUnique({
+        where: { id: job.analysisId },
+        select: {
+          id: true,
+          fileName: true,
+          analysisResult: true,
+          provider: true,
+          modelId: true,
+          analysisDate: true,
+        },
       });
 
-      if (!job || !job.fileContent) {
-        throw new Error("Job not found or missing file content");
+      if (!analysis) {
+        throw new Error("Analysis not found for story generation");
       }
 
-      // Step 1: Prepare file data
-      await this.updateJobProgress(jobId, 25, "Preparing file data");
+      // Step 2: Generate story using AI
+      await this.updateJobProgress(jobId, 66, "Generating story with AI");
 
-      // Get API key from job record (stored during job creation)
-      const providerConfig = getProviderConfig(
-        (job.provider as any) || "openai",
+      // Import story generator here to avoid circular dependencies
+      const { generateStoryFromAnalysis } = await import("@/lib/story-generator");
+      
+      await generateStoryFromAnalysis(
+        job.storyId,
+        analysis.analysisResult,
+        job.userId
       );
-      if (!providerConfig) {
-        throw new Error(`Provider configuration not found: ${job.provider}`);
-      }
 
-      const apiKey = job.apiKey;
-      if (!apiKey) {
-        throw new Error(
-          `No API key found for ${providerConfig.name}. Please check your settings and try again.`,
-        );
-      }
-
-      // Step 2: Run analysis
-      await this.updateJobProgress(jobId, 50, "Running AI analysis");
-
-      const formData = new FormData();
-      const file = new File([job.fileContent], job.fileName || "chat.txt", {
-        type: "text/plain",
-      });
-      formData.append("chatFile", file);
-      formData.append("templateId", job.templateId || "");
-      formData.append("modelId", job.modelId || "");
-      formData.append("provider", job.provider || "");
-      formData.append("apiKey", apiKey);
-
-      const result = await this.backgroundAnalyzeChat(formData, job.userId);
-
-      if (!result.success) {
-        throw new Error(result.error || "Analysis failed");
-      }
-
-      // Step 3: Validate results
-      await this.updateJobProgress(jobId, 75, "Validating results");
-
-      if (!result.data) {
-        throw new Error("No analysis data returned");
-      }
-
-      // Step 4: Save and complete
-      await this.updateJobProgress(jobId, 100, "Saving results");
+      // Step 3: Complete
+      await this.updateJobProgress(jobId, 100, "Story generation completed");
 
       await prisma.backgroundJob.update({
         where: { id: jobId },
         data: {
           status: "COMPLETED",
-          result: result.data as any,
           progress: 100,
-          currentStep: "Analysis completed successfully",
+          currentStep: "Story generation completed successfully",
           completedAt: new Date(),
+          actualTime: job.startedAt ? Math.round((Date.now() - new Date(job.startedAt).getTime()) / 1000) : null,
         },
       });
 
       // Track completion
       await trackUserActivity({
         userId: job.userId,
-        action: "analysis_job_completed",
-        category: "analysis",
+        action: "story_generation_job_completed",
+        category: "story",
         metadata: {
           jobId,
-          fileName: job.fileName,
-          duration: job.startedAt
-            ? Date.now() - job.startedAt.getTime()
-            : undefined,
+          storyId: job.storyId,
+          analysisId: job.analysisId,
+          duration: job.startedAt ? Date.now() - new Date(job.startedAt).getTime() : undefined,
         },
       });
 
-      console.log(`Completed background job ${jobId}`);
+      console.log(`Completed story generation job ${jobId}`);
     } catch (error) {
-      console.error(`Failed to process job ${jobId}:`, error);
-
-      // Get current job to check retry count
-      const currentJob = await prisma.backgroundJob.findUnique({
-        where: { id: jobId },
-        select: { retryCount: true },
-      });
-
-      const retryCount = (currentJob?.retryCount || 0) + 1;
-
-      // Check if we should retry
-      if (retryCount <= this.retryAttempts) {
-        console.log(
-          `Retrying job ${jobId} (attempt ${retryCount}/${this.retryAttempts})`,
-        );
-
-        // Schedule retry with exponential backoff
-        setTimeout(async () => {
-          await prisma.backgroundJob.update({
-            where: { id: jobId },
-            data: {
-              status: "PENDING",
-              progress: 0,
-              currentStep: `Retrying... (attempt ${retryCount}/${this.retryAttempts})`,
-              startedAt: null,
-              retryCount: retryCount,
-            },
-          });
-        }, this.retryDelay * retryCount);
-
-        return;
-      }
-
-      // Mark job as failed with more detailed error message
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      const detailedError = `Failed to analyze conversation after ${this.retryAttempts} attempts. Error: ${errorMessage}. Please check your API keys and provider settings.`;
-
-      await prisma.backgroundJob.update({
-        where: { id: jobId },
-        data: {
-          status: "FAILED",
-          error: detailedError,
-          currentStep: "Analysis failed",
-          completedAt: new Date(),
-          retryCount: retryCount,
-        },
-      });
-
-      // Log the error
-      const job = await prisma.backgroundJob.findUnique({
-        where: { id: jobId },
-      });
-
-      await logPlatformError({
-        category: "AI_PROVIDER",
-        severity: "HIGH",
-        message: `Background analysis job failed: ${error instanceof Error ? error.message : String(error)}`,
-        userId: job?.userId,
-        stackTrace: error instanceof Error ? error.stack : undefined,
-        requestData: {
-          jobId,
-          fileName: job?.fileName,
-          provider: job?.provider,
-          modelId: job?.modelId,
-          templateId: job?.templateId,
-        },
-      });
-
-      await trackUserActivity({
-        userId: job?.userId || "",
-        action: "analysis_job_failed",
-        category: "analysis",
-        metadata: {
-          jobId,
-          error: error instanceof Error ? error.message : String(error),
-        },
-      });
-    } finally {
-      // Remove from processing set
-      this.processingJobs.delete(jobId);
+      throw error; // Will be handled by handleJobError
     }
+  }
+
+  /**
+   * Process an analysis job
+   */
+  private async processAnalysisJob(job: any) {
+    const jobId = job.id;
+
+    if (!job.fileContent) {
+      throw new Error("Missing file content for analysis job");
+    }
+
+    // Step 1: Prepare file data
+    await this.updateJobProgress(jobId, 25, "Preparing file data");
+
+    // Get API key from job record (stored during job creation)
+    const providerConfig = getProviderConfig(
+      (job.provider as any) || "openai",
+    );
+    if (!providerConfig) {
+      throw new Error(`Provider configuration not found: ${job.provider}`);
+    }
+
+    const apiKey = job.apiKey;
+    if (!apiKey) {
+      throw new Error(
+        `No API key found for ${providerConfig.name}. Please check your settings and try again.`,
+      );
+    }
+
+    // Step 2: Run analysis
+    await this.updateJobProgress(jobId, 50, "Running AI analysis");
+
+    const formData = new FormData();
+    const file = new File([job.fileContent], job.fileName || "chat.txt", {
+      type: "text/plain",
+    });
+    formData.append("chatFile", file);
+    formData.append("templateId", job.templateId || "");
+    formData.append("modelId", job.modelId || "");
+    formData.append("provider", job.provider || "");
+    formData.append("apiKey", apiKey);
+
+    const result = await this.backgroundAnalyzeChat(formData, job.userId);
+
+    if (!result.success) {
+      throw new Error(result.error || "Analysis failed");
+    }
+
+    // Step 3: Validate results
+    await this.updateJobProgress(jobId, 75, "Validating results");
+
+    if (!result.data) {
+      throw new Error("No analysis data returned");
+    }
+
+    // Step 4: Save and complete
+    await this.updateJobProgress(jobId, 100, "Saving results");
+
+    await prisma.backgroundJob.update({
+      where: { id: jobId },
+      data: {
+        status: "COMPLETED",
+        result: result.data as any,
+        progress: 100,
+        currentStep: "Analysis completed successfully",
+        completedAt: new Date(),
+        actualTime: job.startedAt ? Math.round((Date.now() - new Date(job.startedAt).getTime()) / 1000) : null,
+      },
+    });
+
+    // Track completion
+    await trackUserActivity({
+      userId: job.userId,
+      action: "analysis_job_completed",
+      category: "analysis",
+      metadata: {
+        jobId,
+        fileName: job.fileName,
+        duration: job.startedAt
+          ? Date.now() - job.startedAt.getTime()
+          : undefined,
+      },
+    });
+
+    console.log(`Completed background job ${jobId}`);
+  }
+
+  /**
+   * Handle job errors with retry logic
+   */
+  private async handleJobError(jobId: string, error: unknown) {
+    console.error(`Failed to process job ${jobId}:`, error);
+
+    // Get current job to check retry count
+    const currentJob = await prisma.backgroundJob.findUnique({
+      where: { id: jobId },
+      select: { retryCount: true, maxRetries: true, type: true, userId: true },
+    });
+
+    if (!currentJob) {
+      console.error(`Job ${jobId} not found for error handling`);
+      return;
+    }
+
+    const retryCount = (currentJob.retryCount || 0) + 1;
+    const maxRetries = currentJob.maxRetries || this.retryAttempts;
+
+    // Check if we should retry
+    if (retryCount <= maxRetries) {
+      console.log(
+        `Retrying job ${jobId} (attempt ${retryCount}/${maxRetries})`,
+      );
+
+      // Schedule retry with exponential backoff
+      setTimeout(async () => {
+        await prisma.backgroundJob.update({
+          where: { id: jobId },
+          data: {
+            status: "PENDING",
+            progress: 0,
+            currentStep: `Retrying... (attempt ${retryCount}/${maxRetries})`,
+            startedAt: null,
+            retryCount: retryCount,
+          },
+        });
+      }, this.retryDelay * retryCount);
+
+      return;
+    }
+
+    // Mark job as failed with more detailed error message
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const detailedError = `Failed after ${maxRetries} attempts. Error: ${errorMessage}. Please check your settings and try again.`;
+
+    await prisma.backgroundJob.update({
+      where: { id: jobId },
+      data: {
+        status: "FAILED",
+        error: detailedError,
+        currentStep: `${currentJob.type} failed`,
+        completedAt: new Date(),
+        retryCount: retryCount,
+      },
+    });
+
+    // Log the error
+    await logPlatformError({
+      category: currentJob.type === "STORY_GENERATION" ? "AI_PROVIDER" : "AI_PROVIDER",
+      severity: "HIGH",
+      message: `Background ${currentJob.type.toLowerCase()} job failed: ${errorMessage}`,
+      userId: currentJob.userId,
+      stackTrace: error instanceof Error ? error.stack : undefined,
+      requestData: { jobId, type: currentJob.type },
+    });
+
+    // Track failure
+    await trackUserActivity({
+      userId: currentJob.userId,
+      action: `${currentJob.type.toLowerCase()}_job_failed`,
+      category: currentJob.type === "STORY_GENERATION" ? "story" : "analysis",
+      metadata: {
+        jobId,
+        error: errorMessage,
+      },
+    });
   }
 
   /**

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth-config";
 import { prisma, withRetry } from "@/lib/prisma";
 import { validateStoryAccess } from "@/lib/story-access";
-import { taskQueueManager } from "@/lib/task-queue-manager";
+import { jobProcessor } from "@/lib/background/job-processor";
 import { withEnhancedErrorHandler } from "@/lib/enhanced-error-handler";
 
 export const runtime = 'nodejs';
@@ -132,15 +132,16 @@ async function postHandler(request: NextRequest): Promise<NextResponse> {
     }
   });
 
-  // Enqueue story generation as background task
-  const taskId = await taskQueueManager.enqueueStoryGeneration(
-    session.user.id,
-    story.id,
-    analysis.analysisResult,
-    'NORMAL'
-  );
+  // Enqueue story generation as background job
+  const jobId = await jobProcessor.createStoryGenerationJob({
+    userId: session.user.id,
+    storyId: story.id,
+    analysisId: analysis.id,
+    analysisResult: analysis.analysisResult,
+    priority: 'NORMAL'
+  });
 
-  // Update story status to GENERATING once task is queued
+  // Update story status to GENERATING once job is queued
   await prisma.story.update({
     where: { id: story.id },
     data: {
@@ -155,11 +156,11 @@ async function postHandler(request: NextRequest): Promise<NextResponse> {
       status: 'GENERATING',
       title: story.title
     },
-    taskId,
+    jobId,
     retryInfo: {
-      maxAttempts: 3, // Default max retries + 1
+      maxAttempts: 4, // Default max retries + 1 (3 retries + initial attempt)
       currentAttempt: 1,
-      canRetry: false, // Not applicable for new tasks
+      canRetry: false, // Not applicable for new jobs
       isRetrying: false,
     },
     message: "Story generation has been queued. You'll be notified when it's complete."

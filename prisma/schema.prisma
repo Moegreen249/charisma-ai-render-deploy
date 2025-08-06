@@ -42,7 +42,6 @@ model User {
   storyUsage            UserStoryUsage?
   subscription          UserSubscription?
   adminSettings         AdminSettings[]
-  taskQueue             TaskQueue[]
 }
 
 model Account {
@@ -138,32 +137,43 @@ model AnalysisModule {
 }
 
 model BackgroundJob {
-  id          String    @id @default(uuid())
-  userId      String
-  type        String    @default("ANALYSIS")
-  status      JobStatus @default(PENDING)
-  templateId  String?
-  modelId     String?
-  provider    String?
-  fileName    String?
-  fileContent String?
-  progress    Int       @default(0)
-  currentStep String?
-  totalSteps  Int       @default(1)
-  result      Json?
-  error       String?
-  startedAt   DateTime?
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  retryCount  Int       @default(0)
-  apiKey      String?
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String    @id @default(uuid())
+  userId        String
+  type          String    @default("ANALYSIS")
+  status        JobStatus @default(PENDING)
+  templateId    String?
+  modelId       String?
+  provider      String?
+  fileName      String?
+  fileContent   String?
+  progress      Int       @default(0)
+  currentStep   String?
+  totalSteps    Int       @default(1)
+  result        Json?
+  error         String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  retryCount    Int       @default(0)
+  maxRetries    Int       @default(3)
+  apiKey        String?
+  // Story generation specific fields
+  storyId       String?   // For story generation jobs
+  analysisId    String?   // Reference to analysis for story generation
+  priority      String    @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  estimatedTime Int?      // Estimated processing time in seconds
+  actualTime    Int?      // Actual processing time in seconds
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
   @@index([type])
   @@index([createdAt])
+  @@index([priority])
+  @@index([storyId])
+  @@index([analysisId])
 }
 
 model PlatformError {
@@ -618,34 +628,7 @@ model AdminSettings {
   @@index([isActive])
 }
 
-model TaskQueue {
-  id            String       @id @default(uuid())
-  userId        String
-  type          TaskType     @default(STORY_GENERATION)
-  priority      TaskPriority @default(NORMAL)
-  status        TaskStatus   @default(QUEUED)
-  payload       Json
-  result        Json?
-  error         String?
-  progress      Int          @default(0)
-  estimatedTime Int? // seconds
-  actualTime    Int? // seconds
-  retryCount    Int          @default(0)
-  maxRetries    Int          @default(3)
-  queuedAt      DateTime     @default(now())
-  startedAt     DateTime?
-  completedAt   DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([status])
-  @@index([priority])
-  @@index([type])
-  @@index([queuedAt])
-}
 
 enum SubscriptionTier {
   FREE
@@ -661,23 +644,4 @@ enum SubscriptionStatus {
   INCOMPLETE
 }
 
-enum TaskType {
-  STORY_GENERATION
-  ANALYSIS
-  EXPORT
-}
 
-enum TaskPriority {
-  LOW
-  NORMAL
-  HIGH
-  URGENT
-}
-
-enum TaskStatus {
-  QUEUED
-  RUNNING
-  COMPLETED
-  FAILED
-  CANCELED
-}
