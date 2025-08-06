@@ -2,10 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Gilroy:wght@300;400;500;600;700;800&display=swap');
 
-/* Performance optimizations */
+/* Performance optimizations - removed transform that interferes with dropdowns */
 * {
   /* Enable hardware acceleration for better performance */
-  transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
 }
