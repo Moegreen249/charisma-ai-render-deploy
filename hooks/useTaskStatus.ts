@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TaskStatus, TaskType } from '@prisma/client';
+
+// Define types for background jobs (replacing old TaskStatus and TaskType enums)
+export type JobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+export type JobType = 'ANALYSIS' | 'STORY_GENERATION';
 
 export interface TaskInfo {
   id: string;
-  type: TaskType;
-  status: TaskStatus;
+  type: JobType | string;
+  status: JobStatus | string;
   priority: string;
   progress: number;
   estimatedTime?: number;
@@ -15,6 +18,11 @@ export interface TaskInfo {
   queuedAt: string;
   startedAt?: string;
   completedAt?: string;
+  currentStep?: string;
+  totalSteps?: number;
+  fileName?: string;
+  storyId?: string;
+  analysisId?: string;
   queuePosition?: {
     position: number;
     estimatedWaitTime: number;
@@ -27,6 +35,8 @@ export interface TaskInfo {
     nextRetryAt?: string;
   };
   canCancel: boolean;
+  isComplete?: boolean;
+  estimatedTimeRemaining?: number;
 }
 
 export interface UseTaskStatusOptions {
@@ -108,7 +118,7 @@ export function useTaskStatus(taskId: string, options: UseTaskStatusOptions = {}
   useEffect(() => {
     if (!autoRefresh || !task) return;
 
-    const isActive = task.status === 'QUEUED' || task.status === 'RUNNING';
+    const isActive = task.status === 'PENDING' || task.status === 'PROCESSING';
     if (!isActive) return;
 
     const interval = setInterval(fetchTask, pollInterval);
@@ -126,8 +136,8 @@ export function useTaskStatus(taskId: string, options: UseTaskStatusOptions = {}
 }
 
 export interface UseTaskListOptions {
-  status?: TaskStatus[];
-  type?: TaskType[];
+  status?: JobStatus[];
+  type?: JobType[];
   limit?: number;
   autoRefresh?: boolean;
   pollInterval?: number;
@@ -227,7 +237,7 @@ export function useTaskList(options: UseTaskListOptions = {}) {
     if (!autoRefresh) return;
 
     const hasActiveTasks = tasks.some(task => 
-      task.status === 'QUEUED' || task.status === 'RUNNING'
+      task.status === 'PENDING' || task.status === 'PROCESSING'
     );
 
     if (!hasActiveTasks) return;

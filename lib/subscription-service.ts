@@ -544,14 +544,14 @@ export class SubscriptionService {
   }
 
   private async getCurrentRunningTasks(userId: string): Promise<number> {
-    const runningTasks = await prisma.taskQueue.count({
+    const runningJobs = await prisma.backgroundJob.count({
       where: {
         userId,
-        status: 'RUNNING'
+        status: 'PROCESSING'
       }
     });
 
-    return runningTasks;
+    return runningJobs;
   }
 }
 

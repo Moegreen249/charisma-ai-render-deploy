@@ -43,7 +43,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: result,
+      users: result.users, // Frontend expects 'users' key directly
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
       timestamp: new Date().toISOString()
     });
 

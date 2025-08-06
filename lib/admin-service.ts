@@ -1,6 +1,11 @@
 import { prisma } from './prisma';
-import { Role, SubscriptionTier, SubscriptionStatus, TaskType, TaskStatus, TaskPriority } from '@prisma/client';
+import { Role, SubscriptionTier, SubscriptionStatus } from '@prisma/client';
 import { z } from 'zod';
+
+// Define job types and statuses for background jobs (replacing old TaskType, TaskStatus, TaskPriority enums)
+export type JobType = 'ANALYSIS' | 'STORY_GENERATION';
+export type JobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+export type JobPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
 
 // Types and interfaces
 export interface SystemMetrics {
@@ -681,13 +686,13 @@ export class UserManagementService {
         data: { status: SubscriptionStatus.CANCELED }
       });
 
-      // Cancel all running tasks
-      await prisma.taskQueue.updateMany({
+      // Cancel all running background jobs
+      await prisma.backgroundJob.updateMany({
         where: { 
           userId,
-          status: { in: [TaskStatus.QUEUED, TaskStatus.RUNNING] }
+          status: { in: ['PENDING', 'PROCESSING'] }
         },
-        data: { status: TaskStatus.CANCELED }
+        data: { status: 'CANCELLED' }
       });
 
       // Log the action
@@ -854,7 +859,7 @@ export class SystemMetricsService {
   }
 
   /**
-   * Get task queue statistics
+   * Get background job statistics (replacing task queue statistics)
    */
   private async getTaskQueueStatistics(): Promise<TaskQueueStatistics> {
     const [
@@ -863,46 +868,46 @@ export class SystemMetricsService {
       totalCompleted,
       totalFailed
     ] = await Promise.all([
-      prisma.taskQueue.count({ where: { status: TaskStatus.QUEUED } }),
-      prisma.taskQueue.count({ where: { status: TaskStatus.RUNNING } }),
-      prisma.taskQueue.count({ where: { status: TaskStatus.COMPLETED } }),
-      prisma.taskQueue.count({ where: { status: TaskStatus.FAILED } })
+      prisma.backgroundJob.count({ where: { status: 'PENDING' } }),
+      prisma.backgroundJob.count({ where: { status: 'PROCESSING' } }),
+      prisma.backgroundJob.count({ where: { status: 'COMPLETED' } }),
+      prisma.backgroundJob.count({ where: { status: 'FAILED' } })
     ]);
 
     // Calculate average wait and processing times
-    const completedTasks = await prisma.taskQueue.findMany({
+    const completedJobs = await prisma.backgroundJob.findMany({
       where: { 
-        status: TaskStatus.COMPLETED,
+        status: 'COMPLETED',
         startedAt: { not: null },
         completedAt: { not: null }
       },
       select: {
-        queuedAt: true,
+        createdAt: true,
         startedAt: true,
         completedAt: true
       },
-      take: 1000, // Sample recent tasks
+      take: 1000, // Sample recent jobs
       orderBy: { completedAt: 'desc' }
     });
 
     let totalWaitTime = 0;
     let totalProcessingTime = 0;
 
-    completedTasks.forEach(task => {
-      if (task.startedAt && task.completedAt) {
-        const waitTime = task.startedAt.getTime() - task.queuedAt.getTime();
-        const processingTime = task.completedAt.getTime() - task.startedAt.getTime();
+    completedJobs.forEach(job => {
+      if (job.startedAt && job.completedAt) {
+        const waitTime = job.startedAt.getTime() - job.createdAt.getTime();
+        const processingTime = job.completedAt.getTime() - job.startedAt.getTime();
         
         totalWaitTime += waitTime;
         totalProcessingTime += processingTime;
       }
     });
 
-    const averageWaitTime = completedTasks.length > 0 ? totalWaitTime / completedTasks.length : 0;
-    const averageProcessingTime = completedTasks.length > 0 ? totalProcessingTime / completedTasks.length : 0;
+    const averageWaitTime = completedJobs.length > 0 ? totalWaitTime / completedJobs.length : 0;
+    const averageProcessingTime = completedJobs.length > 0 ? totalProcessingTime / completedJobs.length : 0;
 
-    const totalTasks = totalQueued + totalRunning + totalCompleted + totalFailed;
-    const successRate = totalTasks > 0 ? (totalCompleted / totalTasks) * 100 : 0;
+    const totalJobs = totalQueued + totalRunning + totalCompleted + totalFailed;
+    const successRate = totalJobs > 0 ? (totalCompleted / totalJobs) * 100 : 0;
 
     return {
       totalQueued,
@@ -998,24 +1003,24 @@ export class SystemMetricsService {
   }
 
   /**
-   * Get ratio of failed tasks in recent period
+   * Get ratio of failed background jobs in recent period
    */
   private async getRecentFailedTasksRatio(): Promise<number> {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
-    const [totalTasks, failedTasks] = await Promise.all([
-      prisma.taskQueue.count({
+    const [totalJobs, failedJobs] = await Promise.all([
+      prisma.backgroundJob.count({
         where: { createdAt: { gte: oneHourAgo } }
       }),
-      prisma.taskQueue.count({
+      prisma.backgroundJob.count({
         where: { 
           createdAt: { gte: oneHourAgo },
-          status: TaskStatus.FAILED
+          status: 'FAILED'
         }
       })
     ]);
 
-    return totalTasks > 0 ? failedTasks / totalTasks : 0;
+    return totalJobs > 0 ? failedJobs / totalJobs : 0;
   }
 
   /**

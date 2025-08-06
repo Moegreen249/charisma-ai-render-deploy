@@ -1,13 +1,30 @@
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
-import { TaskUpdateEvent } from './task-queue-types';
-import { TaskStatus } from '@prisma/client';
 import { logger } from './logger';
+
+// Define job update event types (replacing old TaskUpdateEvent)
+export interface JobUpdateEvent {
+  jobId: string;
+  userId: string;
+  type: 'status' | 'progress' | 'completed' | 'failed' | 'cancelled';
+  data: {
+    status?: string;
+    progress?: number;
+    result?: any;
+    error?: string;
+    currentStep?: string;
+    estimatedTimeRemaining?: number;
+  };
+  timestamp: Date;
+}
+
+// Define job status type (replacing old TaskStatus enum)
+export type JobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
 interface TaskUpdate {
     taskId: string;
     userId: string;
-    update: TaskUpdateEvent;
+    update: JobUpdateEvent;
     timestamp: Date;
 }
 
@@ -163,9 +180,9 @@ export class WebSocketManager {
     /**
      * Send task update to connected clients and store for polling fallback
      */
-    public sendTaskUpdate(userId: string, update: TaskUpdateEvent): void {
+    public sendTaskUpdate(userId: string, update: JobUpdateEvent): void {
         const taskUpdate: TaskUpdate = {
-            taskId: update.taskId,
+            taskId: update.jobId,
             userId,
             update,
             timestamp: new Date()
@@ -174,7 +191,7 @@ export class WebSocketManager {
         // Send real-time update via WebSocket if connected
         if (this.io) {
             const updatePayload = {
-                taskId: update.taskId,
+                taskId: update.jobId,
                 type: update.type,
                 data: update.data,
                 timestamp: update.timestamp
@@ -186,7 +203,7 @@ export class WebSocketManager {
                 userSockets.forEach(socketId => {
                     this.io!.to(socketId).emit('task_update', updatePayload);
                 });
-                logger.info(`Sent real-time task update to user ${userId}, task ${update.taskId}`);
+                logger.info(`Sent real-time task update to user ${userId}, task ${update.jobId}`);
             }
 
             // Also send to admin subscribers
@@ -194,10 +211,10 @@ export class WebSocketManager {
         }
 
         // Store by task ID for polling fallback
-        if (!this.taskUpdates.has(update.taskId)) {
-            this.taskUpdates.set(update.taskId, []);
+        if (!this.taskUpdates.has(update.jobId)) {
+            this.taskUpdates.set(update.jobId, []);
         }
-        const taskUpdateList = this.taskUpdates.get(update.taskId)!;
+        const taskUpdateList = this.taskUpdates.get(update.jobId)!;
         taskUpdateList.push(taskUpdate);
 
         // Keep only recent updates
@@ -229,8 +246,8 @@ export class WebSocketManager {
         currentStep?: string,
         estimatedTimeRemaining?: number
     ): void {
-        const update: TaskUpdateEvent = {
-            taskId,
+        const update: JobUpdateEvent = {
+            jobId: taskId,
             userId,
             type: 'progress',
             data: {
@@ -250,14 +267,14 @@ export class WebSocketManager {
     public sendStatusUpdate(
         taskId: string,
         userId: string,
-        status: TaskStatus,
+        status: JobStatus | string,
         result?: any,
         error?: string
     ): void {
-        const update: TaskUpdateEvent = {
-            taskId,
+        const update: JobUpdateEvent = {
+            jobId: taskId,
             userId,
-            type: status === TaskStatus.COMPLETED ? 'completed' : status === TaskStatus.FAILED ? 'failed' : 'status',
+            type: status === 'COMPLETED' ? 'completed' : status === 'FAILED' ? 'failed' : 'status',
             data: {
                 status,
                 result,

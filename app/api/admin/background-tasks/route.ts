@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-config";
 import { prisma } from "@/lib/prisma";
-import { TaskStatus, TaskType } from "@prisma/client";
 
-// Unified job interface for admin display
-interface UnifiedJob {
+// Job interface for admin display (now only background jobs)
+interface AdminJob {
   id: string;
   userId: string;
   user: {
@@ -29,17 +28,16 @@ interface UnifiedJob {
   createdAt: Date;
   updatedAt: Date;
   retryCount: number;
-  source: 'backgroundJob' | 'taskQueue'; // To identify which system the job comes from
-  // Additional fields for task queue jobs
-  priority?: string;
-  estimatedTime?: number;
-  actualTime?: number;
-  maxRetries?: number;
-  queuedAt?: Date;
+  maxRetries: number;
+  priority: string;
+  estimatedTime: number | null;
+  actualTime: number | null;
+  storyId: string | null;
+  analysisId: string | null;
 }
 
-// Normalize background job to unified format
-function normalizeBackgroundJob(job: any): UnifiedJob {
+// Convert background job to admin job format
+function formatBackgroundJob(job: any): AdminJob {
   return {
     id: job.id,
     userId: job.userId,
@@ -60,71 +58,13 @@ function normalizeBackgroundJob(job: any): UnifiedJob {
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
     retryCount: job.retryCount,
-    source: 'backgroundJob'
+    maxRetries: job.maxRetries || 3,
+    priority: job.priority || 'NORMAL',
+    estimatedTime: job.estimatedTime,
+    actualTime: job.actualTime,
+    storyId: job.storyId,
+    analysisId: job.analysisId,
   };
-}
-
-// Normalize task queue job to unified format
-function normalizeTaskQueueJob(task: any): UnifiedJob {
-  // Map task queue statuses to background job statuses for consistency
-  const statusMap: Record<string, string> = {
-    'QUEUED': 'PENDING',
-    'RUNNING': 'PROCESSING',
-    'COMPLETED': 'COMPLETED',
-    'FAILED': 'FAILED',
-    'CANCELED': 'CANCELLED'
-  };
-
-  // Extract story information from payload if available
-  let fileName = null;
-  let templateId = null;
-  if (task.payload && typeof task.payload === 'object') {
-    // For story generation, try to extract story title or analysis info
-    if (task.type === 'STORY_GENERATION' && task.payload.analysisResult) {
-      fileName = `Story Generation`;
-    }
-  }
-
-  return {
-    id: task.id,
-    userId: task.userId,
-    user: task.user,
-    type: task.type,
-    status: statusMap[task.status] || task.status,
-    progress: task.progress,
-    currentStep: `${task.type} Task`, // Task queue doesn't have detailed steps
-    totalSteps: 1, // Task queue doesn't track steps the same way
-    templateId: templateId,
-    modelId: null, // Task queue doesn't store this directly
-    provider: null, // Task queue doesn't store this directly
-    fileName: fileName,
-    result: task.result,
-    error: task.error,
-    startedAt: task.startedAt,
-    completedAt: task.completedAt,
-    createdAt: task.createdAt,
-    updatedAt: task.updatedAt,
-    retryCount: task.retryCount,
-    source: 'taskQueue',
-    // Additional task queue specific fields
-    priority: task.priority,
-    estimatedTime: task.estimatedTime,
-    actualTime: task.actualTime,
-    maxRetries: task.maxRetries,
-    queuedAt: task.queuedAt
-  };
-}
-
-// Map task queue status to background job status for filtering
-function mapTaskQueueStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    'PENDING': 'QUEUED',
-    'PROCESSING': 'RUNNING',
-    'COMPLETED': 'COMPLETED',
-    'FAILED': 'FAILED',
-    'CANCELLED': 'CANCELED'
-  };
-  return statusMap[status] || status;
 }
 
 export async function GET(request: NextRequest) {
@@ -147,33 +87,21 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get("userId");
     const type = searchParams.get("type"); // Add type filter support
 
-    // Build where clauses for both tables
+    // Build where clause for background jobs only
     const backgroundJobWhere: any = {};
-    const taskQueueWhere: any = {};
 
     if (status && status !== "all") {
       backgroundJobWhere.status = status;
-      taskQueueWhere.status = mapTaskQueueStatus(status);
     }
     if (userId) {
       backgroundJobWhere.userId = userId;
-      taskQueueWhere.userId = userId;
     }
     if (type && type !== "all") {
-      if (type === "STORY_GENERATION") {
-        // Only query task queue for story generation
-        taskQueueWhere.type = type;
-        backgroundJobWhere.type = "NEVER_MATCH"; // Ensure no background jobs match
-      } else {
-        // Only query background jobs for other types
-        backgroundJobWhere.type = type;
-        taskQueueWhere.type = "NEVER_MATCH"; // Ensure no task queue jobs match
-      }
+      backgroundJobWhere.type = type;
     }
 
-    // Fetch from both systems in parallel
-    const [backgroundJobs, taskQueueJobs, backgroundJobCount, taskQueueCount] = await Promise.all([
-      // Background jobs (analysis, etc.)
+    // Fetch background jobs only (task queue system has been removed)
+    const [backgroundJobs, backgroundJobCount] = await Promise.all([
       prisma.backgroundJob.findMany({
         where: backgroundJobWhere,
         select: {
@@ -195,39 +123,12 @@ export async function GET(request: NextRequest) {
           createdAt: true,
           updatedAt: true,
           retryCount: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      }),
-      
-      // Task queue jobs (story generation, etc.)
-      prisma.taskQueue.findMany({
-        where: taskQueueWhere,
-        select: {
-          id: true,
-          userId: true,
-          type: true,
-          status: true,
+          maxRetries: true,
           priority: true,
-          progress: true,
-          payload: true,
-          result: true,
-          error: true,
           estimatedTime: true,
           actualTime: true,
-          retryCount: true,
-          maxRetries: true,
-          queuedAt: true,
-          startedAt: true,
-          completedAt: true,
-          createdAt: true,
-          updatedAt: true,
+          storyId: true,
+          analysisId: true,
           user: {
             select: {
               id: true,
@@ -237,48 +138,28 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
       }),
-      
-      // Counts
       prisma.backgroundJob.count({ where: backgroundJobWhere }),
-      prisma.taskQueue.count({ where: taskQueueWhere }),
     ]);
 
-    // Normalize and merge jobs
-    const normalizedBackgroundJobs = backgroundJobs.map(normalizeBackgroundJob);
-    const normalizedTaskQueueJobs = taskQueueJobs.map(normalizeTaskQueueJob);
-    const allJobs = [...normalizedBackgroundJobs, ...normalizedTaskQueueJobs];
+    // Format background jobs for admin display
+    const formattedJobs = backgroundJobs.map(formatBackgroundJob);
+    const totalCount = backgroundJobCount;
 
-    // Sort by creation date (most recent first)
-    allJobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-    // Apply pagination to merged results
-    const totalCount = backgroundJobCount + taskQueueCount;
-    const paginatedJobs = allJobs.slice(offset, offset + limit);
-
-    // Get combined statistics from both systems
-    const [backgroundStats, taskQueueStats] = await Promise.all([
-      prisma.backgroundJob.groupBy({
-        by: ["status"],
-        _count: { id: true },
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-          },
+    // Get statistics from background jobs only
+    const backgroundStats = await prisma.backgroundJob.groupBy({
+      by: ["status"],
+      _count: { id: true },
+      where: {
+        createdAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
         },
-      }),
-      prisma.taskQueue.groupBy({
-        by: ["status"],
-        _count: { id: true },
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-          },
-        },
-      }),
-    ]);
+      },
+    });
 
-    // Combine statistics
+    // Calculate statistics
     const stats = {
       pending: 0,
       processing: 0,
@@ -295,37 +176,14 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Add task queue stats (with status mapping)
-    taskQueueStats.forEach(stat => {
-      const mappedStatus = {
-        'QUEUED': 'pending',
-        'RUNNING': 'processing',
-        'COMPLETED': 'completed',
-        'FAILED': 'failed',
-        'CANCELED': 'cancelled'
-      }[stat.status] || stat.status.toLowerCase();
-      
-      if (mappedStatus in stats) {
-        stats[mappedStatus as keyof typeof stats] += stat._count.id;
-      }
-    });
-
-    // Add system source information for debugging
-    const systemInfo = {
-      backgroundJobsCount: backgroundJobCount,
-      taskQueueJobsCount: taskQueueCount,
-      totalMerged: totalCount,
-    };
-
     return NextResponse.json({
-      jobs: paginatedJobs,
+      jobs: formattedJobs,
       totalCount,
       stats,
-      systemInfo, // Include for admin debugging
       pagination: {
         limit,
         offset,
-        hasMore: offset + paginatedJobs.length < totalCount,
+        hasMore: offset + limit < totalCount,
       },
     });
   } catch (error) {
@@ -367,7 +225,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, jobIds, sources } = body; // Add sources to identify which system each job belongs to
+    const { action, jobIds } = body;
 
     if (!action || !Array.isArray(jobIds)) {
       return NextResponse.json(
@@ -376,139 +234,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If sources are provided, separate jobs by system
-    let backgroundJobIds: string[] = [];
-    let taskQueueJobIds: string[] = [];
-
-    if (sources && Array.isArray(sources)) {
-      jobIds.forEach((jobId, index) => {
-        if (sources[index] === 'backgroundJob') {
-          backgroundJobIds.push(jobId);
-        } else if (sources[index] === 'taskQueue') {
-          taskQueueJobIds.push(jobId);
-        }
-      });
-    } else {
-      // Fallback: try to determine which system each job belongs to
-      const [backgroundJobs, taskQueueJobs] = await Promise.all([
-        prisma.backgroundJob.findMany({
-          where: { id: { in: jobIds } },
-          select: { id: true }
-        }),
-        prisma.taskQueue.findMany({
-          where: { id: { in: jobIds } },
-          select: { id: true }
-        })
-      ]);
-
-      backgroundJobIds = backgroundJobs.map(job => job.id);
-      taskQueueJobIds = taskQueueJobs.map(job => job.id);
-    }
-
-    let backgroundResult = { count: 0 };
-    let taskQueueResult = { count: 0 };
+    let result = { count: 0 };
 
     switch (action) {
       case "cancel":
-        // Cancel background jobs
-        if (backgroundJobIds.length > 0) {
-          backgroundResult = await prisma.backgroundJob.updateMany({
-            where: {
-              id: { in: backgroundJobIds },
-              status: { in: ["PENDING", "PROCESSING"] },
-            },
-            data: {
-              status: "CANCELLED",
-              updatedAt: new Date(),
-            },
-          });
-        }
-
-        // Cancel task queue jobs
-        if (taskQueueJobIds.length > 0) {
-          taskQueueResult = await prisma.taskQueue.updateMany({
-            where: {
-              id: { in: taskQueueJobIds },
-              status: { in: ["QUEUED", "RUNNING"] },
-            },
-            data: {
-              status: "CANCELED",
-              updatedAt: new Date(),
-            },
-          });
-        }
+        result = await prisma.backgroundJob.updateMany({
+          where: {
+            id: { in: jobIds },
+            status: { in: ["PENDING", "PROCESSING"] },
+          },
+          data: {
+            status: "CANCELLED",
+            updatedAt: new Date(),
+          },
+        });
         break;
 
       case "retry":
-        // Retry background jobs
-        if (backgroundJobIds.length > 0) {
-          backgroundResult = await prisma.backgroundJob.updateMany({
-            where: {
-              id: { in: backgroundJobIds },
-              status: "FAILED",
-            },
-            data: {
-              status: "PENDING",
-              progress: 0,
-              currentStep: null,
-              error: null,
-              startedAt: null,
-              completedAt: null,
-              updatedAt: new Date(),
-            },
-          });
-        }
-
-        // Retry task queue jobs
-        if (taskQueueJobIds.length > 0) {
-          taskQueueResult = await prisma.taskQueue.updateMany({
-            where: {
-              id: { in: taskQueueJobIds },
-              status: "FAILED",
-            },
-            data: {
-              status: "QUEUED",
-              progress: 0,
-              error: null,
-              startedAt: null,
-              completedAt: null,
-              queuedAt: new Date(),
-              updatedAt: new Date(),
-            },
-          });
-        }
+        result = await prisma.backgroundJob.updateMany({
+          where: {
+            id: { in: jobIds },
+            status: "FAILED",
+          },
+          data: {
+            status: "PENDING",
+            progress: 0,
+            currentStep: null,
+            error: null,
+            startedAt: null,
+            completedAt: null,
+            updatedAt: new Date(),
+          },
+        });
         break;
 
       case "delete":
-        // Delete background jobs
-        if (backgroundJobIds.length > 0) {
-          backgroundResult = await prisma.backgroundJob.deleteMany({
-            where: {
-              id: { in: backgroundJobIds },
-              status: { in: ["COMPLETED", "FAILED", "CANCELLED"] },
-            },
-          });
-        }
-
-        // Delete task queue jobs
-        if (taskQueueJobIds.length > 0) {
-          taskQueueResult = await prisma.taskQueue.deleteMany({
-            where: {
-              id: { in: taskQueueJobIds },
-              status: { in: ["COMPLETED", "FAILED", "CANCELED"] },
-            },
-          });
-        }
+        result = await prisma.backgroundJob.deleteMany({
+          where: {
+            id: { in: jobIds },
+            status: { in: ["COMPLETED", "FAILED", "CANCELLED"] },
+          },
+        });
         break;
 
       case "pause_queue":
         // This would require implementing a queue pause mechanism
         // For now, we'll just return success
+        result = { count: 0 };
         break;
 
       case "resume_queue":
         // This would require implementing a queue resume mechanism
         // For now, we'll just return success
+        result = { count: 0 };
         break;
 
       default:
@@ -517,8 +295,6 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         );
     }
-
-    const totalAffected = backgroundResult.count + taskQueueResult.count;
 
     // Log the admin action
     try {
@@ -529,9 +305,7 @@ export async function POST(request: NextRequest) {
           category: "admin",
           metadata: {
             jobIds,
-            backgroundJobsAffected: backgroundResult.count,
-            taskQueueJobsAffected: taskQueueResult.count,
-            totalAffected,
+            affectedCount: result.count,
             timestamp: new Date().toISOString(),
           },
         },
@@ -543,12 +317,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       action,
-      affectedCount: totalAffected,
-      details: {
-        backgroundJobs: backgroundResult.count,
-        taskQueueJobs: taskQueueResult.count,
-      },
-      message: `Successfully ${action}ed ${totalAffected} job(s) (${backgroundResult.count} background jobs, ${taskQueueResult.count} task queue jobs)`,
+      affectedCount: result.count,
+      message: `Successfully ${action}ed ${result.count} job(s)`,
     });
   } catch (error) {
     console.error("Background tasks action error:", error);
