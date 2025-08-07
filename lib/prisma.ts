@@ -70,6 +70,33 @@ export async function checkDatabaseHealth(): Promise<{
   }
 }
 
+// Safe database operation wrapper with fallback
+export async function withDatabaseFallback<T>(
+  operation: () => Promise<T>,
+  fallback: T,
+  operationName?: string
+): Promise<T> {
+  try {
+    // Quick health check first
+    const health = await checkDatabaseHealth();
+    if (!health.isHealthy) {
+      if (operationName && process.env.NODE_ENV === 'development') {
+        console.warn(`Database unavailable for ${operationName}, using fallback:`, health.error);
+      }
+      return fallback;
+    }
+    
+    return await operation();
+  } catch (error) {
+    if (operationName && process.env.NODE_ENV === 'development') {
+      console.warn(`Database operation failed for ${operationName}:`, {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+    return fallback;
+  }
+}
+
 // Enhanced database operation with retry logic
 export async function withRetry<T>(
   operation: () => Promise<T>,

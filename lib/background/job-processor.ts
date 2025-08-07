@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
-import { prisma } from "@/lib/prisma";
+import { prisma, withDatabaseFallback } from "@/lib/prisma";
 import { getModelInfo, getProviderConfig } from "@/lib/ai-providers";
 import { getAllAnalysisTemplates } from "@/lib/analysis-templates";
 import { logPlatformError } from "./error-tracker";
@@ -295,15 +295,21 @@ export class BackgroundJobProcessor {
           return;
         }
 
-        // Get pending jobs
-        const pendingJobs = await prisma.backgroundJob.findMany({
-          where: {
-            status: "PENDING",
-            id: { notIn: Array.from(this.processingJobs) },
+        // Get pending jobs with database fallback
+        const pendingJobs = await withDatabaseFallback(
+          async () => {
+            return await prisma.backgroundJob.findMany({
+              where: {
+                status: "PENDING",
+                id: { notIn: Array.from(this.processingJobs) },
+              },
+              orderBy: { createdAt: "asc" },
+              take: this.maxConcurrentJobs - this.processingJobs.size,
+            });
           },
-          orderBy: { createdAt: "asc" },
-          take: this.maxConcurrentJobs - this.processingJobs.size,
-        });
+          [], // Return empty array if database is unavailable
+          'getBackgroundJobs'
+        );
 
         // Process each job
         for (const job of pendingJobs) {
@@ -313,12 +319,18 @@ export class BackgroundJobProcessor {
         }
       } catch (error) {
         console.error("Error in job processing loop:", error);
-        await logPlatformError({
-          category: "SYSTEM",
-          severity: "HIGH",
-          message: "Background job processing loop error",
-          stackTrace: error instanceof Error ? error.stack : undefined,
-        });
+        // Only try to log if database is available
+        try {
+          await logPlatformError({
+            category: "SYSTEM",
+            severity: "HIGH",
+            message: "Background job processing loop error",
+            stackTrace: error instanceof Error ? error.stack : undefined,
+          });
+        } catch (logError) {
+          // Silently fail if we can't log the error
+          console.error("Failed to log platform error:", logError);
+        }
       }
     };
 

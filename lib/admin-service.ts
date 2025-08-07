@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { prisma, withDatabaseFallback } from './prisma';
 import { Role, SubscriptionTier, SubscriptionStatus } from '@prisma/client';
 import { z } from 'zod';
 
@@ -151,24 +151,25 @@ export class AdminService {
    * Get system configuration by category and key
    */
   async getConfig(category: string, key?: string) {
-    try {
-      const where = key ? { category, key } : { category };
-      
-      const configs = await prisma.adminSettings.findMany({
-        where,
-        include: {
-          updater: {
-            select: { id: true, name: true, email: true }
-          }
-        },
-        orderBy: { updatedAt: 'desc' }
-      });
+    return withDatabaseFallback(
+      async () => {
+        const where = key ? { category, key } : { category };
+        
+        const configs = await prisma.adminSettings.findMany({
+          where,
+          include: {
+            updater: {
+              select: { id: true, name: true, email: true }
+            }
+          },
+          orderBy: { updatedAt: 'desc' }
+        });
 
-      return configs;
-    } catch (error) {
-      console.error('Error fetching admin config:', error);
-      throw new Error('Failed to fetch configuration');
-    }
+        return configs;
+      },
+      [], // Return empty array as fallback
+      `getConfig(${category}${key ? `, ${key}` : ''})`
+    );
   }
 
   /**

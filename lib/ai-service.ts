@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import OpenAI from 'openai';
-import { prisma } from './prisma';
+import { prisma, withDatabaseFallback } from './prisma';
 
 export interface AIRequest {
   feature: string; // 'charisma-feelings', 'writing-assistant', 'story-generation', etc.
@@ -61,18 +61,19 @@ class AIService {
       return this.configCache.get('config');
     }
 
-    try {
-      const settings = await prisma.adminSettings.findMany({
-        where: {
-          category: { in: ['ai_providers', 'ai_features', 'ai_config'] },
-          isActive: true,
-        },
-      });
+    return withDatabaseFallback(
+      async () => {
+        const settings = await prisma.adminSettings.findMany({
+          where: {
+            category: { in: ['ai_providers', 'ai_features', 'ai_config'] },
+            isActive: true,
+          },
+        });
 
-      const providers: Record<string, AIProviderConfig> = {};
+        const providers: Record<string, AIProviderConfig> = {};
       
-      // Default feature configurations (same as API endpoint)
-      const features: Record<string, AIFeatureConfig> = {
+        // Default feature configurations (same as API endpoint)
+        const features: Record<string, AIFeatureConfig> = {
         'charisma-feelings': {
           isEnabled: true,
           defaultProvider: 'google',
@@ -163,15 +164,14 @@ class AIService {
         }
       });
 
-      const config = { providers, features, global };
-      this.configCache.set('config', config);
-      this.lastConfigUpdate = now;
-      
-      return config;
-    } catch (error) {
-      console.error('Failed to load AI config:', error);
-      // Return default configuration if database fails
-      return {
+        const config = { providers, features, global };
+        this.configCache.set('config', config);
+        this.lastConfigUpdate = now;
+        
+        return config;
+      },
+      // Fallback configuration when database is unavailable
+      {
         providers: {},
         features: {
           'charisma-feelings': {
@@ -208,8 +208,9 @@ class AIService {
           },
         },
         global: { enableAI: true, defaultTimeout: 30000, retryAttempts: 3, enableFallback: true }
-      };
-    }
+      },
+      'getAIConfig'
+    );
   }
 
   // Get available providers for a feature

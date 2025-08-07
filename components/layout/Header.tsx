@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
+import { logout } from "@/lib/auth-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -143,7 +144,7 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={() => logout()}
                     className="gap-2 text-muted-foreground hover:text-foreground hover:bg-accent"
                   >
                     <LogOut className="h-4 w-4" />
@@ -241,7 +242,7 @@ export default function Header() {
                     </div>
                     <button
                       onClick={() => {
-                        signOut({ callbackUrl: "/" });
+                        logout();
                         setIsMobileMenuOpen(false);
                       }}
                       className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent w-full"

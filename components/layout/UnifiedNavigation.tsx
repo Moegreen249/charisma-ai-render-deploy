@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { X, ChevronDown, User, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 import { MenuIcon } from '@/components/icons/Menu';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { logout } from '@/lib/auth-utils';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -277,7 +278,7 @@ export function UnifiedNavigation() {
                     <div className="h-px bg-white/10 my-2" />
                     
                     <button
-                      onClick={() => signOut()}
+                      onClick={() => logout()}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer w-full text-left",
                         "text-red-400 hover:text-red-300 hover:bg-red-500/10",
@@ -379,7 +380,7 @@ export function UnifiedNavigation() {
                   Settings
                 </Link>
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => logout()}
                   className="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-red-500 hover:bg-white/5"
                 >
                   Sign Out

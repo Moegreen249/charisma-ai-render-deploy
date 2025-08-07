@@ -79,6 +79,12 @@ export const authConfig: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours
   },
+  events: {
+    async signOut() {
+      // Clear any additional session data if needed
+      console.log('User signed out successfully');
+    },
+  },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
